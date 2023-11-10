@@ -1,0 +1,10 @@
+= Eclipse uProtocol Contributors
+
+These are the contributors to Eclipse uProtocol Kotlin SDK
+
+|===
+| GitHub username | Name
+
+|https://github.com/neelam-kushwah[neelam-kushwah] |Neelam Kushwah
+
+|===
