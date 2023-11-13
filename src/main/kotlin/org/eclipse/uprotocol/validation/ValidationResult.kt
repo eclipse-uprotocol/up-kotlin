@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.validation
@@ -32,7 +35,7 @@ sealed class ValidationResult {
 
     companion object {
         val STATUS_SUCCESS: Status = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("OK").build()
-        private val SUCCESS: ValidationResult = Success()
+        private val SUCCESS: ValidationResult = Success
 
         fun success(): ValidationResult = SUCCESS
         fun failure(message: String): ValidationResult = Failure(message)
@@ -68,7 +71,7 @@ sealed class ValidationResult {
         }
     }
 
-    class Success : ValidationResult() {
+    data object Success : ValidationResult() {
         override fun toStatus(): Status {
             return STATUS_SUCCESS
         }

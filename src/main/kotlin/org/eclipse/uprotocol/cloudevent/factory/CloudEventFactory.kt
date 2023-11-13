@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.factory
@@ -28,7 +31,7 @@ import com.google.protobuf.Empty
 import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory
+import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.UUri
 import java.net.URI
@@ -176,7 +179,7 @@ interface CloudEventFactory {
          * @return Returns a UUIDv8 id.
          */
         private fun generateCloudEventId(): String {
-            val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
+            val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
             return uuid.toString()
         }
 

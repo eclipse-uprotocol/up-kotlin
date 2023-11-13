@@ -20,12 +20,10 @@
  */
 package org.eclipse.uprotocol.rpc
 
-import RpcResult
 import com.google.rpc.Code
 import com.google.rpc.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.assertThrows
 
 internal class RpcResultTest {
     @Test
@@ -84,14 +82,14 @@ internal class RpcResultTest {
 
 //    @Test
 //    fun testSuccessValue_onFailure_() {
-//        val result: RpcResult<Int> = RpcResult.failure(Code.INVALID_ARGUMENT, "boom")
+//        val result: org.eclipse.uprotocol.rpc.RpcResult<Int> = org.eclipse.uprotocol.rpc.RpcResult.failure(Code.INVALID_ARGUMENT, "boom")
 //        val exception: Exception = assertThrows(IllegalStateException::class.java, result::successValue)
 //        assertEquals(exception.getMessage(), "Method successValue() called on a Failure instance")
 //    }
 
 //    @Test
 //    fun testFailureValue_onSuccess() {
-//        val result: RpcResult<Int> = RpcResult.success(2)
+//        val result: org.eclipse.uprotocol.rpc.RpcResult<Int> = org.eclipse.uprotocol.rpc.RpcResult.success(2)
 //        val exception: Exception = assertThrows(IllegalStateException::class.java, result::failureValue)
 //        assertEquals(exception.getMessage(), "Method failureValue() called on a Success instance")
 //    }
@@ -102,7 +100,7 @@ internal class RpcResultTest {
         val resultValue: Status = result.failureValue
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setCode(Code.INVALID_ARGUMENT.number)
                 .setMessage("boom").build(), resultValue
         )
     }
@@ -121,12 +119,12 @@ internal class RpcResultTest {
     @Test
     fun testMapSuccess_when_function_throws_exception() {
         val result: RpcResult<Int> = RpcResult.success(2)
-//        val mapped: RpcResult<Int> = result.map { x: Int -> funThatThrowsAnExceptionForMap(x) }
+//        val mapped: org.eclipse.uprotocol.rpc.RpcResult<Int> = result.map { x: Int -> funThatThrowsAnExceptionForMap(x) }
         val mapped: RpcResult<Int> = result.map { funThatThrowsAnExceptionForMap(it) }
 
         assertTrue(mapped.isFailure)
-        assertEquals(Code.UNKNOWN_VALUE, mapped.failureValue.getCode())
-        assertEquals("2 went boom", mapped.failureValue.getMessage())
+        assertEquals(Code.UNKNOWN_VALUE, mapped.failureValue.code)
+        assertEquals("2 went boom", mapped.failureValue.message)
     }
 
     private fun funThatThrowsAnExceptionForMap(x: Int): Int {
@@ -140,7 +138,7 @@ internal class RpcResultTest {
         assertTrue(mapped.isFailure)
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setCode(Code.INVALID_ARGUMENT.number)
                 .setMessage("boom").build(), mapped.failureValue
         )
     }
@@ -150,8 +148,8 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.success(2)
         val flatMapped: RpcResult<Int> = result.flatMap { x: Int -> funThatThrowsAnExceptionForFlatMap(x) }
         assertTrue(flatMapped.isFailure)
-        assertEquals(Code.UNKNOWN_VALUE, flatMapped.failureValue.getCode())
-        assertEquals("2 went boom", flatMapped.failureValue.getMessage())
+        assertEquals(Code.UNKNOWN_VALUE, flatMapped.failureValue.code)
+        assertEquals("2 went boom", flatMapped.failureValue.message)
     }
 
     private fun funThatThrowsAnExceptionForFlatMap(x: Int): RpcResult<Int> {
@@ -173,7 +171,7 @@ internal class RpcResultTest {
         assertTrue(flatMapped.isFailure)
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setCode(Code.INVALID_ARGUMENT.number)
                 .setMessage("boom").build(), flatMapped.failureValue
         )
     }
@@ -185,7 +183,7 @@ internal class RpcResultTest {
         assertTrue(filterResult.isFailure)
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.FAILED_PRECONDITION.getNumber())
+                .setCode(Code.FAILED_PRECONDITION.number)
                 .setMessage("filtered out").build(), filterResult.failureValue
         )
     }
@@ -221,7 +219,7 @@ internal class RpcResultTest {
         assertTrue(filterResult.isFailure)
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setCode(Code.INVALID_ARGUMENT.number)
                 .setMessage("boom").build(), filterResult.failureValue
         )
     }
@@ -253,7 +251,7 @@ internal class RpcResultTest {
         assertTrue(mappedFlattened.isFailure)
         assertEquals(
             Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+                .setCode(Code.INVALID_ARGUMENT.number)
                 .setMessage("boom").build(), mappedFlattened.failureValue
         )
     }

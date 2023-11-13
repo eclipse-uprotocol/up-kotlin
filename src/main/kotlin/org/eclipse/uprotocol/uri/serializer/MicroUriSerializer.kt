@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uri.serializer
@@ -77,12 +80,16 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray?> {
             UAuthority.RemoteCase.REMOTE_NOT_SET -> AddressType.LOCAL
             UAuthority.RemoteCase.IP -> {
                 val length: Int = uri.authority.ip.size()
-                if (length == 4) {
-                    AddressType.IPv4
-                } else if (length == 16) {
-                    AddressType.IPv6
-                } else {
-                    return ByteArray(0)
+                when (length) {
+                    4 -> {
+                        AddressType.IPv4
+                    }
+                    16 -> {
+                        AddressType.IPv6
+                    }
+                    else -> {
+                        return ByteArray(0)
+                    }
                 }
             }
 

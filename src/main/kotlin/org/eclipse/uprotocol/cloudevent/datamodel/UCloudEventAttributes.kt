@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.datamodel
@@ -67,7 +70,7 @@ class UCloudEventAttributes {
      * @return Returns an Optional hash attribute.
      */
     fun hash(): Optional<String> {
-        return if (hash == null || hash.isBlank()) Optional.empty() else Optional.of(hash)
+        return if (hash.isNullOrBlank()) Optional.empty() else Optional.of(hash)
     }
 
     /**
@@ -91,7 +94,7 @@ class UCloudEventAttributes {
      * @return Returns an Optional OAuth token attribute.
      */
     fun token(): Optional<String> {
-        return if (token == null || token.isBlank()) Optional.empty() else Optional.of(token)
+        return if (token.isNullOrBlank()) Optional.empty() else Optional.of(token)
     }
 
     /**

@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.validate
@@ -32,8 +35,7 @@ import org.eclipse.uprotocol.validation.ValidationResult
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import java.util.Optional
-import java.util.stream.Collectors
-import java.util.stream.Stream
+
 
 /**
  * Validates a CloudEvent using google.grpc.Status<br></br>
@@ -62,15 +64,13 @@ abstract class CloudEventValidator {
      */
     fun validate(cloudEvent: CloudEvent): Status? {
         val errorMessage = listOf(
-            validateVersion(cloudEvent),
-            validateId(cloudEvent),
-            validateSource(cloudEvent),
-            validateType(cloudEvent),
-            validateSink(cloudEvent)
+                validateVersion(cloudEvent),
+                validateId(cloudEvent),
+                validateSource(cloudEvent),
+                validateType(cloudEvent),
+                validateSink(cloudEvent)
         )
-            .filter { it!!.isFailure() }
-            .map { it!!.getMessage() }
-            .joinToString(",")
+                .filter { it!!.isFailure() }.joinToString(",") { it!!.getMessage() }
 
         return if (errorMessage.isBlank()) {
             ValidationResult.success().toStatus()
@@ -329,7 +329,7 @@ abstract class CloudEventValidator {
         /**
          * Validate an  UriPart for a  Software Entity must have an authority in the case of a microRemote uri, and must contain
          * the name of the USE.
-         * @param uri uri string to validate.
+         * @param uuri uri string to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun validateUEntityUri(uuri: String?): ValidationResult {
@@ -343,7 +343,7 @@ abstract class CloudEventValidator {
 
         /**
          * Validate a UriPart that is to be used as a topic in publish scenarios for events such as publish, file and notification.
-         * @param uri String UriPart to validate.
+         * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun validateTopicUri(uuri: String?): ValidationResult {
@@ -353,7 +353,7 @@ abstract class CloudEventValidator {
 
         /**
          * Validate a UriPart that is to be used as a topic in publish scenarios for events such as publish, file and notification.
-         * @param Uri UriPart to validate.
+         * @param uri UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         private fun validateTopicUri(uri: UUri): ValidationResult {
@@ -373,7 +373,7 @@ abstract class CloudEventValidator {
         /**
          * Validate a UriPart that is meant to be used as the application response topic for rpc calls. <br></br>
          * Used in Request source values and Response sink values.
-         * @param uri String UriPart to validate.
+         * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun validateRpcTopicUri(uuri: String?): ValidationResult {
@@ -383,7 +383,7 @@ abstract class CloudEventValidator {
 
         /**
          * Validate an  UriPart that is meant to be used as the application response topic for rpc calls. <br></br>
-         * @param Uri  UriPart to validate.
+         * @param uri  UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         private fun validateRpcTopicUri(uri: UUri): ValidationResult {
@@ -405,7 +405,7 @@ abstract class CloudEventValidator {
 
         /**
          * Validate a UriPart that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
-         * @param uri String UriPart to validate.
+         * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun validateRpcMethod(uuri: String?): ValidationResult {

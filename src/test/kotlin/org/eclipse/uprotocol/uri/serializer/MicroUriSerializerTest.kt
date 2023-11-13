@@ -70,7 +70,7 @@ class MicroUriSerializerTest {
             .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
             .setResource(UResource.newBuilder().setId(19999).build()).build()
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        assertTrue(bytes.size == 0)
+        assertTrue(bytes.isEmpty())
     }
 
     @Test
@@ -79,7 +79,7 @@ class MicroUriSerializerTest {
         val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build())
             .setResource(UResourceBuilder.forRpcResponse()).build()
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        assertTrue(bytes.size == 0)
+        assertTrue(bytes.isEmpty())
     }
 
     @Test
@@ -87,7 +87,7 @@ class MicroUriSerializerTest {
     fun test_serialize_uri_missing_resource_id() {
         val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build()).build()
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        assertTrue(bytes.size == 0)
+        assertTrue(bytes.isEmpty())
     }
 
     @Test
@@ -136,16 +136,16 @@ class MicroUriSerializerTest {
     @Throws(UnknownHostException::class)
     fun test_serialize_good_ipv4_based_authority() {
         val uri: UUri = UUri.newBuilder().setAuthority(
-            UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").getAddress())).build()
+            UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").address)).build()
         ).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
             .setResource(UResourceBuilder.forRpcRequest(99)).build()
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
-        assertTrue(bytes.size > 0)
+        assertTrue(bytes.isNotEmpty())
         assertTrue(UriValidator.isMicroForm(uri))
         assertTrue(UriValidator.isMicroForm(uri2))
         assertEquals(uri.toString(), uri2.toString())
-        assertTrue(uri.equals(uri2))
+        assertTrue(uri == uri2)
     }
 
     @Test
@@ -155,7 +155,7 @@ class MicroUriSerializerTest {
         val uri: UUri = UUri.newBuilder().setAuthority(
             UAuthority.newBuilder().setIp(
                 ByteString.copyFrom(
-                    InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334").getAddress()
+                    InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334").address
                 )
             ).build()
         ).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
@@ -163,8 +163,8 @@ class MicroUriSerializerTest {
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(UriValidator.isMicroForm(uri))
-        assertTrue(bytes.size > 0)
-        assertTrue(uri.equals(uri2))
+        assertTrue(bytes.isNotEmpty())
+        assertTrue(uri == uri2)
     }
 
     @Test
@@ -183,8 +183,8 @@ class MicroUriSerializerTest {
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(UriValidator.isMicroForm(uri))
-        assertTrue(bytes.size > 0)
-        assertTrue(uri.equals(uri2))
+        assertTrue(bytes.isNotEmpty())
+        assertTrue(uri == uri2)
     }
 
     @Test
@@ -197,7 +197,7 @@ class MicroUriSerializerTest {
                 .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
                 .setResource(UResource.newBuilder().setId(19999).build()).build()
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        assertTrue(bytes.size == 0)
+        assertTrue(bytes.isEmpty())
     }
 
     @Test
@@ -217,6 +217,6 @@ class MicroUriSerializerTest {
         assertEquals(bytes.size, 9 + size)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(UriValidator.isMicroForm(uri))
-        assertTrue(uri.equals(uri2))
+        assertTrue(uri == uri2)
     }
 }

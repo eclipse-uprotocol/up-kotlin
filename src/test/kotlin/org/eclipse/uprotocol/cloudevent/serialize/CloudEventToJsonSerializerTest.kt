@@ -52,7 +52,7 @@ internal class CloudEventToJsonSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType(protoContentType)
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
             .withExtension("ttl", 3)
             .withExtension("priority", "CS1")
@@ -80,7 +80,7 @@ internal class CloudEventToJsonSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType(protoContentType)
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
             .withExtension("ttl", 3)
             .withExtension("priority", "CS1")
@@ -103,7 +103,7 @@ internal class CloudEventToJsonSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType(protoContentType)
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
             .withExtension("ttl", 3)
             .withExtension("priority", "CS1")
@@ -131,7 +131,7 @@ internal class CloudEventToJsonSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType(protoContentType)
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
             .withExtension("ttl", 3)
             .withExtension("priority", "CS1")
@@ -167,7 +167,7 @@ internal class CloudEventToJsonSerializerTest {
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "testme", source,
-            protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+            protoPayload.toByteArray(), protoPayload.typeUrl,
             uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
@@ -194,7 +194,7 @@ internal class CloudEventToJsonSerializerTest {
         val cloudEventProto = buildProtoPayloadForTest1()
         builder.withDataContentType(protoContentType)
         builder.withData(cloudEventProto.toByteArray())
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()))
+        builder.withDataSchema(URI.create(cloudEventProto.typeUrl))
         val cloudEvent1: CloudEvent = builder.build()
         val bytes1: ByteArray = serializer.serialize(cloudEvent1)
         val cloudEvent2: CloudEvent = serializer.deserialize(bytes1)

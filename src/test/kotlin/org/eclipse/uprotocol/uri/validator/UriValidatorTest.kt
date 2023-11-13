@@ -536,7 +536,7 @@ internal class UriValidatorTest {
             val pkgname: String = this.javaClass.getPackage().name.replace(".", "/")
             val jsonFile = File(
                 currentDirectory,
-                ((("src" + File.separator).toString() + "test" + File.separator).toString() + "kotlin" + File.separator + pkgname + File.separator).toString() + "uris.json"
+                ((("src" + File.separator) + "test" + File.separator) + "kotlin" + File.separator + pkgname + File.separator) + "uris.json"
             )
 
             // Open the file for reading

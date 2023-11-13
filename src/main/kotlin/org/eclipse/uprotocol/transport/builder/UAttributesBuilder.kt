@@ -17,11 +17,14 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.transport.builder
 
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory
+import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.v1.UUID
 import java.util.*
@@ -146,7 +149,7 @@ class UAttributesBuilder
          */
         fun publish(priority: UPriority): UAttributesBuilder {
             Objects.requireNonNull(priority, "UPriority cannot be null.")
-            return UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
+            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
         }
 
@@ -159,7 +162,7 @@ class UAttributesBuilder
         fun notification(priority: UPriority, sink: UUri): UAttributesBuilder {
             Objects.requireNonNull(priority, "UPriority cannot be null.")
             Objects.requireNonNull(sink, "sink cannot be null.")
-            return UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
+            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink)
         }
 
@@ -174,7 +177,7 @@ class UAttributesBuilder
             Objects.requireNonNull(priority, "UPriority cannot be null.")
             Objects.requireNonNull(ttl, "ttl cannot be null.")
             Objects.requireNonNull(sink, "sink cannot be null.")
-            return UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
+            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(ttl).withSink(sink)
         }
 
@@ -189,7 +192,7 @@ class UAttributesBuilder
             Objects.requireNonNull(priority, "UPriority cannot be null.")
             Objects.requireNonNull(sink, "sink cannot be null.")
             Objects.requireNonNull(reqid, "reqid cannot be null.")
-            return UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
+            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid)
         }
     }

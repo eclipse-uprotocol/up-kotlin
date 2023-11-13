@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.transport.datamodel
@@ -32,10 +35,7 @@ class UPayload(data: ByteArray?, hint: UPayloadFormat?) {
     private val hint // Hint regarding the bytes contained within the UPayload
             : UPayloadFormat
 
-    /**
-     * Create a UPayload.
-     * @param data A byte array of the actual data.
-     */
+
     init {
         this.data = Objects.requireNonNullElse(data, ByteArray(0))
         this.hint = Objects.requireNonNullElse(hint, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED)
@@ -61,7 +61,7 @@ class UPayload(data: ByteArray?, hint: UPayloadFormat?) {
         /**
          * @return Returns true if the data in the UPayload is empty.
          */
-        get() = data.size == 0
+        get() = data.isEmpty()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

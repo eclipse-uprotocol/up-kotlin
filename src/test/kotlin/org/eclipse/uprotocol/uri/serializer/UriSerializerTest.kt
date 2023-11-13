@@ -42,15 +42,15 @@ class UriSerializerTest {
         val microuri: ByteArray = MicroUriSerializer.instance().serialize(microUUri)
         val longuri: String = LongUriSerializer.instance().serialize(longUUri)
         val resolvedUUri: Optional<UUri> = LongUriSerializer.instance().buildResolved(longuri, microuri)
-        assertTrue(resolvedUUri.isPresent())
+        assertTrue(resolvedUUri.isPresent)
         assertFalse(UriValidator.isEmpty(resolvedUUri.get()))
-        assertEquals("testauth", resolvedUUri.get().getAuthority().getName())
-        assertEquals("neelam", resolvedUUri.get().getEntity().getName())
-        assertEquals(29999, resolvedUUri.get().getEntity().getId())
-        assertEquals(254, resolvedUUri.get().getEntity().getVersionMajor())
-        assertEquals("rpc", resolvedUUri.get().getResource().getName())
-        assertEquals("response", resolvedUUri.get().getResource().getInstance())
-        assertEquals(39999, resolvedUUri.get().getResource().getId())
+        assertEquals("testauth", resolvedUUri.get().authority.name)
+        assertEquals("neelam", resolvedUUri.get().entity.name)
+        assertEquals(29999, resolvedUUri.get().entity.id)
+        assertEquals(254, resolvedUUri.get().entity.versionMajor)
+        assertEquals("rpc", resolvedUUri.get().resource.name)
+        assertEquals("response", resolvedUUri.get().resource.instance)
+        assertEquals(39999, resolvedUUri.get().resource.id)
     }
 
     @Test
@@ -59,7 +59,7 @@ class UriSerializerTest {
 
         // Test the buildResolved method with invalid input
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, null)
-        assertTrue(result.isPresent())
+        assertTrue(result.isPresent)
         // Assert that the result is empty
         assertTrue(UriValidator.isEmpty(result.get()))
     }
@@ -70,7 +70,7 @@ class UriSerializerTest {
 
         // Test the buildResolved method with invalid input
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, ByteArray(0))
-        assertTrue(result.isPresent())
+        assertTrue(result.isPresent)
         // Assert that the result is empty
         assertTrue(UriValidator.isEmpty(result.get()))
     }
@@ -81,7 +81,7 @@ class UriSerializerTest {
 
         // Test the buildResolved method with invalid input
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved("", ByteArray(0))
-        assertTrue(result.isPresent())
+        assertTrue(result.isPresent)
         // Assert that the result is not empty
         assertTrue(UriValidator.isEmpty(result.get()))
     }

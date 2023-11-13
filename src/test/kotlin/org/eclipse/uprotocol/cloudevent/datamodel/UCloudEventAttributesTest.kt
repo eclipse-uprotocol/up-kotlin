@@ -54,13 +54,13 @@ internal class UCloudEventAttributesTest {
             .withTtl(3)
             .withToken("someOAuthToken")
             .build()
-        assertTrue(uCloudEventAttributes.hash().isPresent())
+        assertTrue(uCloudEventAttributes.hash().isPresent)
         assertEquals("somehash", uCloudEventAttributes.hash().get())
-        assertTrue(uCloudEventAttributes.priority().isPresent())
+        assertTrue(uCloudEventAttributes.priority().isPresent)
         assertEquals(UCloudEventAttributes.Priority.NETWORK_CONTROL, uCloudEventAttributes.priority().get())
-        assertTrue(uCloudEventAttributes.ttl().isPresent())
+        assertTrue(uCloudEventAttributes.ttl().isPresent)
         assertEquals(3, uCloudEventAttributes.ttl().get())
-        assertTrue(uCloudEventAttributes.token().isPresent())
+        assertTrue(uCloudEventAttributes.token().isPresent)
         assertEquals("someOAuthToken", uCloudEventAttributes.token().get())
     }
 

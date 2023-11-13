@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uri.serializer
@@ -36,7 +39,7 @@ import org.eclipse.uprotocol.v1.UUri
 class LongUriSerializer private constructor() : UriSerializer<String?> {
     /**
      * Support for serializing [UUri] objects into their String format.
-     * @param Uri [UUri] object to be serialized to the String format.
+     * @param uri [UUri] object to be serialized to the String format.
      * @return Returns the String format of the supplied [UUri] that can be used as a sink or a source in a uProtocol publish communication.
      */
     override fun serialize(uri: UUri?): String {
@@ -153,7 +156,7 @@ class LongUriSerializer private constructor() : UriSerializer<String?> {
         }
 
         /**
-         * Create the service part of the uProtocol URI from an  software entity object.
+         * Create the service part of the uProtocol URI from a software entity object.
          * @param use  Software Entity representing a service or an application.
          */
         private fun buildSoftwareEntityPartOfUri(use: UEntity): String {

@@ -87,6 +87,6 @@ internal class UPayloadTest {
         assertEquals(0, uPayload.data().size)
         assertTrue(uPayload.isEmpty)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, uPayload.hint())
-        assertFalse(UPayload.empty().equals(uPayload))
+        assertFalse(UPayload.empty() == uPayload)
     }
 }

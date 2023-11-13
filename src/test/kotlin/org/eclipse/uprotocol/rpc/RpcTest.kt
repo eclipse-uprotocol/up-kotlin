@@ -20,7 +20,6 @@
  */
 package org.eclipse.uprotocol.rpc
 
-import RpcResult
 import com.google.protobuf.Any
 import org.junit.jupiter.api.Assertions.*
 
@@ -52,20 +51,20 @@ import java.util.concurrent.ExecutionException
 
 
 internal class RpcTest {
-    var ReturnsNumber3: RpcClient = object : RpcClient {
+    private var returnsNumber3: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val data = UPayload(Any.pack(Int32Value.of(3)).toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
             return CompletableFuture.completedFuture(data)
         }
     }
-    var HappyPath: RpcClient = object : RpcClient {
+    private var happyPath: RpcClient = object : RpcClient {
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val data: UPayload = buildUPayload()
             return CompletableFuture.completedFuture(data)
         }
     }
-    var WithStatusCodeInsteadOfHappyPath: RpcClient = object : RpcClient {
+    private var withStatusCodeInsteadOfHappyPath: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val status: Status = Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage("boom").build()
@@ -74,7 +73,7 @@ internal class RpcTest {
             return CompletableFuture.completedFuture(data)
         }
     }
-    var WithStatusCodeHappyPath: RpcClient = object : RpcClient {
+    private var withStatusCodeHappyPath: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val status: Status = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("all good").build()
@@ -83,20 +82,20 @@ internal class RpcTest {
             return CompletableFuture.completedFuture(data)
         }
     }
-    var ThatBarfsCrapyPayload: RpcClient = object : RpcClient {
+    private var thatBarfsCrapyPayload: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val response = UPayload(byteArrayOf(0), UPayloadFormat.UPAYLOAD_FORMAT_RAW)
             return CompletableFuture.completedFuture(response)
         }
     }
-    var ThatCompletesWithAnException: RpcClient = object : RpcClient {
+    var thatCompletesWithAnException: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             return CompletableFuture.failedFuture(RuntimeException("Boom"))
         }
     }
-    var ThatReturnsTheWrongProto: RpcClient = object : RpcClient {
+    private var thatReturnsTheWrongProto: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             val any: Any = Any.pack(Int32Value.of(42))
@@ -108,7 +107,7 @@ internal class RpcTest {
             )
         }
     }
-    var WithNullInPayload: RpcClient = object : RpcClient {
+    private var withNullInPayload: RpcClient = object : RpcClient {
 
         override fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>? {
             return CompletableFuture.completedFuture(null)
@@ -119,9 +118,9 @@ internal class RpcTest {
     fun test_compose_happy_path() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Int32Value>> = RpcMapper.mapResponseToResult(
-            ReturnsNumber3.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Int32Value::class.java
+            returnsNumber3.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Int32Value::class.java
         )!!
-            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.getValue() + 5) } }.exceptionally { exception ->
+            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.value + 5) } }.exceptionally { exception ->
                 println("in exceptionally")
                 RpcResult.failure("boom", exception)
             }
@@ -138,11 +137,11 @@ internal class RpcTest {
     fun test_compose_that_returns_status() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Int32Value>> = RpcMapper.mapResponseToResult(
-            WithStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            withStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             Int32Value::class.java
-        )!!.thenApply { ur -> ur!!.map { i -> Int32Value.of(i.getValue() + 5) } }
+        )!!.thenApply { ur -> ur!!.map { i -> Int32Value.of(i.value + 5) } }
             .exceptionally { exception ->
-                System.out.println("in exceptionally")
+                println("in exceptionally")
                 RpcResult.failure("boom", exception)
             }
         assertFalse(rpcResponse.isCompletedExceptionally())
@@ -160,10 +159,10 @@ internal class RpcTest {
     fun test_compose_with_failure() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Int32Value>> = RpcMapper.mapResponseToResult(
-                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                thatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             Int32Value::class.java
         )!!
-            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.getValue() + 5) } }
+            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.value + 5) } }
         assertTrue(rpcResponse.isCompletedExceptionally())
         val exception: Exception = assertThrows(ExecutionException::class.java, rpcResponse::get)
         assertEquals(exception.message, "java.lang.RuntimeException: Boom")
@@ -173,11 +172,11 @@ internal class RpcTest {
     fun test_compose_with_failure_transform_Exception() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Int32Value>> = RpcMapper.mapResponseToResult(
-                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                thatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             Int32Value::class.java
         )!!
-            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.getValue() + 5) } }.exceptionally { exception ->
-                System.out.println("in exceptionally")
+            .thenApply { ur -> ur!!.map { i -> Int32Value.of(i.value + 5) } }.exceptionally { exception ->
+                println("in exceptionally")
                 RpcResult.failure("boom", exception)
             }
         assertFalse(rpcResponse.isCompletedExceptionally())
@@ -194,7 +193,7 @@ internal class RpcTest {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<CloudEvent>?> =
                 RpcMapper.mapResponseToResult(
-                        HappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                        happyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
                         CloudEvent::class.java
                 )!!
         assertFalse(rpcResponse.isCompletedExceptionally())
@@ -210,7 +209,7 @@ internal class RpcTest {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<CloudEvent>?> =
             RpcMapper.mapResponseToResult(
-                WithStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                withStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
                 CloudEvent::class.java
             )!!
         assertFalse(rpcResponse.isCompletedExceptionally())
@@ -227,7 +226,7 @@ internal class RpcTest {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<CloudEvent>?> =
             RpcMapper.mapResponseToResult(
-                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                thatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
                 CloudEvent::class.java
             )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -240,7 +239,7 @@ internal class RpcTest {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<CloudEvent>?> =
             RpcMapper.mapResponseToResult(
-                ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                thatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
                 CloudEvent::class.java
             )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -256,7 +255,7 @@ internal class RpcTest {
     fun test_success_invoke_method_happy_flow_using_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<CloudEvent> = RpcMapper.mapResponse(
-            HappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            happyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             CloudEvent::class.java
         )!!
         assertFalse(rpcResponse.isCompletedExceptionally())
@@ -269,7 +268,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<CloudEvent> = RpcMapper.mapResponse(
-            WithStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            withStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             CloudEvent::class.java
         )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -285,7 +284,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<CloudEvent> = RpcMapper.mapResponse(
-            ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            thatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             CloudEvent::class.java
         )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -297,7 +296,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<CloudEvent> = RpcMapper.mapResponse(
-            ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            thatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             CloudEvent::class.java
         )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -313,7 +312,7 @@ internal class RpcTest {
     fun test_success_invoke_method_happy_flow() {
         //Stub code
         val data: UPayload = buildUPayload()
-        val rpcResponse: CompletableFuture<UPayload?>? = HappyPath.invokeMethod(buildTopic(), data, buildUAttributes())
+        val rpcResponse: CompletableFuture<UPayload?>? = happyPath.invokeMethod(buildTopic(), data, buildUAttributes())
         val stubReturnValue: CompletableFuture<CloudEvent> =
             rpcResponse!!.handle { payload, exception ->
                 val any: Any
@@ -341,7 +340,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_returns_a_status() {
         //Stub code
         val data: UPayload = buildUPayload()
-        val rpcResponse: CompletableFuture<UPayload?>? = WithStatusCodeInsteadOfHappyPath.invokeMethod(
+        val rpcResponse: CompletableFuture<UPayload?>? = withStatusCodeInsteadOfHappyPath.invokeMethod(
             buildTopic(),
             data, buildUAttributes()
         )
@@ -382,7 +381,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_threw_an_exception() {
         //Stub code
         val data: UPayload = buildUPayload()
-        val rpcResponse: CompletableFuture<UPayload?>? = ThatCompletesWithAnException.invokeMethod(
+        val rpcResponse: CompletableFuture<UPayload?>? = thatCompletesWithAnException.invokeMethod(
             buildTopic(), data,
             buildUAttributes()
         )
@@ -402,7 +401,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_returns_a_bad_proto() {
         //Stub code
         val data: UPayload = buildUPayload()
-        val rpcResponse: CompletableFuture<UPayload?>? = ThatReturnsTheWrongProto.invokeMethod(
+        val rpcResponse: CompletableFuture<UPayload?>? = thatReturnsTheWrongProto.invokeMethod(
             buildTopic(), data,
             buildUAttributes()
         )
@@ -440,7 +439,7 @@ internal class RpcTest {
     fun test_success_invoke_method_that_has_null_payload_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<CloudEvent> = RpcMapper.mapResponse(
-            WithNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+            withNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
             CloudEvent::class.java
         )!!
         assertTrue(rpcResponse.isCompletedExceptionally())
@@ -458,7 +457,7 @@ internal class RpcTest {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<CloudEvent>?>? =
             RpcMapper.mapResponseToResult(
-                WithNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
+                withNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!,
                 CloudEvent::class.java
             )!!
         assertTrue(rpcResponse!!.isCompletedExceptionally())
@@ -475,11 +474,11 @@ internal class RpcTest {
     fun test_success_invoke_method_happy_flow_that_returns_status_using_mapResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<Status> = RpcMapper.mapResponse(
-            WithStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
+            withStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
         )!!
         assertFalse(rpcResponse.isCompletedExceptionally())
         val test: CompletableFuture<Void> = rpcResponse.thenAccept { status ->
-            assertEquals(Code.OK.getNumber(), status.getCode())
+            assertEquals(Code.OK.number, status.code)
             assertEquals("all good", status.message)
         }
         assertFalse(test.isCompletedExceptionally())
@@ -493,12 +492,12 @@ internal class RpcTest {
     fun test_success_invoke_method_happy_flow_that_returns_status_using_mapResponseToResultToRpcResponse() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Status>?>? = RpcMapper.mapResponseToResult(
-            WithStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
+            withStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
         )
         assertFalse(rpcResponse!!.isCompletedExceptionally())
         val test: CompletableFuture<Void> = rpcResponse.thenAccept { rpcResult ->
             assertTrue(rpcResult!!.isSuccess)
-            assertEquals(Code.OK.number, rpcResult.successValue.getCode())
+            assertEquals(Code.OK.number, rpcResult.successValue.code)
             assertEquals("all good", rpcResult.successValue.message)
         }
         assertFalse(test.isCompletedExceptionally())
@@ -521,7 +520,7 @@ internal class RpcTest {
     fun test_invalid_payload_that_is_not_type_any() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<Status>? = RpcMapper.mapResponse(
-            ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
+            thatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
         )
         assertTrue(rpcResponse!!.isCompletedExceptionally())
         val exception: Exception = assertThrows(ExecutionException::class.java, rpcResponse::get)
@@ -537,7 +536,7 @@ internal class RpcTest {
     fun test_invalid_payload_that_is_not_type_any_map_to_result() {
         val payload: UPayload = buildUPayload()
         val rpcResponse: CompletableFuture<RpcResult<Status>?>? = RpcMapper.mapResponseToResult(
-            ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
+            thatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes())!!, Status::class.java
         )
         assertTrue(rpcResponse!!.isCompletedExceptionally())
         val exception: Exception = assertThrows(ExecutionException::class.java, rpcResponse::get)
@@ -624,7 +623,7 @@ internal class RpcTest {
                         throw RuntimeException(
                             String.format(
                                 "Error returned, status code: [%s], message: [%s]",
-                                Code.forNumber(status.getCode()), status.message
+                                Code.forNumber(status.code), status.message
                             )
                         )
                     } catch (e: InvalidProtocolBufferException) {
@@ -633,7 +632,7 @@ internal class RpcTest {
                         )
                     }
                 }
-                throw RuntimeException(String.format("Unknown payload type [%s]", any.getTypeUrl()))
+                throw RuntimeException(String.format("Unknown payload type [%s]", any.typeUrl))
             }
         }
     }

@@ -34,8 +34,8 @@ class UAttributesBuilderTest {
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType())
-        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority())
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
     }
 
     @Test
@@ -45,23 +45,23 @@ class UAttributesBuilderTest {
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType())
-        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority())
-        assertEquals(sink, attributes.getSink())
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
+        assertEquals(sink, attributes.sink)
     }
 
     @Test
     fun testRequest() {
         val sink: UUri = buildSink()
-        val ttl: Int = 1000
+        val ttl = 1000
         val builder: UAttributesBuilder = UAttributesBuilder.request(UPriority.UPRIORITY_CS4, sink, ttl)
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_REQUEST, attributes.getType())
-        assertEquals(UPriority.UPRIORITY_CS4, attributes.getPriority())
-        assertEquals(sink, attributes.getSink())
-        assertEquals(ttl, attributes.getTtl())
+        assertEquals(UMessageType.UMESSAGE_TYPE_REQUEST, attributes.type)
+        assertEquals(UPriority.UPRIORITY_CS4, attributes.priority)
+        assertEquals(sink, attributes.sink)
+        assertEquals(ttl, attributes.ttl)
     }
 
     @Test
@@ -72,10 +72,10 @@ class UAttributesBuilderTest {
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, attributes.getType())
-        assertEquals(UPriority.UPRIORITY_CS6, attributes.getPriority())
-        assertEquals(sink, attributes.getSink())
-        assertEquals(reqId, attributes.getReqid())
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, attributes.type)
+        assertEquals(UPriority.UPRIORITY_CS6, attributes.priority)
+        assertEquals(sink, attributes.sink)
+        assertEquals(reqId, attributes.reqid)
     }
 
     @Test
@@ -86,14 +86,14 @@ class UAttributesBuilderTest {
                 .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType())
-        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority())
-        assertEquals(1000, attributes.getTtl())
-        assertEquals("test_token", attributes.getToken())
-        assertEquals(buildSink(), attributes.getSink())
-        assertEquals(2, attributes.getPermissionLevel())
-        assertEquals(1, attributes.getCommstatus())
-        assertEquals(reqId, attributes.getReqid())
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
+        assertEquals(1000, attributes.ttl)
+        assertEquals("test_token", attributes.token)
+        assertEquals(buildSink(), attributes.sink)
+        assertEquals(2, attributes.permissionLevel)
+        assertEquals(1, attributes.commstatus)
+        assertEquals(reqId, attributes.reqid)
     }
 
     private fun buildSink(): UUri {
@@ -103,10 +103,10 @@ class UAttributesBuilderTest {
     }
 
     private val uUID: UUID
-        private get() {
-            val uuid_java: java.util.UUID = java.util.UUID.randomUUID()
-            return UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-                .setLsb(uuid_java.getLeastSignificantBits())
+        get() {
+            val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
+            return UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
+                .setLsb(uuidJava.leastSignificantBits)
                 .build()
         }
 }

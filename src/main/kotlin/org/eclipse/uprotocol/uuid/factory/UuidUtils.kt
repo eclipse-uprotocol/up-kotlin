@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uuid.factory
@@ -25,14 +28,13 @@ import com.github.f4b6a3.uuid.enums.UuidVariant
 import com.github.f4b6a3.uuid.util.UuidTime
 import com.github.f4b6a3.uuid.util.UuidUtil
 import org.eclipse.uprotocol.v1.UUID
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+
 import java.util.Optional
 
 /**
  * UUID Utils class that provides utility methods for uProtocol IDs
  */
-interface UUIDUtils {
+interface UuidUtils {
     /**
      * UUID Version
      */
@@ -76,64 +78,6 @@ interface UUIDUtils {
     }
 
     companion object {
-        /**
-         * Convert the UUID to a String.
-         *
-         * @return String representation of the UUID or Optional.empty() if the UUID is null.
-         */
-        fun toString(uuid: UUID?): Optional<String> {
-            return if (uuid == null) Optional.empty() else Optional.of(java.util.UUID(uuid.msb, uuid.lsb).toString())
-        }
-
-        /**
-         * Convert the UUID to byte array.
-         *
-         * @return The byte array or Optional.empty() if the UUID is null.
-         */
-        fun toBytes(uuid: UUID?): Optional<ByteArray> {
-            if (uuid == null) {
-                return Optional.empty()
-            }
-            val b = ByteArray(16)
-            return Optional.of(
-                ByteBuffer.wrap(b).order(ByteOrder.BIG_ENDIAN).putLong(uuid.msb).putLong(uuid.lsb).array()
-            )
-        }
-
-        /**
-         * Convert the byte array to a UUID.
-         *
-         * @param bytes The UUID in bytes format.
-         * @return UUIDv8 object built from the byte array or Optional.empty()
-         * if the byte array is null or not 16 bytes long.
-         */
-        fun fromBytes(bytes: ByteArray?): Optional<UUID> {
-            if (bytes == null || bytes.size != 16) {
-                return Optional.empty()
-            }
-            val byteBuffer: ByteBuffer = ByteBuffer.wrap(bytes)
-            return Optional.of(UUID.newBuilder().setMsb(byteBuffer.getLong()).setLsb(byteBuffer.getLong()).build())
-        }
-
-        /**
-         * Create a UUID from the passed string.
-         *
-         * @param string the string representation of the uuid.
-         * @return The UUID object representation of the string or Optional.empty()
-         * if the string is null, empty, or invalid.
-         */
-        fun fromString(string: String?): Optional<UUID> {
-            return if (string.isNullOrBlank()) {
-                Optional.empty()
-            } else try {
-                val uuid_java: java.util.UUID = java.util.UUID.fromString(string)
-                val uuid: UUID = UUID.newBuilder().setMsb(uuid_java.mostSignificantBits)
-                    .setLsb(uuid_java.leastSignificantBits).build()
-                Optional.of(uuid)
-            } catch (e: IllegalArgumentException) {
-                Optional.empty()
-            }
-        }
 
         /**
          * Fetch the UUID version.

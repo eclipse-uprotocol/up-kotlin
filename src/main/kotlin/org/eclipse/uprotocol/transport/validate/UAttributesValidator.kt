@@ -17,13 +17,16 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.transport.validate
 
 import org.eclipse.uprotocol.transport.datamodel.UStatus
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils
+import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UUID
@@ -55,7 +58,7 @@ abstract class UAttributesValidator {
         val errorMessage = Stream.of<ValidationResult?>(validateType(attributes),
                 validateTtl(attributes), validateSink(attributes),
                 validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
-                .filter(ValidationResult::isFailure).map<String> { obj: ValidationResult? -> obj!!.getMessage() }.collect(Collectors.joining(","))
+                .filter(ValidationResult::isFailure).map { obj: ValidationResult? -> obj!!.getMessage() }.collect(Collectors.joining(","))
         return if (errorMessage.isBlank()) ValidationResult.success() else ValidationResult.failure(errorMessage)
     }
 
@@ -69,7 +72,7 @@ abstract class UAttributesValidator {
      */
     fun isExpired(uAttributes: UAttributes): ValidationResult {
         val ttl = uAttributes.ttl
-        val maybeTime = UUIDUtils.getTime(uAttributes.id)
+        val maybeTime = UuidUtils.getTime(uAttributes.id)
         //        if (maybeTime.isEmpty()) {
 //            return ValidationResult.failure("Invalid Time");
 //        }
@@ -155,7 +158,7 @@ abstract class UAttributesValidator {
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
     open fun validateReqId(attributes: UAttributes): ValidationResult? {
-        return if (attributes.hasReqid() && !UUIDUtils.isUuid(attributes.reqid)) {
+        return if (attributes.hasReqid() && !UuidUtils.isUuid(attributes.reqid)) {
             ValidationResult.failure("Invalid UUID")
         } else {
             ValidationResult.success()
@@ -224,7 +227,7 @@ abstract class UAttributesValidator {
          * @param attributes UAttributes object containing the sink to validate.
          * @return Returns a [ValidationResult] that is success or failed with a failure message.
          */
-        override fun validateSink(attributes: UAttributes): ValidationResult? {
+        override fun validateSink(attributes: UAttributes): ValidationResult {
             return if (!attributes.hasSink()) {
                 ValidationResult.failure("Missing Sink")
             } else UriValidator.validateRpcResponse(attributes.sink)
@@ -295,7 +298,7 @@ abstract class UAttributesValidator {
             if (!attributes.hasReqid() || attributes.reqid === UUID.getDefaultInstance()) {
                 return ValidationResult.failure("Missing correlationId")
             }
-            return if (!UUIDUtils.isUuid(attributes.reqid)) {
+            return if (!UuidUtils.isUuid(attributes.reqid)) {
                 ValidationResult.failure(String.format("Invalid correlationId [%s]", attributes.reqid))
             } else {
                 ValidationResult.success()

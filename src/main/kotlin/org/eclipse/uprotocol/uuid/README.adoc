@@ -11,15 +11,15 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
 [source,java]
 ----
     final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-    final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
-    final Optional<Long> time = UUIDUtils.getTime(uuid);
-    final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
-    final Optional<String> uuidString = UUIDUtils.toString(uuid);
+    final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
+    final Optional<Long> time = UuidUtils.getTime(uuid);
+    final Optional<byte[]> bytes = UuidUtils.toBytes(uuid);
+    final Optional<String> uuidString = UuidUtils.toString(uuid);
 
     assertNotNull(uuid);
-    assertTrue(UUIDUtils.isUProtocol(uuid));
-    assertTrue(UUIDUtils.isUuid(uuid));
-    assertFalse(UUIDUtils.isUuidv6(uuid));
+    assertTrue(UuidUtils.isUProtocol(uuid));
+    assertTrue(UuidUtils.isUuid(uuid));
+    assertFalse(UuidUtils.isUuidv6(uuid));
     assertTrue(version.isPresent());
     assertTrue(time.isPresent());
     assertEquals(time.get(), now.toEpochMilli());
@@ -27,12 +27,12 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     assertTrue(bytes.isPresent());
     assertTrue(uuidString.isPresent());
 
-    final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+    final Optional<UUID> uuid1 = UuidUtils.fromBytes(bytes.get());
 
     assertTrue(uuid1.isPresent());
     assertEquals(uuid, uuid1.get());
 
-    final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+    final Optional<UUID> uuid2 = UuidUtils.fromString(uuidString.get());
     assertTrue(uuid2.isPresent());
     assertEquals(uuid, uuid2.get());
 ----

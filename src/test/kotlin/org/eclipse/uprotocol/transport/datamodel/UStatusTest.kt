@@ -75,8 +75,8 @@ internal class UStatusTest {
     fun testHashCodeEquals_barfs_when_not_same() {
         val ok: UStatus = UStatus.ok()
         val failed: UStatus = UStatus.failed()
-        assertFalse(failed.equals(ok))
-        assertFalse(ok.equals(failed))
+        assertFalse(failed == ok)
+        assertFalse(ok == failed)
     }
 
     @Test
@@ -86,18 +86,18 @@ internal class UStatusTest {
         val failed1: UStatus = UStatus.failed("boom", UStatus.Code.INVALID_ARGUMENT)
         val failed2: UStatus = UStatus.failed("bang", UStatus.Code.UNKNOWN)
         val failed3: UStatus = UStatus.failed("bang", UStatus.Code.INVALID_ARGUMENT)
-        assertFalse(failed.equals(failed1))
-        assertFalse(failed.equals(failed2))
-        assertFalse(failed.equals(failed3))
-        assertFalse(failed1.equals(failed))
-        assertFalse(failed1.equals(failed2))
-        assertFalse(failed1.equals(failed3))
-        assertFalse(failed2.equals(failed))
-        assertFalse(failed2.equals(failed1))
-        assertFalse(failed2.equals(failed3))
-        assertFalse(failed3.equals(failed))
-        assertFalse(failed3.equals(failed2))
-        assertFalse(failed3.equals(failed1))
+        assertFalse(failed == failed1)
+        assertFalse(failed == failed2)
+        assertFalse(failed == failed3)
+        assertFalse(failed1 == failed)
+        assertFalse(failed1 == failed2)
+        assertFalse(failed1 == failed3)
+        assertFalse(failed2 == failed)
+        assertFalse(failed2 == failed1)
+        assertFalse(failed2 == failed3)
+        assertFalse(failed3 == failed)
+        assertFalse(failed3 == failed2)
+        assertFalse(failed3 == failed1)
     }
 
     @Test
@@ -105,7 +105,7 @@ internal class UStatusTest {
     fun testHashCodeEquals_same_failed_status() {
         val failed: UStatus = UStatus.failed("boom", UStatus.Code.UNKNOWN)
         val failed1: UStatus = UStatus.failed("boom", UStatus.Code.UNKNOWN)
-        assertTrue(failed.equals(failed1))
+        assertTrue(failed == failed1)
     }
 
     @Test
@@ -113,16 +113,7 @@ internal class UStatusTest {
     fun testHashCodeEquals_same_ok_status() {
         val ok: UStatus = UStatus.ok()
         val ok1: UStatus = UStatus.ok()
-        assertTrue(ok.equals(ok1))
-    }
-
-    @Test
-    @DisplayName("Make sure the equals passing the same object is successful")
-    fun testHashCodeEquals_same_object() {
-        val ok: UStatus = UStatus.ok()
-        val failed: UStatus = UStatus.failed()
-        assertTrue(ok.equals(ok))
-        assertTrue(failed.equals(failed))
+        assertTrue(ok == ok1)
     }
 
     @Test

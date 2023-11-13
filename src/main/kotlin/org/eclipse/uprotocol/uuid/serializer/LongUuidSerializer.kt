@@ -21,34 +21,34 @@
  * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
+package org.eclipse.uprotocol.uuid.serializer
 
-package org.eclipse.uprotocol.cloudevent.datamodel
-
-import java.util.Arrays
-import java.util.Optional
+import org.eclipse.uprotocol.v1.UUID
 
 /**
- * Enumeration for the core types of uProtocol CloudEvents.
+ * UUID Serializer interface used to serialize/deserialize UUIDs to/from a string
  */
-enum class UCloudEventType(private val type: String) {
-    PUBLISH("pub.v1"),
-    REQUEST("req.v1"),
-    RESPONSE("res.v1");
+class LongUuidSerializer private constructor() : UuidSerializer<String?> {
+    override fun deserialize(uuid: String?): UUID {
+        return if (uuid.isNullOrBlank()) {
+            UUID.getDefaultInstance()
+        } else try {
+            val uuidJava = java.util.UUID.fromString(uuid)
+            UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
+                    .setLsb(uuidJava.leastSignificantBits).build()
+        } catch (e: IllegalArgumentException) {
+            UUID.getDefaultInstance()
+        }
+    }
 
-    fun type(): String {
-        return type
+    override fun serialize(uuid: UUID?): String {
+        return if (uuid == null) "" else java.util.UUID(uuid.msb, uuid.lsb).toString()
     }
 
     companion object {
-        /**
-         * Convert a String type into a maybe UCloudEventType.
-         * @param type The String value of the UCloudEventType.
-         * @return returns the UCloudEventType associated with the provided String.
-         */
-        fun valueOfType(type: String?): Optional<UCloudEventType> {
-            return Arrays.stream(entries.toTypedArray())
-                .filter { ceType -> ceType.type() == type }
-                .findAny()
+        private val INSTANCE = LongUuidSerializer()
+        fun instance(): LongUuidSerializer {
+            return INSTANCE
         }
     }
 }

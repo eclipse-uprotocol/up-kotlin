@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uuid.factory
@@ -27,29 +30,29 @@ import java.time.Instant
 import java.util.Objects
 import java.util.Random
 
-abstract class UUIDFactory {
+abstract class UuidFactory {
     fun create(): UUID {
         return this.create(Instant.now())
     }
 
     abstract fun create(instant: Instant?): UUID
-    enum class Factories(private val factory: UUIDFactory) {
-        UUIDV6(UUIDv6Factory()),
-        UPROTOCOL(UUIDv8Factory());
+    enum class Factories(private val factory: UuidFactory) {
+        UUIDV6(Uuidv6Factory()),
+        UPROTOCOL(Uuidv8Factory());
 
-        fun factory(): UUIDFactory {
+        fun factory(): UuidFactory {
             return factory
         }
     }
 
-    private class UUIDv6Factory : UUIDFactory() {
+    private class Uuidv6Factory : UuidFactory() {
         override fun create(instant: Instant?): UUID {
-            val uuid_java: java.util.UUID = UuidCreator.getTimeOrdered(
+            val uuidJava: java.util.UUID = UuidCreator.getTimeOrdered(
                 Objects.requireNonNullElse(instant, Instant.now()),
                 null, null
             )
-            return UUID.newBuilder().setMsb(uuid_java.mostSignificantBits)
-                .setLsb(uuid_java.leastSignificantBits).build()
+            return UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
+                .setLsb(uuidJava.leastSignificantBits).build()
         }
     }
 
@@ -82,12 +85,12 @@ abstract class UUIDFactory {
      * UUID generated
      * within the 1ms precision of unix_ts_ms The counter provides the ability to generate 4096 events within 1ms
      * however the precision of the clock is still 1ms accuracy
-     * | var        | MUST be the The 2 bit variant defined by Section 4.1 of RFC |
+     * | var        | MUST be The 2 bit variant defined by Section 4.1 of RFC |
      * |rand_b      | MUST 62 bits random number that is generated at initialization time of the uE only and reused
      * otherwise |
      */
-    private class UUIDv8Factory : UUIDFactory() {
-        @kotlin.jvm.Synchronized
+    private class Uuidv8Factory : UuidFactory() {
+        @Synchronized
         override fun create(instant: Instant?): UUID {
             val time: Long = Objects.requireNonNullElse(instant, Instant.now())!!.toEpochMilli()
 

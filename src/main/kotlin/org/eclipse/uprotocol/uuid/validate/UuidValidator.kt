@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uuid.validate
@@ -24,7 +27,7 @@ package org.eclipse.uprotocol.uuid.validate
 import com.github.f4b6a3.uuid.enums.UuidVariant
 import com.google.rpc.Code
 import com.google.rpc.Status
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils
+import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.validation.ValidationResult
 import java.util.*
@@ -49,9 +52,7 @@ abstract class UuidValidator {
                 validateVariant(uuid),
                 validateTime(uuid)
         )
-                .filter { it!!.isFailure() }
-                .map { it!!.getMessage() }
-                .joinToString(",")
+                .filter { it!!.isFailure() }.joinToString(",") { it!!.getMessage() }
 
         return if (errorMessages.isBlank()) ValidationResult.success().toStatus()
         else Status.newBuilder()
@@ -63,7 +64,7 @@ abstract class UuidValidator {
 
     abstract fun validateVersion(uuid: UUID?): ValidationResult
     private fun validateTime(uuid: UUID?): ValidationResult {
-        val time: Optional<Long> = UUIDUtils.getTime(uuid)
+        val time: Optional<Long> = UuidUtils.getTime(uuid)
         return if (time.isPresent && time.get() > 0) ValidationResult.success() else ValidationResult.failure(
             String.format(
                 "Invalid UUID Time"
@@ -84,14 +85,14 @@ abstract class UuidValidator {
 
     private class UUIDv6Validator : UuidValidator() {
         override fun validateVersion(uuid: UUID?): ValidationResult {
-            val version: Optional<UUIDUtils.Version> = UUIDUtils.getVersion(uuid)
-            return if (version.isPresent && version.get() == UUIDUtils.Version.VERSION_TIME_ORDERED) ValidationResult.success() else ValidationResult.failure(
+            val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
+            return if (version.isPresent && version.get() == UuidUtils.Version.VERSION_TIME_ORDERED) ValidationResult.success() else ValidationResult.failure(
                 String.format("Not a UUIDv6 Version")
             )
         }
 
         override fun validateVariant(uuid: UUID?): ValidationResult {
-            val variant: Optional<Int> = UUIDUtils.getVariant(uuid)
+            val variant: Optional<Int> = UuidUtils.getVariant(uuid)
             return if (variant.isPresent && variant.get() == UuidVariant.VARIANT_RFC_4122.value) ValidationResult.success() else ValidationResult.failure(
                 String.format("Invalid UUIDv6 variant")
             )
@@ -100,8 +101,8 @@ abstract class UuidValidator {
 
     private class UUIDv8Validator : UuidValidator() {
         override fun validateVersion(uuid: UUID?): ValidationResult {
-            val version: Optional<UUIDUtils.Version> = UUIDUtils.getVersion(uuid)
-            return if (version.isPresent && version.get() == UUIDUtils.Version.VERSION_UPROTOCOL) ValidationResult.success() else ValidationResult.failure(
+            val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
+            return if (version.isPresent && version.get() == UuidUtils.Version.VERSION_UPROTOCOL) ValidationResult.success() else ValidationResult.failure(
                 String.format("Invalid UUIDv8 Version")
             )
         }
@@ -113,9 +114,9 @@ abstract class UuidValidator {
 
     companion object {
         fun getValidator(uuid: UUID?): UuidValidator {
-            return if (UUIDUtils.isUuidv6(uuid)) {
+            return if (UuidUtils.isUuidv6(uuid)) {
                 Validators.UUIDV6.validator()
-            } else if (UUIDUtils.isUProtocol(uuid)) {
+            } else if (UuidUtils.isUProtocol(uuid)) {
                 Validators.UPROTOCOL.validator()
             } else {
                 Validators.UNKNOWN.validator()

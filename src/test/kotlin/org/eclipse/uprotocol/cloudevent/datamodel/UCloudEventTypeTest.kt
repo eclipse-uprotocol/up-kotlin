@@ -51,7 +51,7 @@ internal class UCloudEventTypeTest {
     @DisplayName("Test parsing the publish event type from a string")
     fun test_parse_publish_event_type_from_string() {
         val type = "pub.v1"
-        assertTrue(UCloudEventType.valueOfType(type).isPresent())
+        assertTrue(UCloudEventType.valueOfType(type).isPresent)
         assertEquals(UCloudEventType.PUBLISH, UCloudEventType.valueOfType(type).get())
     }
 
@@ -59,7 +59,7 @@ internal class UCloudEventTypeTest {
     @DisplayName("Test parsing the request event type from a string")
     fun test_parse_request_event_type_from_string() {
         val type = "req.v1"
-        assertTrue(UCloudEventType.valueOfType(type).isPresent())
+        assertTrue(UCloudEventType.valueOfType(type).isPresent)
         assertEquals(UCloudEventType.REQUEST, UCloudEventType.valueOfType(type).get())
     }
 
@@ -67,7 +67,7 @@ internal class UCloudEventTypeTest {
     @DisplayName("Test parsing the response event type from a string")
     fun test_parse_unknown_event_type_from_string() {
         val type = "res.v1"
-        assertTrue(UCloudEventType.valueOfType(type).isPresent())
+        assertTrue(UCloudEventType.valueOfType(type).isPresent)
         assertEquals(UCloudEventType.RESPONSE, UCloudEventType.valueOfType(type).get())
     }
 
@@ -75,6 +75,6 @@ internal class UCloudEventTypeTest {
     @DisplayName("Test parsing an unknown event type from a string")
     fun test_parse_response_event_type_from_string() {
         val type = "unknown.v1"
-        assertTrue(UCloudEventType.valueOfType(type).isEmpty())
+        assertTrue(UCloudEventType.valueOfType(type).isEmpty)
     }
 }

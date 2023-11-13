@@ -51,7 +51,7 @@ class CallOptionsTest {
     fun testCreatingCallOptionsDEFAULT() {
         val callOptions = CallOptions.DEFAULT
         assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout())
-        assertTrue(callOptions.token().isEmpty())
+        assertTrue(callOptions.token().isEmpty)
     }
 
     @Test
@@ -61,7 +61,7 @@ class CallOptionsTest {
                 .withToken("someToken")
                 .build()
         assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout())
-        assertTrue(callOptions.token().isPresent())
+        assertTrue(callOptions.token().isPresent)
         val token = callOptions.token().get()
         assertEquals("someToken", token)
     }
@@ -74,7 +74,7 @@ class CallOptionsTest {
                 .withToken("")
                 .build()
         assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout())
-        assertTrue(callOptions.token().isEmpty())
+        assertTrue(callOptions.token().isEmpty)
     }
 
     @Test
@@ -84,7 +84,7 @@ class CallOptionsTest {
                 .withToken("   ")
                 .build()
         assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout())
-        assertTrue(callOptions.token().isEmpty())
+        assertTrue(callOptions.token().isEmpty)
     }
 
     @Test
@@ -94,7 +94,7 @@ class CallOptionsTest {
                 .withTimeout(30)
                 .build()
         assertEquals(30, callOptions.timeout())
-        assertTrue(callOptions.token().isEmpty())
+        assertTrue(callOptions.token().isEmpty)
     }
 
     @Test
@@ -104,6 +104,6 @@ class CallOptionsTest {
                 .withTimeout(-3)
                 .build()
         assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout())
-        assertTrue(callOptions.token().isEmpty())
+        assertTrue(callOptions.token().isEmpty)
     }
 }

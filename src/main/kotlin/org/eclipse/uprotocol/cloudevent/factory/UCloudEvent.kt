@@ -17,11 +17,14 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.factory
 
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils
+import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
@@ -29,6 +32,7 @@ import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UUID
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -157,9 +161,8 @@ interface UCloudEvent {
          */
         fun getCreationTimestamp(cloudEvent: CloudEvent): Optional<Long> {
             val cloudEventId = cloudEvent.id
-            val uuid = UUIDUtils.fromString(cloudEventId)
-
-            return if (uuid.isEmpty) Optional.empty() else UUIDUtils.getTime(uuid.get())
+            val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
+            return UuidUtils.getTime(uuid)
         }
 
         /**
@@ -191,19 +194,19 @@ interface UCloudEvent {
          */
         fun isExpired(cloudEvent: CloudEvent): Boolean {
             val maybeTtl: Optional<Int> = getTtl(cloudEvent)
-            if (maybeTtl.isEmpty()) {
+            if (maybeTtl.isEmpty) {
                 return false
             }
             val ttl: Int = maybeTtl.get()
             if (ttl <= 0) {
                 return false
             }
-            val cloudEventId: String = cloudEvent.getId()
-            val uuid: Optional<UUID> = UUIDUtils.fromString(cloudEventId)
-            if (uuid.isEmpty()) {
+            val cloudEventId: String = cloudEvent.id
+            val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
+            if (uuid == UUID.getDefaultInstance()) {
                 return false
             }
-            val delta: Long = System.currentTimeMillis() - UUIDUtils.getTime(uuid.get()).orElse(0L)
+            val delta: Long = System.currentTimeMillis() - UuidUtils.getTime(uuid).orElse(0L)
             return delta >= ttl
         }
 
@@ -214,8 +217,8 @@ interface UCloudEvent {
          */
         fun isCloudEventId(cloudEvent: CloudEvent): Boolean {
             val cloudEventId: String = cloudEvent.id
-            val uuid: Optional<UUID> = UUIDUtils.fromString(cloudEventId)
-            return if (uuid.isEmpty) false else UUIDUtils.isUuid(uuid.get())
+            val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
+            return UuidUtils.isUuid(uuid)
         }
 
         /**
@@ -259,11 +262,11 @@ interface UCloudEvent {
          * @return returns the String representation of the CloudEvent containing only the id, source, type and maybe a sink.
          */
         fun toString(cloudEvent: CloudEvent?): String {
-            return if (cloudEvent != null) (((("CloudEvent{id='" + cloudEvent.id).toString() +
-                    "', source='" + cloudEvent.getSource()) + "'" +
+            return if (cloudEvent != null) (((("CloudEvent{id='" + cloudEvent.id) +
+                    "', source='" + cloudEvent.source) + "'" +
                     getSink(cloudEvent).map { sink -> String.format(", sink='%s'", sink) }
                         .orElse("")) +
-                    ", type='" + cloudEvent.getType()) + "'}" else "null"
+                    ", type='" + cloudEvent.type) + "'}" else "null"
         }
 
         /**

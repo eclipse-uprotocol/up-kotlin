@@ -61,7 +61,7 @@ internal class CloudEventToProtobufSerializerTest {
             .build()
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "hello", source,
-            protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+            protoPayload.toByteArray(), protoPayload.typeUrl,
             uCloudEventAttributes
         )
         cloudEventBuilder.withType("pub.v1")
@@ -87,7 +87,7 @@ internal class CloudEventToProtobufSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType("application/protobuf")
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
 
@@ -113,7 +113,7 @@ internal class CloudEventToProtobufSerializerTest {
             .withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left"))
             .withDataContentType("application/protobuf")
-            .withDataSchema(URI.create(protoPayload.getTypeUrl()))
+            .withDataSchema(URI.create(protoPayload.typeUrl))
             .withData(protoPayload.toByteArray())
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
 
@@ -149,7 +149,7 @@ internal class CloudEventToProtobufSerializerTest {
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "testme", source,
-            protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+            protoPayload.toByteArray(), protoPayload.typeUrl,
             uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
@@ -176,7 +176,7 @@ internal class CloudEventToProtobufSerializerTest {
         val cloudEventProto = buildProtoPayloadForTest1()
         builder.withDataContentType(protoContentType)
         builder.withData(cloudEventProto.toByteArray())
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()))
+        builder.withDataSchema(URI.create(cloudEventProto.typeUrl))
         val cloudEvent1: CloudEvent = builder.build()
         val bytes1: ByteArray = serializer.serialize(cloudEvent1)
         val cloudEvent2: CloudEvent = serializer.deserialize(bytes1)
@@ -200,7 +200,7 @@ internal class CloudEventToProtobufSerializerTest {
         val cloudEventProto = buildProtoPayloadForTest1()
         builder.withDataContentType(protoContentType)
         builder.withData(cloudEventProto.toByteArray())
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()))
+        builder.withDataSchema(URI.create(cloudEventProto.typeUrl))
         val cloudEvent1: CloudEvent = builder.build()
         val bytes1: ByteArray = protoSerializer.serialize(cloudEvent1)
         val cloudEvent2: CloudEvent = protoSerializer.deserialize(bytes1)
@@ -222,7 +222,7 @@ internal class CloudEventToProtobufSerializerTest {
         val cloudEventProto = buildProtoPayloadForTest1()
         builder.withDataContentType(protoContentType)
         builder.withData(cloudEventProto.toByteArray())
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()))
+        builder.withDataSchema(URI.create(cloudEventProto.typeUrl))
         val cloudEvent1: CloudEvent = builder.build()
         val bytes1: ByteArray = jsonSerializer.serialize(cloudEvent1)
         val cloudEvent2: CloudEvent = jsonSerializer.deserialize(bytes1)
@@ -238,18 +238,18 @@ internal class CloudEventToProtobufSerializerTest {
     private fun assertCloudEventsAreTheSame(cloudEvent1: CloudEvent, cloudEvent2: CloudEvent) {
         assertNotNull(cloudEvent1)
         assertNotNull(cloudEvent2)
-        assertEquals(cloudEvent1.getSpecVersion().toString(), cloudEvent2.getSpecVersion().toString())
-        assertEquals(cloudEvent1.getId(), cloudEvent2.getId())
-        assertEquals(cloudEvent1.getSource(), cloudEvent2.getSource())
-        assertEquals(cloudEvent1.getType(), cloudEvent2.getType())
-        assertEquals(cloudEvent1.getDataContentType(), cloudEvent2.getDataContentType())
-        assertEquals(cloudEvent1.getDataSchema(), cloudEvent2.getDataSchema())
-        val ce1ExtensionNames: Set<String> = cloudEvent1.getExtensionNames()
-        val ce2ExtensionNames: Set<String> = cloudEvent2.getExtensionNames()
+        assertEquals(cloudEvent1.specVersion.toString(), cloudEvent2.specVersion.toString())
+        assertEquals(cloudEvent1.id, cloudEvent2.id)
+        assertEquals(cloudEvent1.source, cloudEvent2.source)
+        assertEquals(cloudEvent1.type, cloudEvent2.type)
+        assertEquals(cloudEvent1.dataContentType, cloudEvent2.dataContentType)
+        assertEquals(cloudEvent1.dataSchema, cloudEvent2.dataSchema)
+        val ce1ExtensionNames: Set<String> = cloudEvent1.extensionNames
+        val ce2ExtensionNames: Set<String> = cloudEvent2.extensionNames
         assertEquals(ce1ExtensionNames.joinToString(","), ce2ExtensionNames.joinToString(","))
         assertArrayEquals(
-            Objects.requireNonNull(cloudEvent1.getData()).toBytes(),
-            Objects.requireNonNull(cloudEvent2.getData()).toBytes()
+            Objects.requireNonNull(cloudEvent1.data).toBytes(),
+            Objects.requireNonNull(cloudEvent2.data).toBytes()
         )
         assertEquals(cloudEvent1, cloudEvent2)
     }
@@ -273,7 +273,7 @@ internal class CloudEventToProtobufSerializerTest {
     }
 
     private fun buildUriForTest(): String {
-        val Uri: UUri = UUri.newBuilder()
+        val uri: UUri = UUri.newBuilder()
             .setEntity(UEntity.newBuilder().setName("body.access"))
             .setResource(
                 UResource.newBuilder()
@@ -282,7 +282,7 @@ internal class CloudEventToProtobufSerializerTest {
                     .setMessage("Door")
             )
             .build()
-        return LongUriSerializer.instance().serialize(Uri)
+        return LongUriSerializer.instance().serialize(uri)
     }
 
     private fun buildProtoPayloadForTest(): Any {

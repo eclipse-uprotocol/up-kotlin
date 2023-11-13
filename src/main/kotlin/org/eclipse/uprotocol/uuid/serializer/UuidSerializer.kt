@@ -21,34 +21,26 @@
  * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
+package org.eclipse.uprotocol.uuid.serializer
 
-package org.eclipse.uprotocol.cloudevent.datamodel
-
-import java.util.Arrays
-import java.util.Optional
+import org.eclipse.uprotocol.v1.UUID
 
 /**
- * Enumeration for the core types of uProtocol CloudEvents.
- */
-enum class UCloudEventType(private val type: String) {
-    PUBLISH("pub.v1"),
-    REQUEST("req.v1"),
-    RESPONSE("res.v1");
+ * UUID Serializer interface used to serialize/deserialize UUIDs to/from either Long (string) or micro (bytes) form
+ * @param <T> The data structure that the UUID will be serialized into. For example String or byte[].
+</T> */
+interface UuidSerializer<T> {
+    /**
+     * Deserialize from the format to a [UUID].
+     * @param uuid serialized UUID.
+     * @return Returns a [UUID] object from the serialized format from the wire.
+     */
+    fun deserialize(uuid: T): UUID
 
-    fun type(): String {
-        return type
-    }
-
-    companion object {
-        /**
-         * Convert a String type into a maybe UCloudEventType.
-         * @param type The String value of the UCloudEventType.
-         * @return returns the UCloudEventType associated with the provided String.
-         */
-        fun valueOfType(type: String?): Optional<UCloudEventType> {
-            return Arrays.stream(entries.toTypedArray())
-                .filter { ceType -> ceType.type() == type }
-                .findAny()
-        }
-    }
+    /**
+     * Serialize from a [UUID] to a specific serialization format.
+     * @param uuid UUID object to be serialized to the format T.
+     * @return Returns the [UUID] in the transport serialized format.
+     */
+    fun serialize(uuid: UUID?): T
 }

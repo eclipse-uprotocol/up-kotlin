@@ -30,8 +30,8 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils
+import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UEntity
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUID
@@ -41,7 +41,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.time.Instant
-import java.util.Optional
 import org.junit.jupiter.api.Assertions.*
 
 internal class CloudEventValidatorTest {
@@ -75,10 +74,10 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status = validator.validateType(cloudEvent)!!.toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
         assertEquals(
             "Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -89,10 +88,10 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
         val status: Status = validator.validateType(cloudEvent)!!.toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
         assertEquals(
             "Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -114,10 +113,10 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
         val status: Status = validator.validateType(cloudEvent)!!.toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
         assertEquals(
             "Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -139,10 +138,10 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
         val status: Status = validator.validateType(cloudEvent)!!.toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
         assertEquals(
             "Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -158,14 +157,10 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test validate version")
     fun validate_cloud_event_version_when_valid() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
-            .withId(str_uuid)
+            .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         val status: Status = CloudEventValidator.validateVersion(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
@@ -177,24 +172,20 @@ internal class CloudEventValidatorTest {
         val payloadForTest = buildProtoPayloadForTest()
         val builder: CloudEventBuilder = CloudEventBuilder.v03().withId("id").withType("pub.v1")
             .withSource(URI.create("/body.access")).withDataContentType("application/protobuf")
-            .withDataSchema(URI.create(payloadForTest.getTypeUrl())).withData(payloadForTest.toByteArray())
+            .withDataSchema(URI.create(payloadForTest.typeUrl)).withData(payloadForTest.toByteArray())
         val cloudEvent: CloudEvent = builder.build()
         val status: Status = CloudEventValidator.validateVersion(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
-        assertEquals("Invalid CloudEvent version [0.3]. CloudEvent version must be 1.0.", status.getMessage())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        assertEquals("Invalid CloudEvent version [0.3]. CloudEvent version must be 1.0.", status.message)
     }
 
     @Test
     @DisplayName("Test validate cloudevent id when valid")
     fun validate_cloud_event_id_when_valid() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
-            .withId(str_uuid)
+            .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
@@ -203,22 +194,18 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test validate cloudevent id when not UUIDv8 type id")
     fun validate_cloud_event_id_when_not_uuidv6_type_id() {
-        val uuid_java: java.util.UUID = java.util.UUID.randomUUID()
-        val uuid: UUID = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-            .setLsb(uuid_java.getLeastSignificantBits()).build()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
+        val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
+        val uuid: UUID = UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
+            .setLsb(uuidJava.leastSignificantBits).build()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
-            .withId(str_uuid)
+            .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
         assertEquals(
-            "Invalid CloudEvent Id [$str_uuid]. CloudEvent Id must be of type UUIDv8.",
-            status.getMessage()
+            "Invalid CloudEvent Id [$strUuid]. CloudEvent Id must be of type UUIDv8.",
+            status.message
         )
     }
 
@@ -229,20 +216,16 @@ internal class CloudEventValidatorTest {
             .withId("testme")
         val cloudEvent: CloudEvent = builder.build()
         val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode())
-        assertEquals("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.", status.getMessage())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        assertEquals("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.", status.message)
     }
 
     @Test
     @DisplayName("Test local Publish type CloudEvent is valid everything is valid")
     fun test_publish_type_cloudevent_is_valid_when_everything_is_valid_local() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
@@ -253,13 +236,9 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is valid everything is valid")
     fun test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
             .withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
@@ -271,13 +250,9 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is valid everything is valid with a sink")
     fun test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote_with_a_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
             .withExtension("sink", "//bo.cloud/petapp").withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
@@ -289,40 +264,32 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is not valid everything is valid with invalid sink")
     fun test_publish_type_cloudevent_is_not_valid_when_remote_with_invalid_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
             .withExtension("sink", "//bo.cloud").withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Publish type CloudEvent is not valid when source is empty")
     fun test_publish_type_cloudevent_is_not_valid_when_source_is_empty() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("/")).withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", status.message)
     }
 
@@ -334,11 +301,11 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                     "CloudEvent source [/body.access]. UriPart is missing uResource name.",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -350,24 +317,20 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                     "CloudEvent source [/body.access/1/door.front_left]. UriPart is missing Message information.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Notification type CloudEvent is valid everything is valid")
     fun test_notification_type_cloudevent_is_valid_when_everything_is_valid() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
             .withExtension("sink", "//bo.cloud/petapp")
         val cloudEvent: CloudEvent = builder.build()
@@ -379,53 +342,41 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Notification type CloudEvent is not valid missing sink")
     fun test_notification_type_cloudevent_is_not_valid_missing_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
-        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", status.getMessage())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
+        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", status.message)
     }
 
     @Test
     @DisplayName("Test Notification type CloudEvent is not valid invalid sink")
     fun test_notification_type_cloudevent_is_not_valid_invalid_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
             .withExtension("sink", "//bo.cloud")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Request type CloudEvent is valid everything is valid")
     fun test_request_type_cloudevent_is_valid_when_everything_is_valid() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type())
             .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
@@ -437,81 +388,65 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Request type CloudEvent is not valid invalid source")
     fun test_request_type_cloudevent_is_not_valid_invalid_source() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//bo.cloud/petapp//dog"))
             .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
             .withType(UCloudEventType.REQUEST.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Request CloudEvent source [//bo.cloud/petapp//dog]. " + "Invalid RPC uri application " +
                     "response topic. UriPart is missing rpc.response.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Request type CloudEvent is not valid missing sink")
     fun test_request_type_cloudevent_is_not_valid_missing_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Request type CloudEvent is not valid sink not rpc command")
     fun test_request_type_cloudevent_is_not_valid_invalid_sink_not_rpc_command() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type())
             .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Request CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC method " +
                     "uri. UriPart should be the method to be called, or method from response.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Response type CloudEvent is valid everything is valid")
     fun test_response_type_cloudevent_is_valid_when_everything_is_valid() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/rpc.UpdateDoor"))
             .withType(UCloudEventType.RESPONSE.type()).withExtension("sink", "//bo.cloud/petapp//rpc.response")
         val cloudEvent: CloudEvent = builder.build()
@@ -523,96 +458,80 @@ internal class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is not valid invalid source")
     fun test_response_type_cloudevent_is_not_valid_invalid_source() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
             .withExtension("sink", "//bo.cloud/petapp//rpc.response").withType(UCloudEventType.RESPONSE.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                     "method uri. UriPart should be the method to be called, or method from response.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Response type CloudEvent is not valid missing sink and invalid source")
     fun test_response_type_cloudevent_is_not_valid_missing_sink_and_invalid_source() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
             .withType(UCloudEventType.RESPONSE.type())
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                     "method uri. UriPart should be the method to be called, or method from response.," + "Invalid" +
                     " CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Response type CloudEvent is not valid sink and source, missing entity name.")
     fun test_response_type_cloudevent_is_not_valid_invalid_sink() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withType(UCloudEventType.RESPONSE.type()).withSource(URI.create("//VCU.myvin"))
             .withExtension("sink", "//bo.cloud")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin]. Invalid RPC method uri. Uri is missing " +
                     "uSoftware Entity name.,Invalid RPC Response CloudEvent sink [//bo.cloud]. Invalid RPC uri " +
                     "application response topic. Uri is missing uSoftware Entity name.",
-            status.getMessage()
+            status.message
         )
     }
 
     @Test
     @DisplayName("Test Response type CloudEvent is not valid source not rpc command")
     fun test_response_type_cloudevent_is_not_valid_invalid_source_not_rpc_command() {
-        val uuid: UUID = UUIDFactory.Factories.UPROTOCOL.factory().create()
-        var str_uuid = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get()
-        }
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
             .withSource(URI.create("//bo.cloud/petapp/1/dog")).withType(UCloudEventType.RESPONSE.type())
             .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.getCode())
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status!!.code)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. UriPart " +
                     "should be the method to be called, or method from response.," + "Invalid RPC Response " +
                     "CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC uri application " +
                     "response topic. UriPart is missing rpc.response.",
-            status.getMessage()
+            status.message
         )
     }
 
@@ -634,7 +553,7 @@ internal class CloudEventValidatorTest {
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "testme", source,
-            protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+            protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
         return cloudEventBuilder
@@ -653,12 +572,8 @@ internal class CloudEventValidatorTest {
 
         // source
         val source = buildLongUriForTest()
-        val uuid: UUID = UUIDFactory.Factories.UUIDV6.factory().create()
-        var id = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            id = uuid_string.get()
-        }
+        val uuid: UUID = UuidFactory.Factories.UUIDV6.factory().create()
+        val id = LongUuidSerializer.instance().serialize(uuid)
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
@@ -670,11 +585,11 @@ internal class CloudEventValidatorTest {
         // build the cloud event
         val cloudEvent: CloudEvent = CloudEventFactory.buildBaseCloudEvent(
             id, source, protoPayload.toByteArray(),
-            protoPayload.getTypeUrl(), attributes
+            protoPayload.typeUrl, attributes
         ).withType(UCloudEventType.PUBLISH.type()).build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.OK_VALUE, status!!.getCode())
+        assertEquals(Code.OK_VALUE, status!!.code)
         assertFalse(UCloudEvent.isExpired(cloudEvent))
     }
 
@@ -684,12 +599,8 @@ internal class CloudEventValidatorTest {
 
         // source
         val source = buildLongUriForTest()
-        val uuid: UUID = UUIDFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100))
-        var id = ""
-        val uuid_string: Optional<String> = UUIDUtils.toString(uuid)
-        if (uuid_string.isPresent()) {
-            id = uuid_string.get()
-        }
+        val uuid: UUID = UuidFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100))
+        val id = LongUuidSerializer.instance().serialize(uuid)
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
@@ -701,11 +612,11 @@ internal class CloudEventValidatorTest {
         // build the cloud event
         val cloudEvent: CloudEvent = CloudEventFactory.buildBaseCloudEvent(
             id, source, protoPayload.toByteArray(),
-            protoPayload.getTypeUrl(), attributes
+            protoPayload.typeUrl, attributes
         ).withType(UCloudEventType.PUBLISH.type()).build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
         val status: Status? = validator.validate(cloudEvent)
-        assertEquals(Code.OK_VALUE, status!!.getCode())
+        assertEquals(Code.OK_VALUE, status!!.code)
         assertTrue(UCloudEvent.isExpired(cloudEvent))
     }
 

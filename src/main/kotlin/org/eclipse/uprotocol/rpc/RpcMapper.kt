@@ -17,11 +17,13 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.rpc
 
-import RpcResult
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
@@ -80,10 +82,10 @@ interface RpcMapper {
         }
 
         /**
-         * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
+         * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a Status containing any errors.
          * @param responseFuture CompletableFuture&lt;Any&gt; response from Link.
          * @param expectedClazz The class name of the declared expected return type of the RPC method.
-         * @return Returns a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
+         * @return Returns a CompletableFuture containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a Status containing any errors.
          * @param <T> The declared expected return type of the RPC method.
         </T> */
         fun <T : Message?> mapResponseToResult(
