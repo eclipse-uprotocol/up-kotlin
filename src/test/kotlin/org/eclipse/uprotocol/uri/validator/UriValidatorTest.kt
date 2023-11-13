@@ -435,18 +435,18 @@ internal class UriValidatorTest {
         assertTrue(status.isFailure())
     }
 
-//    @Test
-//    @DisplayName("Test all valid uris from uris.json")
-//    @Throws(IOException::class)
-//    fun test_all_valid_uris() {
-//        // Access the "validUris" array
-//        val validUris: JSONArray = jsonObject.getJSONArray("validUris")
-//        for (i in 0 until validUris.length()) {
-//            val uuri: UUri = LongUriSerializer.instance().deserialize(validUris.getString(i))
-//            val status: ValidationResult = UriValidator.validate(uuri)
-//            assertTrue(status.isSuccess())
-//        }
-//    }
+    @Test
+    @DisplayName("Test all valid uris from uris.json")
+    @Throws(IOException::class)
+    fun test_all_valid_uris() {
+        // Access the "validUris" array
+        val validUris: JSONArray = jsonObject.getJSONArray("validUris")
+        for (i in 0 until validUris.length()) {
+            val uuri: UUri = LongUriSerializer.instance().deserialize(validUris.getString(i))
+            val status: ValidationResult = UriValidator.validate(uuri)
+            assertTrue(status.isSuccess())
+        }
+    }
 
     @Test
     @DisplayName("Test all invalid uris from uris.json")
@@ -476,20 +476,20 @@ internal class UriValidatorTest {
         }
     }
 
-//    @Test
-//    @DisplayName("Test all invalid rpc uris from uris.json")
-//    @Throws(IOException::class)
-//    fun test_all_invalid_rpc_uris() {
-//        // Access the "invalidRpcUris" array
-//        val invalidRpcUris: JSONArray = jsonObject.getJSONArray("invalidRpcUris")
-//        for (i in 0 until invalidRpcUris.length()) {
-//            val uriObject: JSONObject = invalidRpcUris.getJSONObject(i)
-//            val uuri: UUri = LongUriSerializer.instance().deserialize(uriObject.getString("uri"))
-//            val status: ValidationResult = UriValidator.validateRpcMethod(uuri)
-//            assertTrue(status.isFailure())
-//            assertEquals(status.getMessage(), uriObject.getString("status_message"))
-//        }
-//    }
+    @Test
+    @DisplayName("Test all invalid rpc uris from uris.json")
+    @Throws(IOException::class)
+    fun test_all_invalid_rpc_uris() {
+        // Access the "invalidRpcUris" array
+        val invalidRpcUris: JSONArray = jsonObject.getJSONArray("invalidRpcUris")
+        for (i in 0 until invalidRpcUris.length()) {
+            val uriObject: JSONObject = invalidRpcUris.getJSONObject(i)
+            val uuri: UUri = LongUriSerializer.instance().deserialize(uriObject.getString("uri"))
+            val status: ValidationResult = UriValidator.validateRpcMethod(uuri)
+            assertTrue(status.isFailure())
+            assertEquals(status.getMessage(), uriObject.getString("status_message"))
+        }
+    }
 
     @Test
     @DisplayName("Test all valid rpc response uris from uris.json")

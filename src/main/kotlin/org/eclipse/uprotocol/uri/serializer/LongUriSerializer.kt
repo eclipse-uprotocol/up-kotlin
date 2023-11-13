@@ -207,11 +207,14 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         }
 
         fun removeEmpty(parts: List<String>): List<String> {
-            return if (parts.all { it.isEmpty() }) {
-                emptyList()
-            } else {
-                parts
+            val result = parts.toMutableList()
+
+            // Iterate through the list in reverse and remove empty strings
+            while (result.isNotEmpty() && result.last().isEmpty()) {
+                result.removeAt(result.size - 1)
             }
+            return result
+
         }
     }
 }
