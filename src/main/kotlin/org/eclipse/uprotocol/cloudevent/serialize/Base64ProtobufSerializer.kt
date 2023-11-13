@@ -36,7 +36,7 @@ interface Base64ProtobufSerializer {
          * @param bytes byte[] data
          * @return Returns a String from the base64 protobuf payload.
          */
-        fun deserialize(bytes: ByteArray?): String? {
+        fun deserialize(bytes: ByteArray?): String {
             return if (bytes == null) {
                 ""
             } else Base64.getEncoder().encodeToString(bytes)
@@ -47,7 +47,7 @@ interface Base64ProtobufSerializer {
          * @param stringToSerialize String to serialize.
          * @return Returns the Base64 formatted String as a byte[].
          */
-        fun serialize(stringToSerialize: String?): ByteArray? {
+        fun serialize(stringToSerialize: String?): ByteArray {
             return if (stringToSerialize == null) {
                 ByteArray(0)
             } else Base64.getDecoder().decode(stringToSerialize.toByteArray())

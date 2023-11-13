@@ -98,7 +98,7 @@ interface UuidUtils {
          */
         fun getVariant(uuid: UUID?): Optional<Int> {
             return if (uuid == null) Optional.empty() else Optional.of(
-                (uuid.lsb ushr (64 - (uuid.lsb ushr 62)).toInt() and (uuid.lsb shr 63)).toInt()
+                    (uuid.lsb ushr (64 - (uuid.lsb ushr 62)).toInt() and (uuid.lsb shr 63)).toInt()
             )
         }
 
@@ -141,19 +141,23 @@ interface UuidUtils {
          */
         fun getTime(uuid: UUID?): Optional<Long> {
             var time: Long? = null
+
+            if(uuid==null){
+                return Optional.empty()
+            }
             val version = getVersion(uuid)
 
             if (version.isEmpty) {
-                    return Optional.empty()
-                }
+                return Optional.empty()
+            }
 
             when (version.get()) {
                 Version.VERSION_UPROTOCOL -> {
-                    time = uuid!!.msb ushr 16
+                    time = uuid.msb ushr 16
                 }
                 Version.VERSION_TIME_ORDERED -> {
                     try {
-                        val uuidJava = java.util.UUID(uuid!!.msb, uuid.lsb)
+                        val uuidJava = java.util.UUID(uuid.msb, uuid.lsb)
                         time = UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuidJava)) / UuidTime.TICKS_PER_MILLI
                     } catch (e: IllegalArgumentException) {
                         return Optional.empty()

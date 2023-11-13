@@ -39,7 +39,7 @@ import com.google.protobuf.ByteString
  * UUri Serializer that serializes a UUri to a byte[] (micro format) per
  * [...](https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc)
  */
-class MicroUriSerializer private constructor() : UriSerializer<ByteArray?> {
+class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
     /**
      * The type of address used for Micro URI.
      */

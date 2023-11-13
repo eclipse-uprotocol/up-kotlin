@@ -101,7 +101,7 @@ abstract class UuidFactory {
                     msb++
                 }
 
-                // The previous time is not the same tick as the current so we reset msb
+                // The previous time is not the same tick as the current, so we reset msb
             } else {
                 msb = time shl 16 or (8L shl 12)
             }

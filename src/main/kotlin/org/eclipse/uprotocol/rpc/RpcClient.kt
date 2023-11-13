@@ -44,5 +44,5 @@ interface RpcClient {
      * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
      * @return Returns the CompletableFuture with the result or exception.
      */
-    fun invokeMethod(topic: UUri?, payload: UPayload?, attributes: UAttributes?): CompletableFuture<UPayload?>?
+    fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): CompletableFuture<UPayload>
 }

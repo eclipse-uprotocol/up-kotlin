@@ -33,7 +33,7 @@ import java.util.*
  */
 abstract class UStatus {
     abstract fun isSuccess(): Boolean
-    abstract fun msg(): String?
+    abstract fun msg(): String
     abstract fun getCode(): Int
 
     /**

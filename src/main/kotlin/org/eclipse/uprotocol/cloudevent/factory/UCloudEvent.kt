@@ -145,7 +145,7 @@ interface UCloudEvent {
          * @param communicationStatus the platform delivery error Code to add to the CloudEvent.
          * @return Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.
          */
-        fun addCommunicationStatus(cloudEvent: CloudEvent, communicationStatus: Int?): CloudEvent? {
+        fun addCommunicationStatus(cloudEvent: CloudEvent, communicationStatus: Int?): CloudEvent {
             if (communicationStatus == null) {
                 return cloudEvent
             }

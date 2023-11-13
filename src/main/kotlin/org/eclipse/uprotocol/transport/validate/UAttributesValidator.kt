@@ -55,10 +55,10 @@ abstract class UAttributesValidator {
      * invalid configurations.
      */
     fun validate(attributes: UAttributes): ValidationResult {
-        val errorMessage = Stream.of<ValidationResult?>(validateType(attributes),
+        val errorMessage = Stream.of<ValidationResult>(validateType(attributes),
                 validateTtl(attributes), validateSink(attributes),
                 validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
-                .filter(ValidationResult::isFailure).map { obj: ValidationResult? -> obj!!.getMessage() }.collect(Collectors.joining(","))
+                .filter(ValidationResult::isFailure).map { obj: ValidationResult -> obj.getMessage() }.collect(Collectors.joining(","))
         return if (errorMessage.isBlank()) ValidationResult.success() else ValidationResult.failure(errorMessage)
     }
 
@@ -90,7 +90,7 @@ abstract class UAttributesValidator {
      * @param attributes UAttributes object containing the message time to live configuration to validate.
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
-    open fun validateTtl(attributes: UAttributes): ValidationResult? {
+    open fun validateTtl(attributes: UAttributes): ValidationResult {
         val ttl = attributes.ttl
         return if (attributes.hasTtl() && ttl <= 0) {
             ValidationResult.failure(String.format("Invalid TTL [%s]", ttl))
@@ -106,7 +106,7 @@ abstract class UAttributesValidator {
      * @param attributes UAttributes object containing the sink to validate.
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
-    open fun validateSink(attributes: UAttributes): ValidationResult? {
+    open fun validateSink(attributes: UAttributes): ValidationResult {
         return if (attributes.hasSink()) {
             UriValidator.validate(attributes.sink)
         } else {
@@ -157,7 +157,7 @@ abstract class UAttributesValidator {
      * @param attributes Attributes object containing the request id to validate.
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
-    open fun validateReqId(attributes: UAttributes): ValidationResult? {
+    open fun validateReqId(attributes: UAttributes): ValidationResult {
         return if (attributes.hasReqid() && !UuidUtils.isUuid(attributes.reqid)) {
             ValidationResult.failure("Invalid UUID")
         } else {
@@ -171,7 +171,7 @@ abstract class UAttributesValidator {
      * @param attributes UAttributes object containing the message type to validate.
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
-    abstract fun validateType(attributes: UAttributes): ValidationResult?
+    abstract fun validateType(attributes: UAttributes): ValidationResult
 
     /**
      * Validators Factory. Example:

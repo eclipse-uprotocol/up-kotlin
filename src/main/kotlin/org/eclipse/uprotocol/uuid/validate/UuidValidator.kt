@@ -52,7 +52,7 @@ abstract class UuidValidator {
                 validateVariant(uuid),
                 validateTime(uuid)
         )
-                .filter { it!!.isFailure() }.joinToString(",") { it!!.getMessage() }
+                .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
 
         return if (errorMessages.isBlank()) ValidationResult.success().toStatus()
         else Status.newBuilder()
@@ -72,7 +72,7 @@ abstract class UuidValidator {
         )
     }
 
-    abstract fun validateVariant(uuid: UUID?): ValidationResult?
+    abstract fun validateVariant(uuid: UUID?): ValidationResult
     private class InvalidValidator : UuidValidator() {
         override fun validateVersion(uuid: UUID?): ValidationResult {
             return ValidationResult.failure(String.format("Invalid UUID Version"))

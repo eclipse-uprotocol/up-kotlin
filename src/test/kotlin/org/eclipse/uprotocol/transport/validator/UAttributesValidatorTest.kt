@@ -409,7 +409,7 @@ internal class UAttributesValidatorTest {
     fun test_validating_publish_invalid_ttl_attribute() {
         val attributes: UAttributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(-1).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateTtl(attributes)!!
+        val status: ValidationResult = validator.validateTtl(attributes)
         assertTrue(status.isFailure())
         assertEquals("Invalid TTL [-1]", status.getMessage())
     }
@@ -419,7 +419,7 @@ internal class UAttributesValidatorTest {
     fun test_validating_valid_ttl_attribute() {
         val attributes: UAttributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(100).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateTtl(attributes)!!
+        val status: ValidationResult = validator.validateTtl(attributes)
         assertEquals(ValidationResult.success(), status)
     }
 
@@ -429,7 +429,7 @@ internal class UAttributesValidatorTest {
         val uri: UUri = LongUriSerializer.instance().deserialize("//")
         val attributes: UAttributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withSink(uri).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateSink(attributes)!!
+        val status: ValidationResult = validator.validateSink(attributes)
         assertTrue(status.isFailure())
         assertEquals("Uri is empty.", status.getMessage())
     }
@@ -440,7 +440,7 @@ internal class UAttributesValidatorTest {
         val uri: UUri = LongUriSerializer.instance().deserialize("/haartley/1")
         val attributes: UAttributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withSink(uri).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateSink(attributes)!!
+        val status: ValidationResult = validator.validateSink(attributes)
         assertEquals(ValidationResult.success(), status)
     }
 
@@ -453,7 +453,7 @@ internal class UAttributesValidatorTest {
                 .build()
         ).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateReqId(attributes)!!
+        val status: ValidationResult = validator.validateReqId(attributes)
         assertTrue(status.isFailure())
         assertEquals("Invalid UUID", status.getMessage())
     }
@@ -464,7 +464,7 @@ internal class UAttributesValidatorTest {
         val attributes: UAttributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0)
             .withReqId(UuidFactory.Factories.UPROTOCOL.factory().create()).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
-        val status: ValidationResult = validator.validateReqId(attributes)!!
+        val status: ValidationResult = validator.validateReqId(attributes)
         assertEquals(ValidationResult.success(), status)
     }
 

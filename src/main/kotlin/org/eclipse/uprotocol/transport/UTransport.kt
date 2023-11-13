@@ -45,7 +45,7 @@ interface UTransport {
      * @return Returns OKSTATUS if authenticate was successful, FAILSTATUS if the calling uE
      * is not authenticated.
      */
-    fun authenticate(uEntity: UEntity?): UStatus?
+    fun authenticate(uEntity: UEntity): UStatus
 
     /**
      * Transmit UPayload to the topic using the attributes defined in UTransportAttributes.
@@ -55,7 +55,7 @@ interface UTransport {
      * @return Returns OKSTATUS if the payload has been successfully sent (ACK'ed), otherwise it
      * returns FAILSTATUS with the appropriate failure.
      */
-    fun send(topic: UUri?, payload: UPayload?, attributes: UAttributes?): UStatus?
+    fun send(topic: UUri, payload: UPayload, attributes: UAttributes): UStatus
 
     /**
      * Register listener to be called when UPayload is received for the specific topic.
@@ -64,7 +64,7 @@ interface UTransport {
      * @return Returns OKSTATUS if the listener is unregistered correctly, otherwise it returns FAILSTATUS
      * with the appropriate failure.
      */
-    fun registerListener(topic: UUri?, listener: UListener?): UStatus?
+    fun registerListener(topic: UUri, listener: UListener): UStatus
 
     /**
      * Unregister a listener for a given topic. Messages arriving on this topic will no longer be processed
@@ -74,5 +74,5 @@ interface UTransport {
      * @return Returns OKSTATUS if the listener is unregistered correctly, otherwise it returns FAILSTATUS
      * with the appropriate failure.
      */
-    fun unregisterListener(topic: UUri?, listener: UListener?): UStatus?
+    fun unregisterListener(topic: UUri, listener: UListener): UStatus
 }

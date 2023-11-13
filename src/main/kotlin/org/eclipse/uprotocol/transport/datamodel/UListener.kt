@@ -38,5 +38,5 @@ interface UListener {
      * @param attributes Transportation attributes
      * @return Returns an Ack every time a message is received and processed.
      */
-    fun onReceive(topic: UUri?, payload: UPayload?, attributes: UAttributes?): UStatus?
+    fun onReceive(topic: UUri, payload: UPayload, attributes: UAttributes): UStatus
 }

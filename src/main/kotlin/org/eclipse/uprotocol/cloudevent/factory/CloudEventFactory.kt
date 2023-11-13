@@ -54,11 +54,11 @@ interface CloudEventFactory {
          * @return Returns an  request CloudEvent.
          */
         fun request(
-            applicationUriForRPC: String?,
-            serviceMethodUri: String?,
+            applicationUriForRPC: String,
+            serviceMethodUri: String,
             protoPayload: Any,
             attributes: UCloudEventAttributes
-        ): CloudEvent? {
+        ): CloudEvent {
             val id = generateCloudEventId()
             return buildBaseCloudEvent(
                 id,
@@ -68,7 +68,7 @@ interface CloudEventFactory {
                 attributes
             )
                 .withType(UCloudEventType.REQUEST.type())
-                .withExtension("sink", URI.create(serviceMethodUri!!))
+                .withExtension("sink", URI.create(serviceMethodUri))
                 .build()
         }
 
@@ -84,12 +84,12 @@ interface CloudEventFactory {
          * @return Returns an  response CloudEvent.
          */
         fun response(
-            applicationUriForRPC: String?,
-            serviceMethodUri: String?,
-            requestId: String?,
+            applicationUriForRPC: String,
+            serviceMethodUri: String,
+            requestId: String,
             protoPayload: Any,
             attributes: UCloudEventAttributes
-        ): CloudEvent? {
+        ): CloudEvent {
             val id = generateCloudEventId()
             return buildBaseCloudEvent(
                 id,
@@ -99,8 +99,8 @@ interface CloudEventFactory {
                 attributes
             )
                 .withType(UCloudEventType.RESPONSE.type())
-                .withExtension("sink", URI.create(applicationUriForRPC!!))
-                .withExtension("reqid", requestId!!)
+                .withExtension("sink", URI.create(applicationUriForRPC))
+                .withExtension("reqid", requestId)
                 .build()
         }
 
@@ -115,12 +115,12 @@ interface CloudEventFactory {
          * @return Returns a response CloudEvent Response for the use case of RPC Response message that failed.
          */
         fun failedResponse(
-            applicationUriForRPC: String?,
-            serviceMethodUri: String?,
-            requestId: String?,
-            communicationStatus: Int?,
+            applicationUriForRPC: String,
+            serviceMethodUri: String,
+            requestId: String,
+            communicationStatus: Int,
             attributes: UCloudEventAttributes
-        ): CloudEvent? {
+        ): CloudEvent {
             val id = generateCloudEventId()
             val protoPayload: Any = Any.pack(Empty.getDefaultInstance())
             return buildBaseCloudEvent(
@@ -131,9 +131,9 @@ interface CloudEventFactory {
                 attributes
             )
                 .withType(UCloudEventType.RESPONSE.type())
-                .withExtension("sink", URI.create(applicationUriForRPC!!))
-                .withExtension("reqid", requestId!!)
-                .withExtension("commstatus", communicationStatus!!)
+                .withExtension("sink", URI.create(applicationUriForRPC))
+                .withExtension("reqid", requestId)
+                .withExtension("commstatus", communicationStatus)
                 .build()
         }
 
@@ -145,7 +145,7 @@ interface CloudEventFactory {
          * @param attributes Additional attributes such as ttl, hash and priority.
          * @return Returns a publish CloudEvent.
          */
-        fun publish(source: String?, protoPayload: Any, attributes: UCloudEventAttributes): CloudEvent? {
+        fun publish(source: String, protoPayload: Any, attributes: UCloudEventAttributes): CloudEvent {
             val id = generateCloudEventId()
             return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
                 .withType(UCloudEventType.PUBLISH.type())
@@ -163,15 +163,15 @@ interface CloudEventFactory {
          * @return Returns a publish CloudEvent.
          */
         fun notification(
-            source: String?,
-            sink: String?,
+            source: String,
+            sink: String,
             protoPayload: Any,
             attributes: UCloudEventAttributes
-        ): CloudEvent? {
+        ): CloudEvent {
             val id = generateCloudEventId()
             return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
                 .withType(UCloudEventType.PUBLISH.type())
-                .withExtension("sink", URI.create(sink!!))
+                .withExtension("sink", URI.create(sink))
                 .build()
         }
 
@@ -197,14 +197,14 @@ interface CloudEventFactory {
          * ready to be serialized and sent to the transport layer.
          */
         fun buildBaseCloudEvent(
-            id: String?, source: String?,
-            protoPayloadBytes: ByteArray?,
+            id: String?, source: String,
+            protoPayloadBytes: ByteArray,
             protoPayloadSchema: String?,
             attributes: UCloudEventAttributes
         ): CloudEventBuilder {
             val cloudEventBuilder: CloudEventBuilder = CloudEventBuilder.v1()
                 .withId(id)
-                .withSource(URI.create(source!!)) /* Not needed:
+                .withSource(URI.create(source)) /* Not needed:
                 .withDataContentType(PROTOBUF_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayloadSchema))
                 */

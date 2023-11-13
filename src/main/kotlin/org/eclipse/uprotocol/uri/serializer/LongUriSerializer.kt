@@ -36,7 +36,7 @@ import org.eclipse.uprotocol.v1.UUri
  * UUri Serializer that serializes a UUri to a long format string per
  * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-class LongUriSerializer private constructor() : UriSerializer<String?> {
+class LongUriSerializer private constructor() : UriSerializer<String> {
     /**
      * Support for serializing [UUri] objects into their String format.
      * @param uri [UUri] object to be serialized to the String format.

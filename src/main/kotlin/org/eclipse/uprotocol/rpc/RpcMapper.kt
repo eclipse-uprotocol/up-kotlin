@@ -47,10 +47,10 @@ interface RpcMapper {
          * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
          * @param <T> The declared expected return type of the RPC method.
         </T> */
-        fun <T : Message?> mapResponse(
-            responseFuture: CompletableFuture<UPayload?>,
+        fun <T : Message> mapResponse(
+            responseFuture: CompletableFuture<UPayload>,
             expectedClazz: Class<T>
-        ): CompletableFuture<T>? {
+        ): CompletableFuture<T> {
             return responseFuture.handle { payload, exception ->
                 // Unexpected exception
                 if (exception != null) {
@@ -88,10 +88,10 @@ interface RpcMapper {
          * @return Returns a CompletableFuture containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a Status containing any errors.
          * @param <T> The declared expected return type of the RPC method.
         </T> */
-        fun <T : Message?> mapResponseToResult(
-            responseFuture: CompletableFuture<UPayload?>,
+        fun <T : Message> mapResponseToResult(
+            responseFuture: CompletableFuture<UPayload>,
             expectedClazz: Class<T>
-        ): CompletableFuture<RpcResult<T>?>? {
+        ): CompletableFuture<RpcResult<T>> {
             return responseFuture.handle { payload, exception ->
                 // Unexpected exception
                 if (exception != null) {
@@ -130,7 +130,7 @@ interface RpcMapper {
             }
         }
         @Suppress("UNCHECKED_CAST")
-        private fun <T : Message?> calculateStatusResult(payload: Any): RpcResult<T> {
+        private fun <T : Message> calculateStatusResult(payload: Any): RpcResult<T> {
             val status: Status = unpackPayload(payload, Status::class.java)
             return if (status.code == Code.OK_VALUE) RpcResult.success(status as T) else RpcResult.failure(status)
         }
@@ -142,7 +142,7 @@ interface RpcMapper {
          * @return Returns an object of type T and of the class name specified, that was packed into the [Any] object.
          * @param <T> The message type of the object packed into the [Any].
         </T> */
-        fun <T : Message?> unpackPayload(payload: Any, expectedClazz: Class<T>?): T {
+        fun <T : Message> unpackPayload(payload: Any, expectedClazz: Class<T>): T {
             return try {
                 payload.unpack(expectedClazz)
             } catch (e: InvalidProtocolBufferException) {

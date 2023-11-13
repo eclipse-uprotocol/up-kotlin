@@ -240,8 +240,8 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
         assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
-        val cloudEvent1: CloudEvent? = UCloudEvent.addCommunicationStatus(cloudEvent, Code.DEADLINE_EXCEEDED_VALUE)
-        assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1!!))
+        val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, Code.DEADLINE_EXCEEDED_VALUE)
+        assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1))
         assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
@@ -251,7 +251,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
         assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
-        val cloudEvent1: CloudEvent? = UCloudEvent.addCommunicationStatus(cloudEvent, null)
+        val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, null)
         assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
         assertEquals(cloudEvent, cloudEvent1)
     }

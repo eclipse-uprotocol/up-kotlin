@@ -43,7 +43,7 @@ interface UriSerializer<T> {
      * @param uri serialized UUri.
      * @return Returns a [UUri] object from the serialized format from the wire.
      */
-    fun deserialize(uri: T): UUri?
+    fun deserialize(uri: T?): UUri
 
     /**
      * Serialize from a [UUri] to a specific serialization format.

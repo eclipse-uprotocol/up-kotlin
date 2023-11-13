@@ -86,7 +86,7 @@ sealed class RpcResult<T> {
         }
     }
 
-    class Failure<T> internal constructor(internal val value: Status?) : RpcResult<T>() {
+    class Failure<T> internal constructor(internal val value: Status) : RpcResult<T>() {
 
         constructor(code: Code, message: String) : this(Status.newBuilder().setCode(code.number).setMessage(message).build())
 
@@ -118,7 +118,7 @@ sealed class RpcResult<T> {
         }
 
         override val failureValue: Status
-            get() = value!!
+            get() = value
 
         override val successValue: T
             get() = throw IllegalStateException("Method successValue() called on a Failure instance")

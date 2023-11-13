@@ -39,21 +39,21 @@ internal class Base64ProtobufSerializerTest {
             .withSource(URI.create("http://localhost"))
             .build()
         val bytes: ByteArray = CloudEventSerializers.PROTOBUF.serializer().serialize(datapayload)
-        val payload: String? = Base64ProtobufSerializer.deserialize(bytes)
+        val payload: String = Base64ProtobufSerializer.deserialize(bytes)
         assertEquals("CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4", payload)
     }
 
     @Test
     @DisplayName("Test deserialize a byte[] to a String when byte[] is null")
     fun test_deserialize_bytes_to_string_when_bytes_is_null() {
-        val payload: String? = Base64ProtobufSerializer.deserialize(null)
+        val payload: String = Base64ProtobufSerializer.deserialize(null)
         assertEquals("", payload)
     }
 
     @Test
     @DisplayName("Test deserialize a byte[] to a String when byte[] is empty")
     fun test_deserialize_bytes_to_string_when_bytes_is_empty() {
-        val payload: String? = Base64ProtobufSerializer.deserialize(ByteArray(0))
+        val payload: String = Base64ProtobufSerializer.deserialize(ByteArray(0))
         assertEquals("", payload)
     }
 
@@ -61,7 +61,7 @@ internal class Base64ProtobufSerializerTest {
     @DisplayName("Test serialize a base64 String to bytes")
     fun test_serialize_string_into_bytes() {
         val base64String = "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4"
-        val bytes: ByteArray? = Base64ProtobufSerializer.serialize(base64String)
+        val bytes: ByteArray = Base64ProtobufSerializer.serialize(base64String)
         val datapayload: CloudEvent = CloudEventBuilder.v1()
             .withId("hello")
             .withType("example.vertx")
@@ -74,7 +74,7 @@ internal class Base64ProtobufSerializerTest {
     @Test
     @DisplayName("Test serialize a base64 String to bytes when string is null")
     fun test_serialize_string_into_bytes_when_string_is_null() {
-        val bytes: ByteArray? = Base64ProtobufSerializer.serialize(null)
+        val bytes: ByteArray = Base64ProtobufSerializer.serialize(null)
         val ceBytes = ByteArray(0)
         assertArrayEquals(ceBytes, bytes)
     }
@@ -82,7 +82,7 @@ internal class Base64ProtobufSerializerTest {
     @Test
     @DisplayName("Test serialize a base64 String to bytes when string is empty")
     fun test_serialize_string_into_bytes_when_string_is_empty() {
-        val bytes: ByteArray? = Base64ProtobufSerializer.serialize("")
+        val bytes: ByteArray = Base64ProtobufSerializer.serialize("")
         val ceBytes = ByteArray(0)
         assertArrayEquals(ceBytes, bytes)
     }

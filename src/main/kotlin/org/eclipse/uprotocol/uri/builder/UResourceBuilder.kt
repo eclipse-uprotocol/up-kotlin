@@ -35,7 +35,7 @@ interface UResourceBuilder {
          * Builds a UResource for an RPC response.
          * @return Returns a UResource for an RPC response.
          */
-        fun forRpcResponse(): UResource? {
+        fun forRpcResponse(): UResource {
             return UResource.newBuilder()
                 .setName("rpc")
                 .setInstance("response")
@@ -48,7 +48,7 @@ interface UResourceBuilder {
          * @param method The method to be invoked.
          * @return Returns a UResource for an RPC request.
          */
-        fun forRpcRequest(method: String?): UResource? {
+        fun forRpcRequest(method: String): UResource {
             return forRpcRequest(method, null)
         }
 
@@ -58,7 +58,7 @@ interface UResourceBuilder {
          * @param id The ID of the request.
          * @return Returns a UResource for an RPC request.
          */
-        private fun forRpcRequest(method: String?, id: Int?): UResource? {
+        private fun forRpcRequest(method: String?, id: Int?): UResource {
             val builder: UResource.Builder = UResource.newBuilder().setName("rpc")
             if (method != null) {
                 builder.setInstance(method)
@@ -74,7 +74,7 @@ interface UResourceBuilder {
          * @param id The ID of the request.
          * @return Returns a UResource for an RPC request.
          */
-        fun forRpcRequest(id: Int?): UResource? {
+        fun forRpcRequest(id: Int): UResource {
             return forRpcRequest(null, id)
         }
 
@@ -84,7 +84,7 @@ interface UResourceBuilder {
          * @param id The ID of the request.
          * @return Returns a UResource for an RPC request.
          */
-        fun fromId(id: Int): UResource? {
+        fun fromId(id: Int): UResource {
             Objects.requireNonNull(id, "id cannot be null")
             return if (id < MAX_RPC_ID) forRpcRequest(id) else UResource.newBuilder().setId(id).build()
         }

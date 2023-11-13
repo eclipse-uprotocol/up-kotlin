@@ -164,8 +164,8 @@ internal class CloudEventFactoryTest {
             .withPriority(UCloudEventAttributes.Priority.STANDARD)
             .withTtl(3)
             .build()
-        val cloudEvent: CloudEvent? = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        val cloudEvent: CloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(source, cloudEvent.source.toString())
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.type)
@@ -197,8 +197,8 @@ internal class CloudEventFactoryTest {
             .build()
 
         // build the cloud event of type publish with destination - a notification
-        val cloudEvent: CloudEvent? = CloudEventFactory.notification(source, sink, protoPayload, uCloudEventAttributes)
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        val cloudEvent: CloudEvent = CloudEventFactory.notification(source, sink, protoPayload, uCloudEventAttributes)
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(source, cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
@@ -230,11 +230,11 @@ internal class CloudEventFactoryTest {
             .withTtl(3)
             .withToken("someOAuthToken")
             .build()
-        val cloudEvent: CloudEvent? = CloudEventFactory.request(
+        val cloudEvent: CloudEvent = CloudEventFactory.request(
             applicationUriForRPC, serviceMethodUri,
             protoPayload, uCloudEventAttributes
         )
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(applicationUriForRPC, cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
@@ -266,11 +266,11 @@ internal class CloudEventFactoryTest {
             .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
             .withTtl(3)
             .build()
-        val cloudEvent: CloudEvent? = CloudEventFactory.response(
+        val cloudEvent: CloudEvent = CloudEventFactory.response(
             applicationUriForRPC, serviceMethodUri,
             "requestIdFromRequestCloudEvent", protoPayload, uCloudEventAttributes
         )
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(serviceMethodUri, cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
@@ -299,13 +299,13 @@ internal class CloudEventFactoryTest {
             .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
             .withTtl(3)
             .build()
-        val cloudEvent: CloudEvent? = CloudEventFactory.failedResponse(
+        val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
             applicationUriForRPC, serviceMethodUri,
             "requestIdFromRequestCloudEvent",
             Code.INVALID_ARGUMENT_VALUE,
             uCloudEventAttributes
         )
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(serviceMethodUri, cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
@@ -335,13 +335,13 @@ internal class CloudEventFactoryTest {
             .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
             .withTtl(3)
             .build()
-        val cloudEvent: CloudEvent? = CloudEventFactory.failedResponse(
+        val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
             applicationUriForRPC, serviceMethodUri,
             "requestIdFromRequestCloudEvent",
             Code.INVALID_ARGUMENT_VALUE,
             uCloudEventAttributes
         )
-        assertEquals("1.0", cloudEvent!!.specVersion.toString())
+        assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
         assertEquals(serviceMethodUri, cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
