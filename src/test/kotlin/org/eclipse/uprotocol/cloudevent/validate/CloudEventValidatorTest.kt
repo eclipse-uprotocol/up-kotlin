@@ -32,10 +32,7 @@ import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUID
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -545,7 +542,7 @@ internal class CloudEventValidatorTest {
         // additional attributes
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
             "somehash"
-        ).withPriority(UCloudEventAttributes.Priority.STANDARD).withTtl(3).withToken(
+        ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
             "someOAuthToken"
         )
             .build()
@@ -578,7 +575,7 @@ internal class CloudEventValidatorTest {
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
         val attributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
-            UCloudEventAttributes.Priority.LOW
+            UPriority.UPRIORITY_CS0
         ).withTtl(1000) // live for 1 second
             .build()
 
@@ -605,7 +602,7 @@ internal class CloudEventValidatorTest {
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
         val attributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
-            UCloudEventAttributes.Priority.LOW
+            UPriority.UPRIORITY_CS0
         ).withTtl(1000) // live for 1 second
             .build()
 

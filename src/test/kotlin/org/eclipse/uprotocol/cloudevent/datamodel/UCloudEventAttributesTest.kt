@@ -21,6 +21,7 @@
 package org.eclipse.uprotocol.cloudevent.datamodel
 
 import nl.jqno.equalsverifier.EqualsVerifier
+import org.eclipse.uprotocol.v1.UPriority
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -37,11 +38,11 @@ internal class UCloudEventAttributesTest {
     fun testToString() {
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
             .withHash("somehash")
-            .withPriority(UCloudEventAttributes.Priority.STANDARD)
+            .withPriority(UPriority.UPRIORITY_CS1)
             .withTtl(3)
             .withToken("someOAuthToken")
             .build()
-        val expected = "UCloudEventAttributes{hash='somehash', priority=STANDARD, ttl=3, token='someOAuthToken'}"
+        val expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}"
         assertEquals(expected, uCloudEventAttributes.toString())
     }
 
@@ -50,14 +51,14 @@ internal class UCloudEventAttributesTest {
     fun test_create_valid() {
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
             .withHash("somehash")
-            .withPriority(UCloudEventAttributes.Priority.NETWORK_CONTROL)
+            .withPriority(UPriority.UPRIORITY_CS6)
             .withTtl(3)
             .withToken("someOAuthToken")
             .build()
         assertTrue(uCloudEventAttributes.hash().isPresent)
         assertEquals("somehash", uCloudEventAttributes.hash().get())
         assertTrue(uCloudEventAttributes.priority().isPresent)
-        assertEquals(UCloudEventAttributes.Priority.NETWORK_CONTROL, uCloudEventAttributes.priority().get())
+        assertEquals(UPriority.UPRIORITY_CS6, uCloudEventAttributes.priority().get())
         assertTrue(uCloudEventAttributes.ttl().isPresent)
         assertEquals(3, uCloudEventAttributes.ttl().get())
         assertTrue(uCloudEventAttributes.token().isPresent)
@@ -108,7 +109,7 @@ internal class UCloudEventAttributesTest {
             .build()
         assertFalse(uCloudEventAttributes3.isEmpty)
         val uCloudEventAttributes4: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withPriority(UCloudEventAttributes.Priority.LOW)
+            .withPriority(UPriority.UPRIORITY_CS0)
             .build()
         assertFalse(uCloudEventAttributes4.isEmpty)
         val uCloudEventAttributes5: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()

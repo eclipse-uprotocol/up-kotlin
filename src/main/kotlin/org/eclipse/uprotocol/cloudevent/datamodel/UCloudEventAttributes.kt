@@ -24,6 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.datamodel
 
+import org.eclipse.uprotocol.v1.UPriority
 import java.util.*
 
 /**
@@ -31,7 +32,7 @@ import java.util.*
  */
 class UCloudEventAttributes {
     private val hash: String?
-    private val priority: Priority?
+    private val priority: UPriority?
     private val ttl: Int?
     private val token: String?
 
@@ -39,12 +40,12 @@ class UCloudEventAttributes {
      * Construct the properties object.
      *
      * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @param priority uProtocol Prioritization classifications defined at QoS in SDV-202.
+     * @param priority uProtocol Prioritization classifications.
      * @param ttl      How long this event should live for after it was generated (in milliseconds).
      * Events without this attribute (or value is 0) MUST NOT timeout.
      * @param token    Oauth2 access token to perform the access request defined in the request message.
      */
-    private constructor(hash: String?, priority: Priority?, ttl: Int?, token: String?) {
+    private constructor(hash: String?, priority: UPriority?, ttl: Int?, token: String?) {
         this.hash = hash
         this.priority = priority
         this.ttl = ttl
@@ -74,10 +75,10 @@ class UCloudEventAttributes {
     }
 
     /**
-     * uProtocol Prioritization classifications defined at QoS in SDV-202.
+     * uProtocol Prioritization classifications.
      * @return Returns an Optional priority attribute.
      */
-    fun priority(): Optional<Priority> {
+    fun priority(): Optional<UPriority> {
         return if (priority == null) Optional.empty() else Optional.of(priority)
     }
 
@@ -102,7 +103,7 @@ class UCloudEventAttributes {
      */
     class UCloudEventAttributesBuilder {
         var hash: String? = null
-        var priority: Priority? = null
+        var priority: UPriority? = null
         var ttl: Int? = null
         var token: String? = null
 
@@ -117,11 +118,11 @@ class UCloudEventAttributes {
         }
 
         /**
-         * add a uProtocol Prioritization classifications defined at QoS in SDV-202.
-         * @param priority uProtocol Prioritization classifications defined at QoS in SDV-202.
+         * add a uProtocol Prioritization classifications.
+         * @param priority uProtocol Prioritization classifications.
          * @return Returns the UCloudEventAttributesBuilder with the configured priority.
          */
-        fun withPriority(priority: Priority?): UCloudEventAttributesBuilder {
+        fun withPriority(priority: UPriority?): UCloudEventAttributesBuilder {
             this.priority = priority
             return this
         }
@@ -158,35 +159,6 @@ class UCloudEventAttributes {
         }
     }
 
-    /**
-     * Priority according to SDV 202 Quality of Service (QoS) and Prioritization.
-     */
-    enum class Priority(private val qosString: String) {
-        // Low Priority. No bandwidth assurance such as File Transfer.
-        LOW("CS0"),
-
-        // Standard, undifferentiated application such as General (unclassified).
-        STANDARD("CS1"),
-
-        // Operations, Administration, and Management such as Streamer messages (sub, connect, etc…)
-        OPERATIONS("CS2"),
-
-        // Multimedia streaming such as Video Streaming
-        MULTIMEDIA_STREAMING("CS3"),
-
-        // Real-time interactive such as High priority (rpc events)
-        REALTIME_INTERACTIVE("CS4"),
-
-        // Signaling such as Important
-        SIGNALING("CS5"),
-
-        // Network control such as Safety Critical
-        NETWORK_CONTROL("CS6");
-
-        fun qosString(): String {
-            return qosString
-        }
-    }
 
     @Override
     override fun equals(other: Any?): Boolean {

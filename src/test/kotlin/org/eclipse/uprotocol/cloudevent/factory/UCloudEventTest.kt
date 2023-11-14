@@ -32,6 +32,7 @@ import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UEntity
+import org.eclipse.uprotocol.v1.UPriority
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.UUri
@@ -123,7 +124,7 @@ internal class UCloudEventTest {
         val cloudEvent: CloudEvent = builder.build()
         val priority: Optional<String> = UCloudEvent.getPriority(cloudEvent)
         assertTrue(priority.isPresent)
-        assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), priority.get())
+        assertEquals(UPriority.UPRIORITY_CS1.name, priority.get())
     }
 
     @Test
@@ -596,7 +597,7 @@ internal class UCloudEventTest {
         // additional attributes
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
             "somehash"
-        ).withPriority(UCloudEventAttributes.Priority.STANDARD).withTtl(3).withToken(
+        ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
             "someOAuthToken"
         )
             .build()

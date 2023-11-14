@@ -24,13 +24,13 @@
 
 package org.eclipse.uprotocol.cloudevent.factory
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import com.google.protobuf.Any
 import com.google.protobuf.Empty
 import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.UUri
@@ -211,7 +211,7 @@ interface CloudEventFactory {
                 .withData(protoPayloadBytes)
             attributes.ttl().ifPresent { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
             attributes.priority()
-                .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.qosString()) }
+                .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
             attributes.hash().ifPresent { hash -> cloudEventBuilder.withExtension("hash", hash) }
             attributes.token().ifPresent { token -> cloudEventBuilder.withExtension("token", token) }
             return cloudEventBuilder
