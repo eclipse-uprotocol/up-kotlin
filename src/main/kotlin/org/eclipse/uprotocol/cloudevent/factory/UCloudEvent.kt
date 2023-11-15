@@ -24,7 +24,6 @@
 
 package org.eclipse.uprotocol.cloudevent.factory
 
-import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
@@ -32,11 +31,14 @@ import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
+import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
+import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UUID
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.Optional
+import java.util.*
+
 
 /**
  * Class to extract  information from a CloudEvent.
@@ -297,6 +299,24 @@ interface UCloudEvent {
         private fun extractIntegerValueFromExtension(extensionName: String, cloudEvent: CloudEvent): Optional<Int> {
             return extractStringValueFromExtension(extensionName, cloudEvent)
                 .map(Integer::valueOf)
+        }
+
+        fun getEventType(type: UMessageType?): String {
+            return when (type) {
+                UMessageType.UMESSAGE_TYPE_PUBLISH -> "pub.v1"
+                UMessageType.UMESSAGE_TYPE_REQUEST -> "req.v1"
+                UMessageType.UMESSAGE_TYPE_RESPONSE -> "res.v1"
+                else -> ""
+            }
+        }
+
+        fun getMessageType(ce_type: String?): UMessageType {
+            return when (ce_type) {
+                "pub.v1" -> UMessageType.UMESSAGE_TYPE_PUBLISH
+                "req.v1" -> UMessageType.UMESSAGE_TYPE_REQUEST
+                "res.v1" -> UMessageType.UMESSAGE_TYPE_RESPONSE
+                else -> UMessageType.UMESSAGE_TYPE_UNSPECIFIED
+            }
         }
     }
 }

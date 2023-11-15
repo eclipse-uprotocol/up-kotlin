@@ -27,13 +27,13 @@ package org.eclipse.uprotocol.cloudevent.validate
 import com.google.rpc.Code
 import com.google.rpc.Status
 import io.cloudevents.CloudEvent
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.v1.UMessageType
 import java.util.Optional
 
 
@@ -294,14 +294,13 @@ abstract class CloudEventValidator {
          * @return Returns a CloudEventValidator according to the type attribute in the CloudEvent.
          */
         fun getValidator(cloudEvent: CloudEvent): CloudEventValidator {
-            val cloudEventType: String = cloudEvent.type
-            val maybeType: Optional<UCloudEventType> = UCloudEventType.valueOfType(cloudEventType)
-            if (maybeType.isEmpty) {
+            val cloudEventType: String? = cloudEvent.type
+            if (cloudEventType.isNullOrEmpty()) {
                 return Validators.PUBLISH.validator()
             }
-            val validator: CloudEventValidator = when (maybeType.get()) {
-                UCloudEventType.RESPONSE -> Validators.RESPONSE.validator()
-                UCloudEventType.REQUEST -> Validators.REQUEST.validator()
+            val validator: CloudEventValidator = when (UCloudEvent.getMessageType(cloudEventType)) {
+                UMessageType.UMESSAGE_TYPE_RESPONSE -> Validators.RESPONSE.validator()
+                UMessageType.UMESSAGE_TYPE_REQUEST -> Validators.REQUEST.validator()
                 else -> Validators.PUBLISH.validator()
             }
             return validator

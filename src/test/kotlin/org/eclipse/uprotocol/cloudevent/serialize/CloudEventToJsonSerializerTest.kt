@@ -26,9 +26,9 @@ import com.google.protobuf.Message
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
+import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UPriority
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -171,7 +171,7 @@ internal class CloudEventToJsonSerializerTest {
             protoPayload.toByteArray(), protoPayload.typeUrl,
             uCloudEventAttributes
         )
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent1: CloudEvent = cloudEventBuilder.build()
         val bytes1: ByteArray = serializer.serialize(cloudEvent1)
         val cloudEvent2: CloudEvent = serializer.deserialize(bytes1)

@@ -27,23 +27,19 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UPriority
-import org.eclipse.uprotocol.v1.UResource
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.v1.UUID
-import org.eclipse.uprotocol.v1.UUri
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.*
+import java.util.*
 
 
 internal class UCloudEventTest {
@@ -583,7 +579,34 @@ internal class UCloudEventTest {
         val expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', type='pub.v1'}"
         assertEquals(expected, prettyPrint)
     }
+    @Test
+    @DisplayName("Test the type for a publish message type")
+    fun test_type_for_publish() {
+        val uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)
+        assertEquals("pub.v1", uCloudEventType)
+    }
 
+
+    @Test
+    @DisplayName("Test the type for a request RPC message type")
+    fun test_type_for_request() {
+        val uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST)
+        assertEquals("req.v1", uCloudEventType)
+    }
+
+    @Test
+    @DisplayName("Test the type for a response RPC message type")
+    fun test_type_for_response() {
+        val uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)
+        assertEquals("res.v1", uCloudEventType)
+    }
+
+    @Test
+    @DisplayName("Test the type for a unspecified message type")
+    fun test_parse_publish_event_type_from_string() {
+        val uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_UNSPECIFIED)
+        assertTrue(uCloudEventType.isBlank())
+    }
     private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {
         // source
         val uUri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
@@ -607,7 +630,7 @@ internal class UCloudEventTest {
             "testme", source,
             protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         return cloudEventBuilder
     }
 
