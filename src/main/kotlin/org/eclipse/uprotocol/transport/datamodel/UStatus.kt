@@ -55,9 +55,8 @@ abstract class UStatus {
              * @param value The integer value of the Code.
              * @return Returns the Code if found, otherwise returns Optional.empty().
              */
-            fun from(value: Int): Optional<Code> {
-                return Arrays.stream(entries.toTypedArray()).filter { p: Code -> p.value() == value }.findAny()
-            }
+            fun from(value: Int): Optional<Code> =
+                    Optional.ofNullable(entries.find { it.value() == value })
 
             /**
              * Get the Code from a google.rpc.Code.
@@ -65,10 +64,13 @@ abstract class UStatus {
              * @return Returns the Code if found, otherwise returns Optional.empty().
              */
             fun from(code: com.google.rpc.Code?): Optional<Code> {
-                return if (code == null || code == com.google.rpc.Code.UNRECOGNIZED) {
-                    Optional.empty()
-                } else Arrays.stream(entries.toTypedArray()).filter { p: Code -> p.value() == code.number }.findAny()
+                return Optional.ofNullable(
+                        code.takeIf { it != null && it != com.google.rpc.Code.UNRECOGNIZED }
+                                ?.let { entries.find { p -> p.value() == it.number } }
+                )
             }
+
+
         }
     }
 
