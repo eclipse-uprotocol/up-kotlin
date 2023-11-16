@@ -319,7 +319,7 @@ internal class RpcTest {
                 assertTrue(true)
                 assertFalse(true)
                 try {
-                    any = Any.parseFrom(payload.data())
+                    any = Any.parseFrom(payload.data)
                     // happy flow, no exception
                     assertNull(exception)
 
@@ -347,7 +347,7 @@ internal class RpcTest {
         val stubReturnValue: CompletableFuture<CloudEvent> =
             rpcResponse.handle { payload, exception ->
                 try {
-                    val any: Any = Any.parseFrom(payload.data())
+                    val any: Any = Any.parseFrom(payload.data)
                     // happy flow, no exception
                     assertNull(exception)
 
@@ -408,7 +408,7 @@ internal class RpcTest {
         val stubReturnValue: CompletableFuture<CloudEvent> =
             rpcResponse.handle { payload, exception ->
                 try {
-                    val any: Any = Any.parseFrom(payload.data())
+                    val any: Any = Any.parseFrom(payload.data)
                     // happy flow, no exception
                     assertNull(exception)
 
@@ -596,7 +596,7 @@ internal class RpcTest {
             return invokeMethodResponse.handle { payload, exception ->
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data())
+                    any = Any.parseFrom(payload.data)
                 } catch (e: InvalidProtocolBufferException) {
                     throw RuntimeException(e.message, e)
                 }

@@ -148,7 +148,6 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority.
          */
         fun publish(priority: UPriority): UAttributesBuilder {
-            Objects.requireNonNull(priority, "UPriority cannot be null.")
             return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
         }
@@ -160,8 +159,6 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority and sink.
          */
         fun notification(priority: UPriority, sink: UUri): UAttributesBuilder {
-            Objects.requireNonNull(priority, "UPriority cannot be null.")
-            Objects.requireNonNull(sink, "sink cannot be null.")
             return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink)
         }
@@ -174,9 +171,6 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
          */
         fun request(priority: UPriority, sink: UUri, ttl: Int): UAttributesBuilder {
-            Objects.requireNonNull(priority, "UPriority cannot be null.")
-            Objects.requireNonNull(ttl, "ttl cannot be null.")
-            Objects.requireNonNull(sink, "sink cannot be null.")
             return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(ttl).withSink(sink)
         }
@@ -189,9 +183,6 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
          */
         fun response(priority: UPriority, sink: UUri, reqid: UUID): UAttributesBuilder {
-            Objects.requireNonNull(priority, "UPriority cannot be null.")
-            Objects.requireNonNull(sink, "sink cannot be null.")
-            Objects.requireNonNull(reqid, "reqid cannot be null.")
             return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
                     UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid)
         }

@@ -30,32 +30,7 @@ import java.util.*
 /**
  * The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].
  */
-class UPayload(data: ByteArray?, hint: UPayloadFormat?) {
-    private val data: ByteArray
-    private val hint // Hint regarding the bytes contained within the UPayload
-            : UPayloadFormat
-
-
-    init {
-        this.data = Objects.requireNonNullElse(data, ByteArray(0))
-        this.hint = Objects.requireNonNullElse(hint, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED)
-    }
-
-    /**
-     * The actual serialized or raw data, which can be deserialized or simply used as is.
-     * @return Returns the actual serialized or raw data, which can be deserialized or simply used as is.
-     */
-    fun data(): ByteArray {
-        return data
-    }
-
-    /**
-     * The hint regarding the bytes contained within the UPayload.
-     * @return Returns the hint regarding the bytes contained within the UPayload.
-     */
-    fun hint(): UPayloadFormat {
-        return hint
-    }
+data class UPayload(val data: ByteArray = ByteArray(0), val hint: UPayloadFormat = UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED) {
 
     val isEmpty: Boolean
         /**
@@ -63,22 +38,6 @@ class UPayload(data: ByteArray?, hint: UPayloadFormat?) {
          */
         get() = data.isEmpty()
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val uPayload = other as UPayload
-        return data.contentEquals(uPayload.data) && hint == uPayload.hint
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(data.contentHashCode(), hint)
-    }
-
-    override fun toString(): String {
-        return "UPayload{" +
-                "data=" + data().contentToString() +
-                ", hint=" + hint + '}'
-    }
 
     companion object {
         private val EMPTY = UPayload(ByteArray(0), UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED)
@@ -89,5 +48,27 @@ class UPayload(data: ByteArray?, hint: UPayloadFormat?) {
         fun empty(): UPayload {
             return EMPTY
         }
+    }
+
+    override fun toString(): String {
+        return "UPayload{" + "data=" + data.contentToString() + ", hint=" + hint + '}'
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as UPayload
+
+        if (!data.contentEquals(other.data)) return false
+        if (hint != other.hint) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = data.contentHashCode()
+        result = 31 * result + hint.hashCode()
+        return result
     }
 }

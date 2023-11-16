@@ -61,7 +61,7 @@ interface RpcMapper {
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data())
+                    any = Any.parseFrom(payload.data)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
@@ -102,7 +102,7 @@ interface RpcMapper {
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data())
+                    any = Any.parseFrom(payload.data)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
