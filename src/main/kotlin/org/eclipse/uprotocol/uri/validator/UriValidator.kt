@@ -132,8 +132,8 @@ interface UriValidator {
         fun isRpcResponse(uri: UUri): Boolean {
             Objects.requireNonNull(uri, "Uri cannot be null.")
             val resource: UResource = uri.resource
-            return isRpcMethod(uri) && (resource.hasInstance() && resource.instance
-                .contains("response") || resource.hasId() && resource.id != 0)
+            return isRpcMethod(uri) && ((resource.hasInstance() && resource.instance
+                .contains("response")) || (resource.hasId() && resource.id != 0))
         }
 
         /**

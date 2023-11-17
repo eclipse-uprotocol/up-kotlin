@@ -31,7 +31,7 @@ import com.google.rpc.Code
 import com.google.rpc.Status
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
-import org.eclipse.uprotocol.transport.datamodel.UPayload
+import org.eclipse.uprotocol.v1.UPayload
 
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with
@@ -61,7 +61,7 @@ interface RpcMapper {
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data)
+                    any = Any.parseFrom(payload.value)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
@@ -102,7 +102,7 @@ interface RpcMapper {
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data)
+                    any = Any.parseFrom(payload.value)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
