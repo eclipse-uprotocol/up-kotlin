@@ -27,7 +27,7 @@ package org.eclipse.uprotocol.cloudevent.factory
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
-import com.google.rpc.Code
+import org.eclipse.uprotocol.v1.UCode;
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
@@ -119,16 +119,16 @@ interface UCloudEvent {
         /**
          * Extract the integer value of the communication status attribute from a cloud event. The communication status attribute is optional.
          * If there was a platform communication error that occurred while delivering this cloudEvent, it will be indicated in this attribute.
-         * If the attribute does not exist, it is assumed that everything was Code.OK_VALUE.
+         * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE.
          * @param cloudEvent CloudEvent with the platformError to be extracted.
-         * @return Returns a [Code] value that indicates of a platform communication error while delivering this CloudEvent or Code.OK_VALUE.
+         * @return Returns a UCode value that indicates of a platform communication error while delivering this CloudEvent or UCode.OK_VALUE.
          */
         fun getCommunicationStatus(cloudEvent: CloudEvent): Int {
             return try {
                 extractIntegerValueFromExtension("commstatus", cloudEvent)
-                    .orElse(Code.OK_VALUE)
+                    .orElse(UCode.OK_VALUE)
             } catch (e: Exception) {
-                Code.OK_VALUE
+                UCode.OK_VALUE
             }
         }
 
@@ -138,13 +138,13 @@ interface UCloudEvent {
          * @return returns true if the provided CloudEvent is marked with having a platform delivery problem.
          */
         fun hasCommunicationStatusProblem(cloudEvent: CloudEvent): Boolean {
-            return getCommunicationStatus(cloudEvent) != Code.OK_VALUE
+            return getCommunicationStatus(cloudEvent) != UCode.OK_VALUE
         }
 
         /**
          * Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.
          * @param cloudEvent CloudEvent that the platform delivery error will be added.
-         * @param communicationStatus the platform delivery error Code to add to the CloudEvent.
+         * @param communicationStatus the platform delivery error UCode to add to the CloudEvent.
          * @return Returns a new CloudEvent from the supplied CloudEvent, with the platform communication added.
          */
         fun addCommunicationStatus(cloudEvent: CloudEvent, communicationStatus: Int?): CloudEvent {

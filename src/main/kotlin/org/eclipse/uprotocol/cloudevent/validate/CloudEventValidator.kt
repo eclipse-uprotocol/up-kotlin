@@ -24,16 +24,12 @@
 
 package org.eclipse.uprotocol.cloudevent.validate
 
-import com.google.rpc.Code
-import com.google.rpc.Status
 import io.cloudevents.CloudEvent
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UMessageType
+import org.eclipse.uprotocol.v1.*
 import java.util.Optional
 
 
@@ -60,9 +56,9 @@ abstract class CloudEventValidator {
     /**
      * Validate the CloudEvent. A CloudEventValidator instance is obtained according to the type attribute on the CloudEvent.
      * @param cloudEvent The CloudEvent to validate.
-     * @return Returns a google.rpc.Status with success or a google.rpc.Status with failure containing all the errors that were found.
+     * @return Returns a UStatus with success or a UUStatuswith failure containing all the errors that were found.
      */
-    fun validate(cloudEvent: CloudEvent): Status {
+    fun validate(cloudEvent: CloudEvent): UStatus{
         val errorMessage = listOf(
                 validateVersion(cloudEvent),
                 validateId(cloudEvent),
@@ -75,8 +71,8 @@ abstract class CloudEventValidator {
         return if (errorMessage.isBlank()) {
             ValidationResult.success().toStatus()
         } else {
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
+            UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage(errorMessage)
                 .build()
         }

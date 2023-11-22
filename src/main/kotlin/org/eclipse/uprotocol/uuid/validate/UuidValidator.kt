@@ -25,8 +25,8 @@
 package org.eclipse.uprotocol.uuid.validate
 
 import com.github.f4b6a3.uuid.enums.UuidVariant
-import com.google.rpc.Code
-import com.google.rpc.Status
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.validation.ValidationResult
@@ -46,7 +46,7 @@ abstract class UuidValidator {
         }
     }
 
-    fun validate(uuid: UUID?): Status {
+    fun validate(uuid: UUID?): UStatus {
         val errorMessages = listOf(
                 validateVersion(uuid),
                 validateVariant(uuid),
@@ -55,8 +55,8 @@ abstract class UuidValidator {
                 .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
 
         return if (errorMessages.isBlank()) ValidationResult.success().toStatus()
-        else Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
+        else UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage(errorMessages)
                 .build()
     }

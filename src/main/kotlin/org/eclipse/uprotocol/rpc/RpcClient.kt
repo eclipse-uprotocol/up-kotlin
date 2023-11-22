@@ -24,10 +24,10 @@
 
 package org.eclipse.uprotocol.rpc
 
-import java.util.concurrent.CompletableFuture
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UUri
+import java.util.concurrent.CompletionStage
 
 /**
  * RpcClient is an interface used by code generators for uProtocol services defined in proto files such as
@@ -44,5 +44,5 @@ interface RpcClient {
      * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
      * @return Returns the CompletableFuture with the result or exception.
      */
-    fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): CompletableFuture<UPayload>
+    fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): CompletionStage<UPayload>
 }

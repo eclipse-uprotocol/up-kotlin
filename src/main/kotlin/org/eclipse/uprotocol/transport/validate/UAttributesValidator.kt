@@ -24,7 +24,8 @@
 
 package org.eclipse.uprotocol.transport.validate
 
-import org.eclipse.uprotocol.transport.datamodel.UStatus
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.v1.UAttributes
@@ -139,8 +140,8 @@ abstract class UAttributesValidator {
     fun validateCommStatus(attributes: UAttributes): ValidationResult {
         run {
             if (attributes.hasCommstatus()) {
-                val enumValue = UStatus.Code.from(attributes.commstatus)
-                return if (enumValue.isPresent) {
+                val enumValue = UCode.forNumber(attributes.commstatus)
+                return if (enumValue!=null) {
                     ValidationResult.success()
                 } else {
                     ValidationResult.failure("Invalid Communication Status Code")

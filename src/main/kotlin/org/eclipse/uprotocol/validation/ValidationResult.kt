@@ -24,8 +24,8 @@
 
 package org.eclipse.uprotocol.validation
 
-import com.google.rpc.Code
-import com.google.rpc.Status
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import java.util.*
 
 /**
@@ -34,7 +34,7 @@ import java.util.*
 sealed class ValidationResult {
 
     companion object {
-        val STATUS_SUCCESS: Status = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("OK").build()
+        val STATUS_SUCCESS: UStatus = UStatus.newBuilder().setCode(UCode.OK).setMessage("OK").build()
         private val SUCCESS: ValidationResult = Success
 
         fun success(): ValidationResult = SUCCESS
@@ -44,7 +44,7 @@ sealed class ValidationResult {
     fun isFailure(): Boolean {
         return !isSuccess()
     }
-    abstract fun toStatus(): Status
+    abstract fun toStatus(): UStatus
     abstract fun isSuccess(): Boolean
     abstract fun getMessage(): String
 
@@ -54,8 +54,8 @@ sealed class ValidationResult {
             Objects.requireNonNull(message)
         }
 
-        override fun toStatus(): Status {
-            return Status.newBuilder().setCode(3).setMessage(message).build()
+        override fun toStatus(): UStatus {
+            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(message).build()
         }
 
         override fun isSuccess(): Boolean {
@@ -72,7 +72,7 @@ sealed class ValidationResult {
     }
 
     data object Success : ValidationResult() {
-        override fun toStatus(): Status {
+        override fun toStatus(): UStatus {
             return STATUS_SUCCESS
         }
 

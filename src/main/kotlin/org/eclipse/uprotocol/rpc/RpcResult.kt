@@ -24,8 +24,8 @@
 
 package org.eclipse.uprotocol.rpc
 
-import com.google.rpc.Code
-import com.google.rpc.Status
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
 import java.util.function.Function
 import java.util.function.Supplier
 
@@ -38,7 +38,7 @@ sealed class RpcResult<T> {
     abstract fun <U> map(f: Function<T, U>): RpcResult<U>
     abstract fun <U> flatMap(f: Function<T, RpcResult<U>>): RpcResult<U>
     abstract fun filter(f: Function<T, Boolean>): RpcResult<T>
-    abstract val failureValue: Status
+    abstract val failureValue: UStatus
     abstract val successValue: T
 
     class Success<T>(private val value: T) : RpcResult<T>() {
@@ -69,13 +69,13 @@ sealed class RpcResult<T> {
 
         override fun filter(f: Function<T, Boolean>): RpcResult<T> {
             return try {
-                if (f.apply(successValue)) this else failure(Code.FAILED_PRECONDITION, "filtered out")
+                if (f.apply(successValue)) this else failure(UCode.FAILED_PRECONDITION, "filtered out")
             } catch (e: Exception) {
                 failure(e.message!!, e)
             }
         }
 
-        override val failureValue: Status
+        override val failureValue: UStatus
             get() = throw IllegalStateException("Method failureValue() called on a Success instance")
 
         override val successValue: T
@@ -86,13 +86,13 @@ sealed class RpcResult<T> {
         }
     }
 
-    class Failure<T> internal constructor(internal val value: Status) : RpcResult<T>() {
+    class Failure<T> internal constructor(internal val value: UStatus) : RpcResult<T>() {
 
-        constructor(code: Code, message: String) : this(Status.newBuilder().setCode(code.number).setMessage(message).build())
+        constructor(code: UCode, message: String) : this(UStatus.newBuilder().setCode(code).setMessage(message).build())
 
         companion object {
             fun <T> fromException(e: Exception): RpcResult<T> {
-                return Failure(Status.newBuilder().setCode(Code.UNKNOWN.number).setMessage(e.message).build())
+                return Failure(UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage(e.message).build())
             }
         }
 
@@ -117,7 +117,7 @@ sealed class RpcResult<T> {
             return failure(this)
         }
 
-        override val failureValue: Status
+        override val failureValue: UStatus
             get() = value
 
         override val successValue: T
@@ -130,10 +130,10 @@ sealed class RpcResult<T> {
 
     companion object {
         fun <T> success(value: T): Success<T> = Success(value)
-        fun <T> failure(value: Status): RpcResult<T> = Failure(value)
+        fun <T> failure(value: UStatus): RpcResult<T> = Failure(value)
         fun <T, U> failure(failure: Failure<U>): RpcResult<T> = Failure(failure.value)
         fun <T> failure(message: String, e: Throwable): RpcResult<T> = Failure.fromException(IllegalStateException(message, e))
-        fun <T> failure(code: Code, message: String): RpcResult<T> = Failure(code, message)
+        fun <T> failure(code: UCode, message: String): RpcResult<T> = Failure(code, message)
 
         fun <T> flatten(result: RpcResult<RpcResult<T>>): RpcResult<T> = result.flatMap { it }
     }
