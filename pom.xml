@@ -22,18 +22,16 @@
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more
     </description>
 
-    <version>${revision}</version>
+    <version>1.5.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
-        <!--        <java.version>11</java.version>-->
         <kotlin.version>1.9.20</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <revision>1.5.0-SNAPSHOT</revision>
 
         <junit.platform.version>1.9.1</junit.platform.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -127,6 +125,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
@@ -140,28 +139,7 @@
                         </goals>
                     </execution>
                 </executions>
-<!--                <configuration>-->
-<!--                    <outputDir>${project.build.directory}/docs/javadoc</outputDir>-->
-<!--                    <includes>-->
-<!--                        <include>src\main\kotlin\**\*.kt</include>                    </includes>-->
-<!--                </configuration>-->
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-            <!--                <version>3.6.0</version>-->
-            <!--                <configuration>-->
-            <!--                    <doclint>all,-missing,-reference</doclint>-->
-            <!--                </configuration>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>attach-javadocs</id>-->
-            <!--                        <goals>-->
-            <!--                            <goal>jar</goal>-->
-            <!--                        </goals>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -176,7 +154,7 @@
             <plugin>
                 <groupId>org.eclipse.dash</groupId>
                 <artifactId>license-tool-plugin</artifactId>
-                <version>1.0.3-SNAPSHOT</version>
+                <version>1.0.2</version>
                 <executions>
                     <execution>
                         <id>license-check</id>
@@ -356,18 +334,6 @@
             <artifactId>protobuf-java</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-            <version>${protobuf.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-common-protos</artifactId>
-            <version>2.16.0</version>
-        </dependency>
-
 
         <!-- https://search.maven.org/artifact/com.github.f4b6a3/uuid-creator -->
         <dependency>
@@ -386,7 +352,7 @@
         <dependency>
             <groupId>org.eclipse.uprotocol</groupId>
             <artifactId>uprotocol-core-api</artifactId>
-            <version>1.5.0</version>
+            <version>1.5.2</version>
         </dependency>
 
         <!-- JSON library for JUnit test cases -->
@@ -396,11 +362,7 @@
             <version>20230227</version> <!-- Use the latest version -->
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.jetbrains.kotlin</groupId>-->
-<!--            <artifactId>kotlin-stdlib-jdk8</artifactId>-->
-<!--            <version>${kotlin.version}</version>-->
-<!--        </dependency>-->
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
@@ -410,29 +372,20 @@
     </dependencies>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-
+      <snapshotRepository>
+        <id>ossrh</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+       <id>ossrh</id>
+       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
     </distributionManagement>
-    <repositories>
-        <repository>
-            <id>jetbrains-public</id>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
-    </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses-snapshots</id>
-            <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
         </pluginRepository>
 
     </pluginRepositories>
@@ -443,17 +396,17 @@
                 <plugins>
 
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                       <groupId>org.apache.maven.plugins</groupId>
+                       <artifactId>maven-source-plugin</artifactId>
+                       <version>3.3.0</version>
+                       <executions>
+                          <execution>
+                             <id>attach-sources</id>
+                             <goals>
+                                <goal>jar-no-fork</goal>
+                             </goals>
+                          </execution>
+                       </executions>
                     </plugin>
 
                     <plugin>
@@ -481,7 +434,18 @@
                 </plugins>
             </build>
 
-
         </profile>
     </profiles>
+    <repositories>
+        <repository>
+        <id>oss.sonatype.org-snapshot</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+        </repository>
+    </repositories>
 </project>

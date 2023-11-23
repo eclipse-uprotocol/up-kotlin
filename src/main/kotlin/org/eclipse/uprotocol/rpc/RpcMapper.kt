@@ -27,11 +27,11 @@ package org.eclipse.uprotocol.rpc
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
-import com.google.rpc.Code
-import com.google.rpc.Status
-import java.util.concurrent.CompletableFuture
+import org.eclipse.uprotocol.v1.UCode
+import org.eclipse.uprotocol.v1.UPayload
+import org.eclipse.uprotocol.v1.UStatus
 import java.util.concurrent.CompletionException
-import org.eclipse.uprotocol.transport.datamodel.UPayload
+import java.util.concurrent.CompletionStage
 
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with
@@ -41,16 +41,16 @@ import org.eclipse.uprotocol.transport.datamodel.UPayload
 interface RpcMapper {
     companion object {
         /**
-         * Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
-         * @param responseFuture CompletableFuture&lt;UPayload&gt; response from uTransport.
+         * Map a response of CompletionStage&lt;UPayload&gt; from Link into a CompletionStage containing the declared expected return type of the RPC method or an exception.
+         * @param responseFuture CompletionStage&lt;UPayload&gt; response from uTransport.
          * @param expectedClazz The class name of the declared expected return type of the RPC method.
-         * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
+         * @return Returns a CompletionStage containing the declared expected return type of the RPC method or an exception.
          * @param <T> The declared expected return type of the RPC method.
         </T> */
         fun <T : Message> mapResponse(
-            responseFuture: CompletableFuture<UPayload>,
+            responseFuture: CompletionStage<UPayload>,
             expectedClazz: Class<T>
-        ): CompletableFuture<T> {
+        ): CompletionStage<T> {
             return responseFuture.handle { payload, exception ->
                 // Unexpected exception
                 if (exception != null) {
@@ -61,14 +61,14 @@ interface RpcMapper {
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data)
+                    any = Any.parseFrom(payload.value)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
                         return@handle unpackPayload(any, expectedClazz)
                     }
                 } catch (e: InvalidProtocolBufferException) {
-                    throw RuntimeException(String.format("%s [%s]", e.message, Status::class.java.getName()), e)
+                    throw RuntimeException(String.format("%s [%s]", e.message, UStatus::class.java.getName()), e)
                 }
                 // Some other type instead of the expected one
                 throw RuntimeException(
@@ -82,57 +82,62 @@ interface RpcMapper {
         }
 
         /**
-         * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a Status containing any errors.
-         * @param responseFuture CompletableFuture&lt;Any&gt; response from Link.
+         * Map a response of CompletionStage&lt;Any&gt; from Link into a CompletionStage containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a UStatus containing any errors.
+         * @param responseFuture CompletionStage&lt;Any&gt; response from Link.
          * @param expectedClazz The class name of the declared expected return type of the RPC method.
-         * @return Returns a CompletableFuture containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a Status containing any errors.
+         * @return Returns a CompletionStage containing an org.eclipse.uprotocol.rpc.RpcResult containing the declared expected return type T, or a UStatus containing any errors.
          * @param <T> The declared expected return type of the RPC method.
         </T> */
         fun <T : Message> mapResponseToResult(
-            responseFuture: CompletableFuture<UPayload>,
+            responseFuture: CompletionStage<UPayload>,
             expectedClazz: Class<T>
-        ): CompletableFuture<RpcResult<T>> {
+        ): CompletionStage<RpcResult<T>> {
             return responseFuture.handle { payload, exception ->
+                var exception=exception
                 // Unexpected exception
                 if (exception != null) {
-                    throw RuntimeException(exception.message, exception)
+                    return@handle RpcResult.failure(exception.message!!, exception)
                 }
                 if (payload == null) {
-                    throw RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName())
+                    exception = RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName())
+                    return@handle RpcResult.failure(exception.message!!, exception)
                 }
                 val any: Any
                 try {
-                    any = Any.parseFrom(payload.data)
+                    any = Any.parseFrom(payload.value)
 
                     // Expected type
                     if (any.`is`(expectedClazz)) {
-                        if (Status::class.java == expectedClazz) {
+                        if (UStatus::class.java == expectedClazz) {
                             return@handle calculateStatusResult<T>(any)
                         } else {
                             return@handle RpcResult.success(unpackPayload(any, expectedClazz))
                         }
                     }
-                    // Status instead of the expected one
-                    if (any.`is`(Status::class.java)) {
+                    // UStatus instead of the expected one
+                    if (any.`is`(UStatus::class.java)) {
                         return@handle calculateStatusResult<T>(any)
                     }
                 } catch (e: InvalidProtocolBufferException) {
-                    throw RuntimeException(String.format("%s [%s]", e.message, Status::class.java.getName()), e)
+                    exception = RuntimeException(String.format("%s [%s]", e.message, UStatus::class.java.getName()), e)
+                    return@handle RpcResult.failure(exception.message!!, exception)
                 }
 
                 // Some other type instead of the expected one
-                throw RuntimeException(
+                exception = RuntimeException(
                     String.format(
                         "Unknown payload type [%s]. Expected [%s]",
                         any.typeUrl, expectedClazz.getName()
                     )
                 )
+                return@handle RpcResult.failure(exception.message!!, exception)
             }
         }
+
         @Suppress("UNCHECKED_CAST")
         private fun <T : Message> calculateStatusResult(payload: Any): RpcResult<T> {
-            val status: Status = unpackPayload(payload, Status::class.java)
-            return if (status.code == Code.OK_VALUE) RpcResult.success(status as T) else RpcResult.failure(status)
+            val status: UStatus = unpackPayload(payload, UStatus::class.java)
+            return if (status.code == UCode.OK) RpcResult.success(status as T) else RpcResult.failure(status)
         }
 
         /**
@@ -146,7 +151,7 @@ interface RpcMapper {
             return try {
                 payload.unpack(expectedClazz)
             } catch (e: InvalidProtocolBufferException) {
-                throw RuntimeException(String.format("%s [%s]", e.message, Status::class.java.getName()), e)
+                throw RuntimeException(String.format("%s [%s]", e.message, UStatus::class.java.getName()), e)
             }
         }
     }

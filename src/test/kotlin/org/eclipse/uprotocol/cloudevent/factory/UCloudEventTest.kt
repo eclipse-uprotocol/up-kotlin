@@ -22,7 +22,6 @@ package org.eclipse.uprotocol.cloudevent.factory
 
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
-import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
@@ -174,7 +173,7 @@ internal class UCloudEventTest {
     @DisplayName("Test a CloudEvent has a platform communication error when the platform communication error exists.")
     fun test_cloudevent_has_platform_error_when_platform_error_exists() {
         val builder: CloudEventBuilder =
-            buildBaseCloudEventBuilderForTest().withExtension("commstatus", Code.ABORTED_VALUE)
+            buildBaseCloudEventBuilderForTest().withExtension("commstatus", UCode.ABORTED_VALUE)
         val cloudEvent: CloudEvent = builder.build()
         assertTrue(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
         assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent))
@@ -189,7 +188,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -201,7 +200,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("commstatus", "boom")
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -212,7 +211,7 @@ internal class UCloudEventTest {
     fun test_extract_platform_error_from_cloudevent_when_platform_error_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension(
             "commstatus",
-            Code.INVALID_ARGUMENT_VALUE
+            UCode.INVALID_ARGUMENT_VALUE
         )
         val cloudEvent: CloudEvent = builder.build()
         val communicationStatus: Int = UCloudEvent.getCommunicationStatus(cloudEvent)
@@ -228,7 +227,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
         val communicationStatus: Int = UCloudEvent.getCommunicationStatus(cloudEvent)
-        assertEquals(Code.OK_VALUE, communicationStatus)
+        assertEquals(UCode.OK_VALUE, communicationStatus)
     }
 
     @Test
@@ -236,10 +235,10 @@ internal class UCloudEventTest {
     fun test_adding_platform_error_to_existing_cloudevent() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
-        val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, Code.DEADLINE_EXCEEDED_VALUE)
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, UCode.DEADLINE_EXCEEDED_VALUE)
         assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1))
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -247,9 +246,9 @@ internal class UCloudEventTest {
     fun test_adding_empty_platform_error_to_existing_cloudevent() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
         val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, null)
-        assertEquals(Code.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
         assertEquals(cloudEvent, cloudEvent1)
     }
 

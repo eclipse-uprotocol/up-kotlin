@@ -22,11 +22,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.transport.datamodel
+package org.eclipse.uprotocol.transport
 
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UUri
-
+import org.eclipse.uprotocol.v1.UPayload
 /**
  * For any implementation that defines some kind of callback or function that will be called to handle incoming messages.
  */

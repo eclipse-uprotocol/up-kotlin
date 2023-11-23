@@ -26,11 +26,11 @@ package org.eclipse.uprotocol.cloudevent.factory
 
 import com.google.protobuf.Any
 import com.google.protobuf.Empty
-import com.google.rpc.Code
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.UUri
@@ -110,7 +110,7 @@ interface CloudEventFactory {
          * @param applicationUriForRPC  The destination of the response. The uri for the original application that requested the RPC and this response is for.
          * @param serviceMethodUri      The uri for the method that was called on the service Ex.: :/body.access/1/rpc.UpdateDoor
          * @param requestId             The cloud event id from the original request cloud event that this response if for.
-         * @param communicationStatus   A [Code] value that indicates of a platform communication error while delivering this CloudEvent.
+         * @param communicationStatus   A UCode value that indicates of a platform communication error while delivering this CloudEvent.
          * @param attributes            Additional attributes such as ttl, hash and priority.
          * @return Returns a response CloudEvent Response for the use case of RPC Response message that failed.
          */
@@ -180,7 +180,7 @@ interface CloudEventFactory {
          */
         private fun generateCloudEventId(): String {
             val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-            return uuid.toString()
+            return LongUuidSerializer.instance().serialize(uuid)
         }
 
         /**

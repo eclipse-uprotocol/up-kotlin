@@ -21,8 +21,6 @@
 package org.eclipse.uprotocol.cloudevent.validate
 
 import com.google.protobuf.Any
-import com.google.rpc.Code
-import com.google.rpc.Status
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
@@ -46,7 +44,7 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("pub.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.getValidator(cloudEvent)
-        val status: Status = validator.validateType(cloudEvent).toStatus()
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
         assertEquals("CloudEventValidator.Publish", validator.toString())
     }
@@ -58,7 +56,7 @@ internal class CloudEventValidatorTest {
             .withType("pub.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
-        val status: Status = validator.validateType(cloudEvent).toStatus()
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
         assertEquals("CloudEventValidator.Notification", validator.toString())
     }
@@ -69,8 +67,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("res.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validateType(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals(
             "Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
             status.message
@@ -83,8 +81,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("res.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
-        val status: Status = validator.validateType(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals(
             "Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
             status.message
@@ -97,7 +95,7 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("req.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.getValidator(cloudEvent)
-        val status: Status = validator.validateType(cloudEvent).toStatus()
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
         assertEquals("CloudEventValidator.Request", validator.toString())
     }
@@ -108,8 +106,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("pub.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
-        val status: Status = validator.validateType(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals(
             "Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'",
             status.message
@@ -122,7 +120,7 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("res.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.getValidator(cloudEvent)
-        val status: Status = validator.validateType(cloudEvent).toStatus()
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
         assertEquals("CloudEventValidator.Response", validator.toString())
     }
@@ -133,8 +131,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType("pub.v1")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validateType(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = validator.validateType(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals(
             "Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'",
             status.message
@@ -158,7 +156,7 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
-        val status: Status = CloudEventValidator.validateVersion(cloudEvent).toStatus()
+        val status: UStatus = CloudEventValidator.validateVersion(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
     }
 
@@ -170,8 +168,8 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/body.access")).withDataContentType("application/protobuf")
             .withDataSchema(URI.create(payloadForTest.typeUrl)).withData(payloadForTest.toByteArray())
         val cloudEvent: CloudEvent = builder.build()
-        val status: Status = CloudEventValidator.validateVersion(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = CloudEventValidator.validateVersion(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals("Invalid CloudEvent version [0.3]. CloudEvent version must be 1.0.", status.message)
     }
 
@@ -183,7 +181,7 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
-        val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
+        val status: UStatus = CloudEventValidator.validateId(cloudEvent).toStatus()
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
     }
 
@@ -197,8 +195,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
-        val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = CloudEventValidator.validateId(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals(
             "Invalid CloudEvent Id [$strUuid]. CloudEvent Id must be of type UUIDv8.",
             status.message
@@ -211,8 +209,8 @@ internal class CloudEventValidatorTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withId("testme")
         val cloudEvent: CloudEvent = builder.build()
-        val status: Status = CloudEventValidator.validateId(cloudEvent).toStatus()
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val status: UStatus = CloudEventValidator.validateId(cloudEvent).toStatus()
+        assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.", status.message)
     }
 
@@ -225,8 +223,8 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -239,8 +237,8 @@ internal class CloudEventValidatorTest {
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -253,8 +251,8 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud/petapp").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -267,11 +265,10 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -284,9 +281,8 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
-        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", status.message)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", result.getMessage())
     }
 
     @Test
@@ -296,12 +292,11 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/body.access")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                     "CloudEvent source [/body.access]. UriPart is missing uResource name.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -312,12 +307,11 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/body.access/1/door.front_left")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                     "CloudEvent source [/body.access/1/door.front_left]. UriPart is missing Message information.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -331,8 +325,8 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud/petapp")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -344,9 +338,8 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
-        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", status.message)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", result.getMessage())
     }
 
     @Test
@@ -359,11 +352,10 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -377,8 +369,8 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -392,12 +384,11 @@ internal class CloudEventValidatorTest {
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Request CloudEvent source [//bo.cloud/petapp//dog]. " + "Invalid RPC uri application " +
                     "response topic. UriPart is missing rpc.response.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -410,11 +401,10 @@ internal class CloudEventValidatorTest {
             .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -428,12 +418,11 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.REQUEST.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Request CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC method " +
                     "uri. UriPart should be the method to be called, or method from response.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -447,8 +436,8 @@ internal class CloudEventValidatorTest {
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)).withExtension("sink", "//bo.cloud/petapp//rpc.response")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(ValidationResult.STATUS_SUCCESS, status)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertEquals(ValidationResult.success(), result)
     }
 
     @Test
@@ -461,12 +450,11 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud/petapp//rpc.response").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                     "method uri. UriPart should be the method to be called, or method from response.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -480,13 +468,12 @@ internal class CloudEventValidatorTest {
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                     "method uri. UriPart should be the method to be called, or method from response.," + "Invalid" +
                     " CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -500,13 +487,12 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//bo.cloud")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//VCU.myvin]. Invalid RPC method uri. Uri is missing " +
                     "uSoftware Entity name.,Invalid RPC Response CloudEvent sink [//bo.cloud]. Invalid RPC uri " +
                     "application response topic. Uri is missing uSoftware Entity name.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -520,14 +506,13 @@ internal class CloudEventValidatorTest {
             .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor")
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.RESPONSE.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
         assertEquals(
             "Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. UriPart " +
                     "should be the method to be called, or method from response.," + "Invalid RPC Response " +
                     "CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC uri application " +
                     "response topic. UriPart is missing rpc.response.",
-            status.message
+            result.getMessage()
         )
     }
 
@@ -584,8 +569,8 @@ internal class CloudEventValidatorTest {
             protoPayload.typeUrl, attributes
         ).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.OK_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertTrue(result.isSuccess())
         assertFalse(UCloudEvent.isExpired(cloudEvent))
     }
 
@@ -611,8 +596,8 @@ internal class CloudEventValidatorTest {
             protoPayload.typeUrl, attributes
         ).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.PUBLISH.validator()
-        val status: Status = validator.validate(cloudEvent)
-        assertEquals(Code.OK_VALUE, status.code)
+        val result: ValidationResult = validator.validate(cloudEvent)
+        assertTrue(result.isSuccess())
         assertTrue(UCloudEvent.isExpired(cloudEvent))
     }
 
