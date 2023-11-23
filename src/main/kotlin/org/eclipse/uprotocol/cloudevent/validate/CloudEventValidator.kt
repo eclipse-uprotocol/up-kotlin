@@ -58,7 +58,7 @@ abstract class CloudEventValidator {
      * @param cloudEvent The CloudEvent to validate.
      * @return Returns a UStatus with success or a UUStatuswith failure containing all the errors that were found.
      */
-    fun validate(cloudEvent: CloudEvent): UStatus{
+    fun validate(cloudEvent: CloudEvent): ValidationResult{
         val errorMessage = listOf(
                 validateVersion(cloudEvent),
                 validateId(cloudEvent),
@@ -69,12 +69,10 @@ abstract class CloudEventValidator {
                 .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
 
         return if (errorMessage.isBlank()) {
-            ValidationResult.success().toStatus()
+            ValidationResult.success()
         } else {
-            UStatus.newBuilder()
-                .setCode(UCode.INVALID_ARGUMENT)
-                .setMessage(errorMessage)
-                .build()
+            ValidationResult.failure(errorMessage)
+
         }
     }
 
