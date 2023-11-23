@@ -30,6 +30,7 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.UUri
@@ -179,7 +180,7 @@ interface CloudEventFactory {
          */
         private fun generateCloudEventId(): String {
             val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-            return uuid.toString()
+            return LongUuidSerializer.instance().serialize(uuid)
         }
 
         /**
