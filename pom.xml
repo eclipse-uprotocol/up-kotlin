@@ -26,7 +26,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <kotlin.version>1.9.20</kotlin.version>
+        <kotlin.version>1.9.21</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -43,6 +43,8 @@
         <cloudevents.version>2.4.2</cloudevents.version>
 
         <protobuf.version>3.21.10</protobuf.version>
+        <git.tag.name>uprotocol-core-api-1.5.3</git.tag.name>
+
     </properties>
 
     <scm>
@@ -78,6 +80,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.1.0</version>
             </plugin>
+
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}
@@ -189,6 +192,53 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>clone-repository</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>git</executable>
+
+                            <arguments>
+                                <argument>clone</argument>
+                                <argument>--branch</argument>
+                                <argument>${git.tag.name}</argument>
+                                <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
+                                <argument>${project.build.directory}/uprotocol-core-api</argument>
+                                neelam-kushwah marked this conversation as resolved.
+                            </arguments>
+                            <!-- Allow non-zero exit code (error) -->
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <successCode>128</successCode> <!-- Git error code for existing repository -->
+                            </successCodes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pull-repository</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>git</executable>
+                            <workingDirectory>${project.build.directory}/uprotocol-core-api</workingDirectory>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>origin</argument>
+                                <argument>${git.tag.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
@@ -221,6 +271,27 @@
                 </configuration>
                 <version>3.10.1</version> <!-- 3.8.1 -->
             </plugin>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version> <!-- Use the latest version -->
+                <executions>
+                    <execution>
+                        <id>compile-kt</id>
+                        <goals>
+                            <goal>compile-custom</goal>
+                            <goal>test-compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <pluginId>kotlin</pluginId>
+                    <protocArtifact>com.google.protobuf:protoc:3.25.1:exe:${os.detected.classifier}</protocArtifact>
+                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/src/main/proto</protoSourceRoot>
+
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -331,7 +402,8 @@
 
         <dependency>
             <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
+            <artifactId>protobuf-kotlin</artifactId>
+            <version>${protobuf.version}</version>
         </dependency>
 
 
@@ -348,12 +420,6 @@
             <version>1.7</version>
         </dependency>
 
-        <!-- uProtocol core API library -->
-        <dependency>
-            <groupId>org.eclipse.uprotocol</groupId>
-            <artifactId>uprotocol-core-api</artifactId>
-            <version>1.5.2</version>
-        </dependency>
 
         <!-- JSON library for JUnit test cases -->
         <dependency>
