@@ -26,8 +26,6 @@ package org.eclipse.uprotocol.transport.builder
 
 import org.eclipse.uprotocol.uuid.factory.UuidFactory
 import org.eclipse.uprotocol.v1.*
-import org.eclipse.uprotocol.v1.UUID
-import java.util.*
 
 /**
  * Builder for easy construction of the UAttributes object.
@@ -36,16 +34,18 @@ class UAttributesBuilder
 /**
  * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
  *
- * @param id       Unique identifier for the message.
- * @param type     Message type such as Publish a state change, RPC request or RPC response.
- * @param priority uProtocol Prioritization classifications.
- */ private constructor(private val id: UUID, private val type: UMessageType, private val priority: UPriority) {
-    private var ttl: Int? = null
-    private var token: String? = null
-    private var sink: UUri? = null
+ * @param uuid       Unique identifier for the message.
+ * @param messageType     Message type such as Publish a state change, RPC request or RPC response.
+ * @param uPriority uProtocol Prioritization classifications.
+ */ private constructor(
+    private val uuid: UUID, private val messageType: UMessageType, private val uPriority: UPriority
+) {
+    private var timeToLive: Int? = null
+    private var tokenAttr: String? = null
+    private var sinkUUri: UUri? = null
     private var plevel: Int? = null
-    private var commstatus: Int? = null
-    private var reqid: UUID? = null
+    private var commStatus: Int? = null
+    private var reqId: UUID? = null
 
     /**
      * Add the time to live in milliseconds.
@@ -54,7 +54,7 @@ class UAttributesBuilder
      * @return Returns the UAttributesBuilder with the configured ttl.
      */
     fun withTtl(ttl: Int?): UAttributesBuilder {
-        this.ttl = ttl
+        timeToLive = ttl
         return this
     }
 
@@ -65,7 +65,7 @@ class UAttributesBuilder
      * @return Returns the UAttributesBuilder with the configured token.
      */
     fun withToken(token: String?): UAttributesBuilder {
-        this.token = token
+        tokenAttr = token
         return this
     }
 
@@ -76,7 +76,7 @@ class UAttributesBuilder
      * @return Returns the UAttributesBuilder with the configured sink.
      */
     fun withSink(sink: UUri?): UAttributesBuilder {
-        this.sink = sink
+        sinkUUri = sink
         return this
     }
 
@@ -98,7 +98,7 @@ class UAttributesBuilder
      * @return Returns the UAttributesBuilder with the configured commstatus.
      */
     fun withCommStatus(commstatus: Int?): UAttributesBuilder {
-        this.commstatus = commstatus
+        commStatus = commstatus
         return this
     }
 
@@ -109,7 +109,7 @@ class UAttributesBuilder
      * @return Returns the UAttributesBuilder with the configured reqid.
      */
     fun withReqId(reqid: UUID?): UAttributesBuilder {
-        this.reqid = reqid
+        reqId = reqid
         return this
     }
 
@@ -119,26 +119,29 @@ class UAttributesBuilder
      * @return Returns a constructed
      */
     fun build(): UAttributes {
-        val attributesBuilder = UAttributes.newBuilder().setId(id).setType(type).setPriority(priority)
-        if (sink != null) {
-            attributesBuilder.setSink(sink)
+        return uAttributes {
+            id = uuid
+            type = messageType
+            priority = uPriority
+            if (sinkUUri != null) {
+                sink = sinkUUri!!
+            }
+            if (timeToLive != null) {
+                ttl = timeToLive!!
+            }
+            if (plevel != null) {
+                permissionLevel = plevel!!
+            }
+            if (commStatus != null) {
+                commstatus = commStatus!!
+            }
+            if (reqId != null) {
+                reqid = reqId!!
+            }
+            if (tokenAttr != null) {
+                token = tokenAttr!!
+            }
         }
-        if (ttl != null) {
-            attributesBuilder.setTtl(ttl!!)
-        }
-        if (plevel != null) {
-            attributesBuilder.setPermissionLevel(plevel!!)
-        }
-        if (commstatus != null) {
-            attributesBuilder.setCommstatus(commstatus!!)
-        }
-        if (reqid != null) {
-            attributesBuilder.setReqid(reqid)
-        }
-        if (token != null) {
-            attributesBuilder.setToken(token)
-        }
-        return attributesBuilder.build()
     }
 
     companion object {
@@ -148,8 +151,9 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority.
          */
         fun publish(priority: UPriority): UAttributesBuilder {
-            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
-                    UMessageType.UMESSAGE_TYPE_PUBLISH, priority)
+            return UAttributesBuilder(
+                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+            )
         }
 
         /**
@@ -159,8 +163,9 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority and sink.
          */
         fun notification(priority: UPriority, sink: UUri): UAttributesBuilder {
-            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
-                    UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink)
+            return UAttributesBuilder(
+                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+            ).withSink(sink)
         }
 
         /**
@@ -171,8 +176,9 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
          */
         fun request(priority: UPriority, sink: UUri, ttl: Int): UAttributesBuilder {
-            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
-                    UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(ttl).withSink(sink)
+            return UAttributesBuilder(
+                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority
+            ).withTtl(ttl).withSink(sink)
         }
 
         /**
@@ -183,8 +189,9 @@ class UAttributesBuilder
          * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
          */
         fun response(priority: UPriority, sink: UUri, reqid: UUID): UAttributesBuilder {
-            return UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(),
-                    UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid)
+            return UAttributesBuilder(
+                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority
+            ).withSink(sink).withReqId(reqid)
         }
     }
 }

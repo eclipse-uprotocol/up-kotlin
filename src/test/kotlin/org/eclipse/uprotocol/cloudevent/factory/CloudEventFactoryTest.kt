@@ -26,11 +26,11 @@ import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
-import java.util.Objects
-import org.junit.jupiter.api.Assertions.*
+import java.util.*
 
 internal class CloudEventFactoryTest {
     @Test
@@ -42,18 +42,13 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source,
-            protoPayload.toByteArray(), protoPayload.typeUrl,
-            uCloudEventAttributes
+            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
@@ -78,22 +73,16 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source,
-            protoPayload.toByteArray(), protoPayload.typeUrl,
-            uCloudEventAttributes
+            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-            .withDataContentType(DATA_CONTENT_TYPE)
-            .withDataSchema(URI.create(protoPayload.typeUrl))
+            .withDataContentType(DATA_CONTENT_TYPE).withDataSchema(URI.create(protoPayload.typeUrl))
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
 
         // test all attributes
@@ -103,8 +92,7 @@ internal class CloudEventFactoryTest {
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
         assertEquals(DATA_CONTENT_TYPE, cloudEvent.dataContentType)
         assertEquals(
-            "type.googleapis.com/io.cloudevents.v1.CloudEvent",
-            Objects.requireNonNull(cloudEvent.dataSchema).toString()
+            "type.googleapis.com/io.cloudevents.v1.CloudEvent", Objects.requireNonNull(cloudEvent.dataSchema).toString()
         )
         assertFalse(cloudEvent.extensionNames.contains("sink"))
         assertEquals("somehash", cloudEvent.getExtension("hash"))
@@ -127,9 +115,7 @@ internal class CloudEventFactoryTest {
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source,
-            protoPayload.toByteArray(), protoPayload.typeUrl,
-            uCloudEventAttributes
+            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
@@ -155,11 +141,9 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).build()
         val cloudEvent: CloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
@@ -186,11 +170,9 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(3)
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
 
         // build the cloud event of type publish with destination - a notification
         val cloudEvent: CloudEvent = CloudEventFactory.notification(source, sink, protoPayload, uCloudEventAttributes)
@@ -220,15 +202,11 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).withToken("someOAuthToken").build()
         val cloudEvent: CloudEvent = CloudEventFactory.request(
-            applicationUriForRPC, serviceMethodUri,
-            protoPayload, uCloudEventAttributes
+            applicationUriForRPC, serviceMethodUri, protoPayload, uCloudEventAttributes
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
@@ -257,14 +235,15 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(3)
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
         val cloudEvent: CloudEvent = CloudEventFactory.response(
-            applicationUriForRPC, serviceMethodUri,
-            "requestIdFromRequestCloudEvent", protoPayload, uCloudEventAttributes
+            applicationUriForRPC,
+            serviceMethodUri,
+            "requestIdFromRequestCloudEvent",
+            protoPayload,
+            uCloudEventAttributes
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
@@ -290,13 +269,12 @@ internal class CloudEventFactoryTest {
         val serviceMethodUri = buildUriForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(3)
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
         val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
-            applicationUriForRPC, serviceMethodUri,
+            applicationUriForRPC,
+            serviceMethodUri,
             "requestIdFromRequestCloudEvent",
             UCode.INVALID_ARGUMENT_VALUE,
             uCloudEventAttributes
@@ -326,13 +304,12 @@ internal class CloudEventFactoryTest {
 
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(3)
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
         val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
-            applicationUriForRPC, serviceMethodUri,
+            applicationUriForRPC,
+            serviceMethodUri,
             "requestIdFromRequestCloudEvent",
             UCode.INVALID_ARGUMENT_VALUE,
             uCloudEventAttributes
@@ -351,26 +328,22 @@ internal class CloudEventFactoryTest {
     }
 
     private fun buildUriForTest(): String {
-        val uri: UUri = UUri.newBuilder()
-            .setEntity(UEntity.newBuilder().setName("body.access"))
-            .setResource(
-                UResource.newBuilder()
-                    .setName("door")
-                    .setInstance("front_left")
-                    .setMessage("Door")
-            )
-            .build()
+        val uri: UUri = uUri {
+            entity = uEntity { name = "body.access" }
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
+
         return LongUriSerializer.instance().serialize(uri)
     }
 
     private fun buildProtoPayloadForTest(): Any {
-        val cloudEventProto: io.cloudevents.v1.proto.CloudEvent = io.cloudevents.v1.proto.CloudEvent.newBuilder()
-            .setSpecVersion("1.0")
-            .setId("hello")
-            .setSource("https://example.com")
-            .setType("example.demo")
-            .setProtoData(Any.newBuilder().build())
-            .build()
+        val cloudEventProto: io.cloudevents.v1.proto.CloudEvent =
+            io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
+                .setSource("https://example.com").setType("example.demo").setProtoData(Any.newBuilder().build()).build()
         return Any.pack(cloudEventProto)
     }
 

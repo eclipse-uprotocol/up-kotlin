@@ -23,10 +23,11 @@ package org.eclipse.uprotocol.cloudevent.validate
 
 import org.eclipse.uprotocol.v1.UCode
 import org.eclipse.uprotocol.v1.UStatus
+import org.eclipse.uprotocol.v1.uStatus
+import org.eclipse.uprotocol.validation.ValidationResult
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-import org.eclipse.uprotocol.validation.ValidationResult
 
 internal class ValidationResultTest {
     @Test
@@ -82,7 +83,10 @@ internal class ValidationResultTest {
     @DisplayName("Test failure toStatus")
     fun test_failure_validation_result_toStatus() {
         val failure: ValidationResult = ValidationResult.failure("boom")
-        val status: UStatus = UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build()
+        val status: UStatus = uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }
         assertEquals(status, failure.toStatus())
     }
 }

@@ -23,6 +23,7 @@ package org.eclipse.uprotocol.rpc
 
 import org.eclipse.uprotocol.v1.UCode
 import org.eclipse.uprotocol.v1.UStatus
+import org.eclipse.uprotocol.v1.uStatus
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -99,7 +100,10 @@ internal class RpcResultTest {
     fun testFailureValue_onFailure_() {
         val result: RpcResult<Int> = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom")
         val resultValue: UStatus = result.failureValue
-        assertEquals(UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build(), resultValue)
+        assertEquals(uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }, resultValue)
     }
 
     private val default: Int
@@ -133,7 +137,10 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom")
         val mapped: RpcResult<Int> = result.map { x -> x * 2 }
         assertTrue(mapped.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build(), mapped.failureValue)
+        assertEquals(uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }, mapped.failureValue)
     }
 
     @Test
@@ -162,7 +169,10 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom")
         val flatMapped: RpcResult<Int> = result.flatMap { x -> RpcResult.success(x * 2) }
         assertTrue(flatMapped.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build(), flatMapped.failureValue)
+        assertEquals(uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }, flatMapped.failureValue)
     }
 
     @Test
@@ -170,7 +180,10 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.success(2)
         val filterResult: RpcResult<Int> = result.filter { i -> i > 5 }
         assertTrue(filterResult.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).setMessage("filtered out").build(), filterResult.failureValue)
+        assertEquals(uStatus {
+            code = UCode.FAILED_PRECONDITION
+            message = "filtered out"
+        }, filterResult.failureValue)
     }
 
     @Test
@@ -186,7 +199,10 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.success(2)
         val filterResult: RpcResult<Int> = result.filter { x: Int -> predicateThatThrowsAnException(x) }
         assertTrue(filterResult.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("2 went boom").build(), filterResult.failureValue)
+        assertEquals(uStatus {
+            code = UCode.UNKNOWN
+            message = "2 went boom"
+        }, filterResult.failureValue)
     }
 
     private fun predicateThatThrowsAnException(x: Int): Boolean {
@@ -198,7 +214,10 @@ internal class RpcResultTest {
         val result: RpcResult<Int> = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom")
         val filterResult: RpcResult<Int> = result.filter { i -> i > 5 }
         assertTrue(filterResult.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build(), filterResult.failureValue)
+        assertEquals(uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }, filterResult.failureValue)
     }
 
     @Test
@@ -226,7 +245,10 @@ internal class RpcResultTest {
         val mapped: RpcResult<RpcResult<Int>> = result.map { x: Int -> multiplyBy2(x) }
         val mappedFlattened: RpcResult<Int> = RpcResult.flatten(mapped)
         assertTrue(mappedFlattened.isFailure)
-        assertEquals(UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build(), mappedFlattened.failureValue)
+        assertEquals(uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = "boom"
+        }, mappedFlattened.failureValue)
     }
 
     private fun multiplyBy2(x: Int): RpcResult<Int> {
@@ -242,11 +264,13 @@ internal class RpcResultTest {
     @Test
     fun testToStringFailure() {
         val result: RpcResult<Int> = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom")
-        assertEquals("""
+        assertEquals(
+            """
     Failure(code: INVALID_ARGUMENT
     message: "boom"
     )
-    """.trimIndent(), result.toString())
+    """.trimIndent(), result.toString()
+        )
     }
 
 }

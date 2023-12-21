@@ -92,7 +92,6 @@ internal class UCloudEventTest {
     }
 
 
-
     @Test
     @DisplayName("Test extracting the hash from a CloudEvent when the hash exists.")
     fun test_extract_hash_from_cloudevent_when_hash_exists() {
@@ -181,8 +180,7 @@ internal class UCloudEventTest {
 
     @Test
     @DisplayName(
-        "Test a CloudEvent has a platform communication error when the platform communication error does " +
-                "not" + " exist."
+        "Test a CloudEvent has a platform communication error when the platform communication error does " + "not" + " exist."
     )
     fun test_cloudevent_has_platform_error_when_platform_error_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
@@ -193,8 +191,7 @@ internal class UCloudEventTest {
 
     @Test
     @DisplayName(
-        "Test extracting the platform communication error from a CloudEvent when the platform communication "
-                + "error exists but in the wrong format."
+        "Test extracting the platform communication error from a CloudEvent when the platform communication " + "error exists but in the wrong format."
     )
     fun test_extract_platform_error_from_cloudevent_when_platform_error_exists_in_wrong_format() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("commstatus", "boom")
@@ -205,13 +202,11 @@ internal class UCloudEventTest {
 
     @Test
     @DisplayName(
-        "Test extracting the platform communication error from a CloudEvent when the platform communication "
-                + "error exists."
+        "Test extracting the platform communication error from a CloudEvent when the platform communication " + "error exists."
     )
     fun test_extract_platform_error_from_cloudevent_when_platform_error_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension(
-            "commstatus",
-            UCode.INVALID_ARGUMENT_VALUE
+            "commstatus", UCode.INVALID_ARGUMENT_VALUE
         )
         val cloudEvent: CloudEvent = builder.build()
         val communicationStatus: Int = UCloudEvent.getCommunicationStatus(cloudEvent)
@@ -220,8 +215,7 @@ internal class UCloudEventTest {
 
     @Test
     @DisplayName(
-        "Test extracting the platform communication error from a CloudEvent when the platform communication "
-                + "error does not exist."
+        "Test extracting the platform communication error from a CloudEvent when the platform communication " + "error does not exist."
     )
     fun test_extract_platform_error_from_cloudevent_when_platform_error_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
@@ -318,16 +312,15 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds " + "with creation date of now.")
     fun test_cloudevent_is_not_expired_cd_when_ttl_500_mili_with_creation_date_of_now() {
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withTime(OffsetDateTime.now())
-            .withExtension("ttl", 500)
+        val builder: CloudEventBuilder =
+            buildBaseCloudEventBuilderForTest().withTime(OffsetDateTime.now()).withExtension("ttl", 500)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent))
     }
 
     @Test
     @DisplayName(
-        "Test if the CloudEvent is expired using creation date when configured ttl is 500 milliseconds with "
-                + "creation date of yesterday."
+        "Test if the CloudEvent is expired using creation date when configured ttl is 500 milliseconds with " + "creation date of yesterday."
     )
     fun test_cloudevent_is_expired_cd_when_ttl_500_mili_with_creation_date_of_yesterday() {
         val yesterday: OffsetDateTime = OffsetDateTime.now().minus(1, ChronoUnit.DAYS)
@@ -382,8 +375,8 @@ internal class UCloudEventTest {
     fun test_cloudevent_is_not_expired_when_ttl_is_large_number_mili() {
         val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
         val strUuid = LongUuidSerializer.instance().serialize(uuid)
-        val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE)
-            .withId(strUuid)
+        val builder: CloudEventBuilder =
+            buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isExpired(cloudEvent))
     }
@@ -424,8 +417,10 @@ internal class UCloudEventTest {
     @DisplayName("Test if the CloudEvent does not have a UUIDV8 id.")
     fun test_cloudevent_does_not_have_a_UUIDV8_id() {
         val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
-        val uuid: UUID = UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
-            .setLsb(uuidJava.leastSignificantBits).build()
+        val uuid: UUID = uUID {
+            msb = uuidJava.mostSignificantBits
+            lsb = uuidJava.leastSignificantBits
+        }
         val strUuid = LongUuidSerializer.instance().serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
@@ -463,8 +458,7 @@ internal class UCloudEventTest {
         val cloudEventData: ByteArray = payloadForCloudEvent.toByteArray()
         val cloudEventBuilder: CloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
-            .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
-            .withData(cloudEventData)
+            .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent")).withData(cloudEventData)
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         val data: CloudEventData? = cloudEvent.data
         val dataAsAny: Any = Any.parseFrom(data!!.toBytes())
@@ -523,8 +517,7 @@ internal class UCloudEventTest {
             .withDataSchema(URI.create(payloadForCloudEvent.typeUrl)).withData(cloudEventData)
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         val extracted: Optional<io.cloudevents.v1.proto.CloudEvent> = UCloudEvent.unpack(
-            cloudEvent,
-            io.cloudevents.v1.proto.CloudEvent::class.java
+            cloudEvent, io.cloudevents.v1.proto.CloudEvent::class.java
         )
         assertTrue(extracted.isPresent)
         val unpackedCE: io.cloudevents.v1.proto.CloudEvent = extracted.get()
@@ -543,8 +536,7 @@ internal class UCloudEventTest {
             .withData("<html><head></head><body><p>Hello</p></body></html>".toByteArray())
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         val extracted: Optional<io.cloudevents.v1.proto.CloudEvent> = UCloudEvent.unpack(
-            cloudEvent,
-            io.cloudevents.v1.proto.CloudEvent::class.java
+            cloudEvent, io.cloudevents.v1.proto.CloudEvent::class.java
         )
         assertTrue(extracted.isEmpty)
     }
@@ -557,8 +549,8 @@ internal class UCloudEventTest {
             buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest))
         val cloudEvent: CloudEvent = builder.build()
         val prettyPrint: String = UCloudEvent.toString(cloudEvent)
-        val expected = ("CloudEvent{id='testme', source='/body.access//door.front_left#Door', " + "sink='//bo"
-                + ".cloud/petapp/1/rpc.response', type='pub.v1'}")
+        val expected =
+            ("CloudEvent{id='testme', source='/body.access//door.front_left#Door', " + "sink='//bo" + ".cloud/petapp/1/rpc.response', type='pub.v1'}")
         assertEquals(expected, prettyPrint)
     }
 
@@ -578,6 +570,7 @@ internal class UCloudEventTest {
         val expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', type='pub.v1'}"
         assertEquals(expected, prettyPrint)
     }
+
     @Test
     @DisplayName("Test the type for a publish message type")
     fun test_type_for_publish() {
@@ -606,28 +599,34 @@ internal class UCloudEventTest {
         val uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_UNSPECIFIED)
         assertTrue(uCloudEventType.isBlank())
     }
+
     private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {
         // source
-        val uUri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
-            .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
-            .build()
+        val uUri: UUri = uUri {
+            entity = uEntity { name = "body.access" }
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
+
         val source: String = LongUriSerializer.instance().serialize(uUri)
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
-            "somehash"
-        ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
-            "someOAuthToken"
-        )
-            .build()
+        val uCloudEventAttributes: UCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
+                "somehash"
+            ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
+                "someOAuthToken"
+            ).build()
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source,
-            protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
+            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         return cloudEventBuilder

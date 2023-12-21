@@ -8,7 +8,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
 
 == Examples
 
-[source,java]
+[source,kotlin]
 ----
     final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
     final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);

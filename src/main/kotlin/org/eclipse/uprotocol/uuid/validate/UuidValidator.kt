@@ -25,10 +25,11 @@
 package org.eclipse.uprotocol.uuid.validate
 
 import com.github.f4b6a3.uuid.enums.UuidVariant
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils
+import org.eclipse.uprotocol.v1.UCode
+import org.eclipse.uprotocol.v1.UStatus
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uStatus
 import org.eclipse.uprotocol.validation.ValidationResult
 import java.util.*
 
@@ -37,9 +38,7 @@ import java.util.*
  */
 abstract class UuidValidator {
     enum class Validators(private val uuidValidator: UuidValidator) {
-        UNKNOWN(InvalidValidator()),
-        UUIDV6(UUIDv6Validator()),
-        UPROTOCOL(UUIDv8Validator());
+        UNKNOWN(InvalidValidator()), UUIDV6(UUIDv6Validator()), UPROTOCOL(UUIDv8Validator());
 
         fun validator(): UuidValidator {
             return uuidValidator
@@ -48,17 +47,14 @@ abstract class UuidValidator {
 
     fun validate(uuid: UUID?): UStatus {
         val errorMessages = listOf(
-                validateVersion(uuid),
-                validateVariant(uuid),
-                validateTime(uuid)
-        )
-                .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
+            validateVersion(uuid), validateVariant(uuid), validateTime(uuid)
+        ).filter { it.isFailure() }.joinToString(",") { it.getMessage() }
 
         return if (errorMessages.isBlank()) ValidationResult.success().toStatus()
-        else UStatus.newBuilder()
-                .setCode(UCode.INVALID_ARGUMENT)
-                .setMessage(errorMessages)
-                .build()
+        else uStatus {
+            code = UCode.INVALID_ARGUMENT
+            message = errorMessages
+        }
     }
 
 

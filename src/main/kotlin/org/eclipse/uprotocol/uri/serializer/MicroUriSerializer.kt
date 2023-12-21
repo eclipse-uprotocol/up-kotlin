@@ -24,16 +24,13 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.util.Arrays
-import java.util.Optional
+import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UUri
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import com.google.protobuf.ByteString
+import org.eclipse.uprotocol.v1.*
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.*
 
 /**
  * UUri Serializer that serializes a UUri to a byte[] (micro format) per
@@ -44,10 +41,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
      * The type of address used for Micro URI.
      */
     private enum class AddressType(private val value: Int) {
-        LOCAL(0),
-        IPv4(1),
-        IPv6(2),
-        ID(3);
+        LOCAL(0), IPv4(1), IPv6(2), ID(3);
 
         fun getValue(): Byte {
             return value.toByte()
@@ -55,9 +49,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
 
         companion object {
             fun from(value: Int): Optional<AddressType> {
-                return Arrays.stream(entries.toTypedArray())
-                    .filter { p -> p.getValue().toInt() == value }
-                    .findAny()
+                return Arrays.stream(entries.toTypedArray()).filter { p -> p.getValue().toInt() == value }.findAny()
             }
         }
     }
@@ -84,9 +76,11 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                     4 -> {
                         AddressType.IPv4
                     }
+
                     16 -> {
                         AddressType.IPv6
                     }
+
                     else -> {
                         return ByteArray(0)
                     }
@@ -177,36 +171,37 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         // Calculate uAuthority
         var uAuthority: UAuthority? = null
         when (addressType) {
-            AddressType.IPv4, AddressType.IPv6 -> uAuthority = UAuthority.newBuilder().setIp(
-                ByteString.copyFrom(
-                    uri, 8,
-                    if (addressType == AddressType.IPv4) 4 else 16
+
+            AddressType.IPv4, AddressType.IPv6 -> uAuthority = uAuthority {
+                ip = ByteString.copyFrom(
+                    uri, 8, if (addressType == AddressType.IPv4) 4 else 16
                 )
-            ).build()
+            }
 
             AddressType.ID -> {
                 val length: Int = uri[8].toUByte().toInt()
-                uAuthority = UAuthority.newBuilder().setId(
-                    ByteString.copyFrom(
-                        uri, 9,
-                        length
+
+                uAuthority = uAuthority {
+                    id = ByteString.copyFrom(
+                        uri, 9, length
                     )
-                ).build()
+                }
             }
 
             else -> {}
         }
-        val uriBuilder: UUri.Builder = UUri.newBuilder()
-            .setEntity(
-                UEntity.newBuilder()
-                    .setId(ueId)
-                    .setVersionMajor(uiVersion)
-            )
-            .setResource(UResourceBuilder.fromId(uResourceId))
-        if (uAuthority != null) {
-            uriBuilder.setAuthority(uAuthority)
+
+        return uUri {
+            entity = uEntity {
+                id = ueId
+                versionMajor = uiVersion
+            }
+            resource = UResourceBuilder.fromId(uResourceId)
+
+            if (uAuthority != null) {
+                authority = uAuthority
+            }
         }
-        return uriBuilder.build()
     }
 
     companion object {

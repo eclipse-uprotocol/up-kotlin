@@ -24,8 +24,9 @@
 
 package org.eclipse.uprotocol.validation
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UCode
+import org.eclipse.uprotocol.v1.UStatus
+import org.eclipse.uprotocol.v1.uStatus
 import java.util.*
 
 /**
@@ -34,7 +35,10 @@ import java.util.*
 sealed class ValidationResult {
 
     companion object {
-        val STATUS_SUCCESS: UStatus = UStatus.newBuilder().setCode(UCode.OK).setMessage("OK").build()
+        val STATUS_SUCCESS: UStatus = uStatus {
+            code = UCode.OK
+            message = "OK"
+        }
         private val SUCCESS: ValidationResult = Success
 
         fun success(): ValidationResult = SUCCESS
@@ -44,18 +48,22 @@ sealed class ValidationResult {
     fun isFailure(): Boolean {
         return !isSuccess()
     }
+
     abstract fun toStatus(): UStatus
     abstract fun isSuccess(): Boolean
     abstract fun getMessage(): String
 
-    class Failure(private val message: String) : ValidationResult() {
+    class Failure(private val msg: String) : ValidationResult() {
 
         init {
-            Objects.requireNonNull(message)
+            Objects.requireNonNull(msg)
         }
 
         override fun toStatus(): UStatus {
-            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(message).build()
+            return uStatus {
+                code = UCode.INVALID_ARGUMENT
+                message = msg
+            }
         }
 
         override fun isSuccess(): Boolean {
@@ -63,11 +71,11 @@ sealed class ValidationResult {
         }
 
         override fun getMessage(): String {
-            return message
+            return msg
         }
 
         override fun toString(): String {
-            return "ValidationResult.Failure(message='$message')"
+            return "ValidationResult.Failure(message='$msg')"
         }
     }
 
