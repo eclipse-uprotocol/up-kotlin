@@ -27,7 +27,7 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
           entity = use
           resource = res
       }
-      String source = LongUriSerializer.instance().serialize(uri);
+      source: String = LongUriSerializer.instance().serialize(uri)
 ----
 
 === Build proto payload
@@ -35,14 +35,14 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
 
 ----
 
-    io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
+    val cloudEventProto: io.cloudevents.v1.proto.CloudEvent = io.cloudevents.v1.proto.CloudEvent.newBuilder()
             .setSpecVersion("1.0")
             .setId("hello")
             .setSource("https://example.com")
             .setType("example.demo")
             .setProtoData(Any.newBuilder().build())
-            .build();
-    Any proto_payload= Any.pack(cloudEventProto);
+            .build()
+    Any proto_payload= Any.pack(cloudEventProto)
 
 
 ----
@@ -52,13 +52,12 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
 
 ----
 
-
-UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
-                .withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1)
-                .withTtl(3)
-                .withToken("someOAuthToken")
-                .build();
+val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
+            .withHash("somehash")
+            .withPriority(UPriority.UPRIORITY_CS1)
+            .withTtl(3)
+            .withToken("someOAuthToken")
+            .build()
 
 ----
 
@@ -68,17 +67,17 @@ UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEv
 ----
 
 
-CloudEvent cloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes);
+val cloudEvent: CloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
 # test all attributes
- assertEquals("1.0", cloudEvent.getSpecVersion().toString());
- assertNotNull(cloudEvent.getId());
- assertEquals(source, cloudEvent.getSource().toString());
- assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
- assertFalse(cloudEvent.getExtensionNames().contains("sink"));
- assertEquals("somehash", cloudEvent.getExtension("hash"));
- assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
- assertEquals(3, cloudEvent.getExtension("ttl"));
- assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
+ assertEquals("1.0", cloudEvent.getSpecVersion().toString())
+ assertNotNull(cloudEvent.getId())
+ assertEquals(source, cloudEvent.getSource().toString())
+ assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType())
+ assertFalse(cloudEvent.getExtensionNames().contains("sink"))
+ assertEquals("somehash", cloudEvent.getExtension("hash"))
+ assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"))
+ assertEquals(3, cloudEvent.getExtension("ttl"))
+ assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes())
 
 
 ----
@@ -89,18 +88,18 @@ CloudEvent cloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEv
 
 ----
 
-UMessage result = UCloudEvent.toMessage(cloudEvent);
-assertNotNull(result);
-assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent());
-assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent());
-assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl());
-assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
-assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+val result: UMessage = UCloudEvent.toMessage(cloudEvent)
+assertNotNull(result)
+assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent())
+assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent())
+assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl())
+assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue())
+assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()))
+assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent())
+assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()))
 
-final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
-assertEquals(cloudEvent,cloudEvent1);
+val cloudEvent1: CloudEvent = UCloudEvent.fromMessage(result)
+assertEquals(cloudEvent,cloudEvent1)
 
 
 ----

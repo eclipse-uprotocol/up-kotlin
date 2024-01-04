@@ -211,7 +211,6 @@
                                 <argument>${git.tag.name}</argument>
                                 <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
                                 <argument>${project.build.directory}/uprotocol-core-api</argument>
-                                neelam-kushwah marked this conversation as resolved.
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
