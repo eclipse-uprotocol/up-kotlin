@@ -10,29 +10,29 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
 
 [source,kotlin]
 ----
-    final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-    final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
-    final Optional<Long> time = UuidUtils.getTime(uuid);
-    final Optional<byte[]> bytes = UuidUtils.toBytes(uuid);
-    final Optional<String> uuidString = UuidUtils.toString(uuid);
+    val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
+    val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid);
+    val time: Optional<Long> = UuidUtils.getTime(uuid);
+    val bytes = MicroUuidSerializer.instance().serialize(uuid)
+    val uuidString = LongUuidSerializer.instance().serialize(uuid)
 
-    assertNotNull(uuid);
-    assertTrue(UuidUtils.isUProtocol(uuid));
-    assertTrue(UuidUtils.isUuid(uuid));
-    assertFalse(UuidUtils.isUuidv6(uuid));
-    assertTrue(version.isPresent());
-    assertTrue(time.isPresent());
-    assertEquals(time.get(), now.toEpochMilli());
-    
-    assertTrue(bytes.isPresent());
-    assertTrue(uuidString.isPresent());
+    assertNotNull(uuid)
+    assertFalse(UuidUtils.isUuidv6(uuid))
+    assertFalse(UuidUtils.isUProtocol(uuid))
+    assertTrue(version.isPresent)
+    assertEquals(version.get(), UuidUtils.Version.VERSION_UNKNOWN)
+    assertFalse(time.isPresent)
+    assertTrue(bytes.isNotEmpty())
+    assertFalse(uuidString.isBlank())
+    assertFalse(UuidUtils.isUuidv6(null))
+    assertFalse(UuidUtils.isUProtocol(null))
+    assertFalse(UuidUtils.isUuid(null))
 
-    final Optional<UUID> uuid1 = UuidUtils.fromBytes(bytes.get());
+    val uuid1: UUID = MicroUuidSerializer.instance().deserialize(bytes)
+    assertTrue(uuid1 == UUID.getDefaultInstance())
+    assertEquals(uuid, uuid1)
 
-    assertTrue(uuid1.isPresent());
-    assertEquals(uuid, uuid1.get());
-
-    final Optional<UUID> uuid2 = UuidUtils.fromString(uuidString.get());
-    assertTrue(uuid2.isPresent());
-    assertEquals(uuid, uuid2.get());
+    val uuid2: UUID = LongUuidSerializer.instance().deserialize(uuidString)
+    assertTrue(uuid2 == UUID.getDefaultInstance())
+    assertEquals(uuid, uuid2)
 ----

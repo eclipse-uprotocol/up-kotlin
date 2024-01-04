@@ -42,7 +42,7 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
             .setType("example.demo")
             .setProtoData(Any.newBuilder().build())
             .build()
-    Any proto_payload= Any.pack(cloudEventProto)
+    val proto_payload: Any = Any.pack(cloudEventProto)
 
 
 ----
