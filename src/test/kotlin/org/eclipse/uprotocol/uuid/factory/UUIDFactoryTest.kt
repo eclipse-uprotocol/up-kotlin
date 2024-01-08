@@ -24,6 +24,7 @@ package org.eclipse.uprotocol.uuid.factory
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.uuid.serializer.MicroUuidSerializer
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -163,7 +164,10 @@ class UUIDFactoryTest {
     @DisplayName("Test UuidUtils for Random UUID")
     fun test_uuidutils_for_random_uuid() {
         val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
-        val uuid: UUID = UUID.newBuilder().setMsb(uuidJava.mostSignificantBits).setLsb(uuidJava.leastSignificantBits).build()
+        val uuid: UUID = uUID {
+            msb = uuidJava.mostSignificantBits
+            lsb = uuidJava.leastSignificantBits
+        }
         val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
         val time: Optional<Long> = UuidUtils.getTime(uuid)
         val bytes = MicroUuidSerializer.instance().serialize(uuid)
@@ -189,7 +193,10 @@ class UUIDFactoryTest {
     @Test
     @DisplayName("Test UuidUtils for empty UUID")
     fun test_uuidutils_for_empty_uuid() {
-        val uuid: UUID = UUID.newBuilder().setMsb(0L).setLsb(0L).build()
+        val uuid: UUID = uUID {
+            msb = 0L
+            lsb = 0L
+        }
         val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
         val time: Optional<Long> = UuidUtils.getTime(uuid)
         val bytes = MicroUuidSerializer.instance().serialize(uuid)
@@ -229,7 +236,10 @@ class UUIDFactoryTest {
     @Test
     @DisplayName("Test UuidUtils fromString an invalid built UUID")
     fun test_uuidutils_from_invalid_uuid() {
-        val uuid = UUID.newBuilder().setMsb((9 shl 12).toLong()).setLsb(0L).build() // Invalid UUID type
+        val uuid = uUID {
+            msb = (9 shl 12).toLong()
+            lsb = 0L
+        } // Invalid UUID type
         assertFalse(UuidUtils.getVersion(uuid).isPresent)
         assertFalse(UuidUtils.getTime(uuid).isPresent)
         assertTrue(MicroUuidSerializer.instance().serialize(uuid).isNotEmpty())
@@ -243,18 +253,18 @@ class UUIDFactoryTest {
     @Test
     @DisplayName("Test UuidUtils fromString with invalid string")
     fun test_uuidutils_fromstring_with_invalid_string() {
-        val  uuid:UUID = LongUuidSerializer.instance().deserialize(null)
+        val uuid: UUID = LongUuidSerializer.instance().deserialize(null)
         assertTrue(uuid == UUID.getDefaultInstance())
-        val  uuid1:UUID = LongUuidSerializer.instance().deserialize("")
+        val uuid1: UUID = LongUuidSerializer.instance().deserialize("")
         assertTrue(uuid1 == UUID.getDefaultInstance())
     }
 
     @Test
     @DisplayName("Test UuidUtils fromBytes with invalid bytes")
     fun test_uuidutils_frombytes_with_invalid_bytes() {
-        val  uuid:UUID = MicroUuidSerializer.instance().deserialize(null)
+        val uuid: UUID = MicroUuidSerializer.instance().deserialize(null)
         assertTrue(uuid == UUID.getDefaultInstance())
-        val uuid1:UUID= MicroUuidSerializer.instance().deserialize(ByteArray(0))
+        val uuid1: UUID = MicroUuidSerializer.instance().deserialize(ByteArray(0))
         assertTrue(uuid1 == UUID.getDefaultInstance())
     }
 

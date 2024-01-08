@@ -21,24 +21,34 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.*
+import java.util.*
 
 class UriSerializerTest {
     @Test
     @DisplayName("Test build resolve with valid long and micro uri")
     fun test_build_resolved_valid_long_micro_uri() {
-        val longUUri: UUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("testauth").build())
-            .setEntity(UEntity.newBuilder().setName("neelam"))
-            .setResource(UResource.newBuilder().setName("rpc").setInstance("response").build()).build()
-        val microUUri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
-            .setResource(UResource.newBuilder().setId(39999)).build()
+        val longUUri: UUri = uUri {
+            authority = uAuthority { name = "testauth" }
+            entity = uEntity { name = "neelam" }
+            resource = uResource {
+                name = "rpc"
+                instance = "response"
+            }
+        }
+
+        val microUUri: UUri = uUri {
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 39999 }
+        }
+
+
         val microuri: ByteArray = MicroUriSerializer.instance().serialize(microUUri)
         val longuri: String = LongUriSerializer.instance().serialize(longUUri)
         val resolvedUUri: Optional<UUri> = LongUriSerializer.instance().buildResolved(longuri, microuri)

@@ -21,21 +21,18 @@
 package org.eclipse.uprotocol.uri.validator
 
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 
 internal class UriValidatorTest {
     @Test
@@ -403,9 +400,16 @@ internal class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri has authority but missing remote case")
     fun test_rpc_method_uri_invalid_when_uri_is_remote_missing_authority_remotecase() {
-        val uuri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access").build())
-            .setResource(UResource.newBuilder().setName("rpc").setInstance("UpdateDoor").build())
-            .setAuthority(UAuthority.newBuilder().build()).build()
+        val uuri: UUri = uUri {
+            entity = uEntity { name = "body.access" }
+            resource = uResource {
+                name = "rpc"
+                instance = "UpdateDoor"
+            }
+            authority = uAuthority { }
+        }
+
+
         val status: ValidationResult = UriValidator.validateRpcMethod(uuri)
         assertTrue(status.isFailure())
         assertEquals("Uri is remote missing uAuthority.", status.getMessage())
@@ -509,8 +513,14 @@ internal class UriValidatorTest {
     @DisplayName("Test valid rpc response uri")
     @Throws(IOException::class)
     fun test_valid_rpc_response_uri() {
-        val uuri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build())
-            .setResource(UResource.newBuilder().setName("rpc").setId(19999).build()).build()
+        val uuri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource {
+                name = "rpc"
+                id = 19999
+            }
+        }
+
         val status: ValidationResult = UriValidator.validateRpcResponse(uuri)
         assertTrue(UriValidator.isRpcResponse(uuri))
         assertTrue(status.isSuccess())

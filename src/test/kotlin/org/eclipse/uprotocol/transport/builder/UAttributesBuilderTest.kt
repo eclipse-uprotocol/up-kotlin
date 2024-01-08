@@ -22,9 +22,9 @@ package org.eclipse.uprotocol.transport.builder
 
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 
 class UAttributesBuilderTest {
@@ -97,16 +97,23 @@ class UAttributesBuilderTest {
     }
 
     private fun buildSink(): UUri {
-        return UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.someVin.veh.ultifi.gm.com"))
-            .setEntity(UEntity.newBuilder().setName("petapp.ultifi.gm.com").setVersionMajor(1))
-            .setResource(UResourceBuilder.forRpcResponse()).build()
+        return uUri {
+            authority = uAuthority { name = "vcu.someVin.veh.ultifi.gm.com" }
+            entity = uEntity {
+                name = "petapp.ultifi.gm.com"
+                versionMajor = 1
+            }
+            resource = UResourceBuilder.forRpcResponse()
+        }
+
     }
 
     private val uUID: UUID
         get() {
             val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
-            return UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
-                .setLsb(uuidJava.leastSignificantBits)
-                .build()
+            return uUID {
+                msb = uuidJava.mostSignificantBits
+                lsb = uuidJava.leastSignificantBits
+            }
         }
 }

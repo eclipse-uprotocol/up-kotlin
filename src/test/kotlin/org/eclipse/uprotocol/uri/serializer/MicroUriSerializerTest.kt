@@ -23,16 +23,13 @@ package org.eclipse.uprotocol.uri.serializer
 import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.InetAddress
 import java.net.UnknownHostException
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 
 class MicroUriSerializerTest {
     @Test
@@ -56,8 +53,14 @@ class MicroUriSerializerTest {
     @Test
     @DisplayName("Test happy path Byte serialization of local UUri")
     fun test_serialize_uri() {
-        val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-            .setResource(UResource.newBuilder().setId(19999).build()).build()
+        val uri: UUri = uUri {
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertEquals(uri, uri2)
@@ -66,9 +69,15 @@ class MicroUriSerializerTest {
     @Test
     @DisplayName("Test Serialize a remote UUri to micro without the address")
     fun test_serialize_remote_uri_without_address() {
-        val uri: UUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.vin").build())
-            .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-            .setResource(UResource.newBuilder().setId(19999).build()).build()
+        val uri: UUri = uUri {
+            authority = uAuthority { name = "vcu.vin" }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         assertTrue(bytes.isEmpty())
     }
@@ -76,8 +85,12 @@ class MicroUriSerializerTest {
     @Test
     @DisplayName("Test serialize Uri missing uE ID")
     fun test_serialize_uri_missing_ids() {
-        val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build())
-            .setResource(UResourceBuilder.forRpcResponse()).build()
+        val uri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = UResourceBuilder.forRpcResponse()
+        }
+
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         assertTrue(bytes.isEmpty())
     }
@@ -85,7 +98,8 @@ class MicroUriSerializerTest {
     @Test
     @DisplayName("Test serialize Uri missing resource")
     fun test_serialize_uri_missing_resource_id() {
-        val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build()).build()
+        val uri: UUri = uUri { entity = uEntity { name = "hartley" } }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         assertTrue(bytes.isEmpty())
     }
@@ -135,10 +149,16 @@ class MicroUriSerializerTest {
     @DisplayName("Test serialize with good IPv4 based authority")
     @Throws(UnknownHostException::class)
     fun test_serialize_good_ipv4_based_authority() {
-        val uri: UUri = UUri.newBuilder().setAuthority(
-            UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").address)).build()
-        ).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-            .setResource(UResourceBuilder.forRpcRequest(99)).build()
+        val uri: UUri = uUri {
+            authority = uAuthority { ip = ByteString.copyFrom(InetAddress.getByName("10.0.3.3").address) }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = UResourceBuilder.forRpcRequest(99)
+        }
+
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(bytes.isNotEmpty())
@@ -152,14 +172,20 @@ class MicroUriSerializerTest {
     @DisplayName("Test serialize with good IPv6 based authority")
     @Throws(UnknownHostException::class)
     fun test_serialize_good_ipv6_based_authority() {
-        val uri: UUri = UUri.newBuilder().setAuthority(
-            UAuthority.newBuilder().setIp(
-                ByteString.copyFrom(
+        val uri: UUri = uUri {
+            authority = uAuthority {
+                ip = ByteString.copyFrom(
                     InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334").address
                 )
-            ).build()
-        ).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-            .setResource(UResource.newBuilder().setId(19999).build()).build()
+            }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(UriValidator.isMicroForm(uri))
@@ -176,10 +202,15 @@ class MicroUriSerializerTest {
         for (i in 0 until size) {
             byteArray[i] = i.toByte()
         }
-        val uri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build())
-                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-                .setResource(UResource.newBuilder().setId(19999).build()).build()
+        val uri: UUri = uUri {
+            authority = uAuthority { id = ByteString.copyFrom(byteArray) }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
         assertTrue(UriValidator.isMicroForm(uri))
@@ -192,10 +223,17 @@ class MicroUriSerializerTest {
     @Throws(UnknownHostException::class)
     fun test_serialize_bad_length_ip_based_authority() {
         val byteArray = byteArrayOf(127, 1, 23, 123, 12, 6)
-        val uri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(byteArray)).build())
-                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-                .setResource(UResource.newBuilder().setId(19999).build()).build()
+        val uri: UUri = uUri {
+            authority = uAuthority {
+                ip = ByteString.copyFrom(byteArray)
+            }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         assertTrue(bytes.isEmpty())
     }
@@ -209,10 +247,15 @@ class MicroUriSerializerTest {
         for (i in 0 until size) {
             byteArray[i] = i.toByte()
         }
-        val uri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build())
-                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
-                .setResource(UResource.newBuilder().setId(19999).build()).build()
+        val uri: UUri = uUri {
+            authority = uAuthority { id = ByteString.copyFrom(byteArray) }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         assertEquals(bytes.size, 9 + size)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)

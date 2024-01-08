@@ -24,6 +24,7 @@
 package org.eclipse.uprotocol.uuid.serializer
 
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uUID
 
 /**
  * UUID Serializer interface used to serialize/deserialize UUIDs to/from a string
@@ -34,8 +35,11 @@ class LongUuidSerializer private constructor() : UuidSerializer<String?> {
             UUID.getDefaultInstance()
         } else try {
             val uuidJava = java.util.UUID.fromString(uuid)
-            UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
-                    .setLsb(uuidJava.leastSignificantBits).build()
+            uUID {
+                msb = uuidJava.mostSignificantBits
+                lsb = uuidJava.leastSignificantBits
+            }
+
         } catch (e: IllegalArgumentException) {
             UUID.getDefaultInstance()
         }

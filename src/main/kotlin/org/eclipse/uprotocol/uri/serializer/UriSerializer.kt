@@ -24,12 +24,11 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import java.util.Optional
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.copy
+import org.eclipse.uprotocol.v1.uUri
+import java.util.*
 
 /**
  * UUris are used in transport layers and hence need to be serialized.
@@ -62,19 +61,23 @@ interface UriSerializer<T> {
         if (longUri.isNullOrEmpty() && (microUri == null || microUri.isEmpty())) {
             return Optional.of(UUri.getDefaultInstance())
         }
-        val longUUri: UUri = LongUriSerializer.instance().deserialize(longUri)
-        val microUUri: UUri = MicroUriSerializer.instance().deserialize(microUri)
-        val uAuthorityBuilder: UAuthority.Builder = UAuthority.newBuilder(microUUri.authority)
-            .setName(longUUri.authority.name)
-        val uEntityBuilder: UEntity.Builder = UEntity.newBuilder(microUUri.entity)
-            .setName(longUUri.entity.name)
-        val uResourceBuilder: UResource.Builder = UResource.newBuilder(longUUri.resource)
-            .setId(microUUri.resource.id)
-        val uUri: UUri = UUri.newBuilder()
-            .setAuthority(uAuthorityBuilder)
-            .setEntity(uEntityBuilder)
-            .setResource(uResourceBuilder)
-            .build()
-        return if (UriValidator.isResolved(uUri)) Optional.of(uUri) else Optional.empty()
+
+        val longUUri = LongUriSerializer.instance().deserialize(longUri)
+        val microUUri = MicroUriSerializer.instance().deserialize(microUri)
+
+        val uri = uUri {
+            authority = microUUri.authority.copy {
+                name = longUUri.authority.name
+            }
+
+            entity=microUUri.entity.copy {
+                name = longUUri.entity.name
+            }
+            resource=longUUri.resource.copy {
+                id = microUUri.resource.id
+            }
+        }
+
+        return if (UriValidator.isResolved(uri)) Optional.of(uri) else Optional.empty()
     }
 }

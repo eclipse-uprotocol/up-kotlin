@@ -92,8 +92,8 @@ interface RpcMapper {
             responseFuture: CompletionStage<UPayload>,
             expectedClazz: Class<T>
         ): CompletionStage<RpcResult<T>> {
-            return responseFuture.handle { payload, exception ->
-                var exception=exception
+            return responseFuture.handle { payload, exc ->
+                var exception=exc
                 // Unexpected exception
                 if (exception != null) {
                     return@handle RpcResult.failure(exception.message!!, exception)

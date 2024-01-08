@@ -20,23 +20,26 @@
  */
 package org.eclipse.uprotocol.uri.serializer
 
+import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.*
+import java.net.InetAddress
+import java.util.*
+
 
 class LongUriSerializerTest {
     @Test
     @DisplayName("Test using the serializers")
     fun test_using_the_serializers() {
-        val uri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley"))
-            .setResource(UResourceBuilder.forRpcRequest("raise")).build()
+        val uri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = UResourceBuilder.forRpcRequest("raise")
+        }
+
         val strUri: String = LongUriSerializer.instance().serialize(uri)
         assertEquals("/hartley//rpc.raise", strUri)
         val uri2: UUri = LongUriSerializer.instance().deserialize(strUri)
@@ -71,7 +74,7 @@ class LongUriSerializerTest {
         assertTrue(UriValidator.isEmpty(uuri))
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
-        val uri2: String = LongUriSerializer.instance().serialize(UUri.newBuilder().build())
+        val uri2: String = LongUriSerializer.instance().serialize(uUri { })
         assertTrue(uri2.isEmpty())
     }
 
@@ -588,7 +591,7 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an empty  URI Object")
     fun test_build_protocol_uri_from__uri_when__uri_isEmpty() {
-        val uuri: UUri = UUri.newBuilder().build()
+        val uuri: UUri = uUri { }
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("", uProtocolUri)
     }
@@ -596,9 +599,12 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI object with an empty USE")
     fun test_build_protocol_uri_from__uri_when__uri_has_empty_use() {
-        val use: UEntity = UEntity.newBuilder().build()
-        val uuri: UUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().build()).setEntity(use)
-            .setResource(UResource.newBuilder().setName("door").build()).build()
+        val use: UEntity = uEntity { }
+        val uuri: UUri = uUri {
+            authority = uAuthority { }
+            entity = use
+            resource = uResource { name = "door" }
+        }
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/////door", uProtocolUri)
     }
@@ -606,7 +612,8 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service no version")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version() {
-        val uuri: UUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access").build()).build()
+        val uuri: UUri = uUri { entity = uEntity { name = "body.access" } }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access", uProtocolUri)
     }
@@ -614,8 +621,14 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri = UUri.newBuilder().setEntity(use).setResource(UResource.newBuilder().build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource { }
+        }
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access/1", uProtocolUri)
     }
@@ -623,9 +636,14 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service no version with resource")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri =
-            UUri.newBuilder().setEntity(use).setResource(UResource.newBuilder().setName("door").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource { name = "door" }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access//door", uProtocolUri)
     }
@@ -633,9 +651,15 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setEntity(use).setResource(UResource.newBuilder().setName("door").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource { name = "door" }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access/1/door", uProtocolUri)
     }
@@ -643,9 +667,17 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service no version with resource with instance no message")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource_with_instance_no_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri = UUri.newBuilder().setEntity(use)
-            .setResource(UResource.newBuilder().setName("door").setInstance("front_left").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access//door.front_left", uProtocolUri)
     }
@@ -653,9 +685,19 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource with instance no message")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_no_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri = UUri.newBuilder().setEntity(use)
-            .setResource(UResource.newBuilder().setName("door").setInstance("front_left").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+            }
+        }
+
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access/1/door.front_left", uProtocolUri)
     }
@@ -663,10 +705,19 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service no version with resource with instance and message")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource_with_instance_with_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri = UUri.newBuilder().setEntity(use)
-            .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door").build())
-            .build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
+
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access//door.front_left#Door", uProtocolUri)
     }
@@ -674,10 +725,18 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource with instance and message")
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_with_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri = UUri.newBuilder().setEntity(use)
-            .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door").build())
-            .build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("/body.access/1/door.front_left#Door", uProtocolUri)
     }
@@ -685,10 +744,12 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .build()
+        val use: UEntity = uEntity { name = "body.access" }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access", uProtocolUri)
     }
@@ -696,10 +757,18 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            entity = use
+            authority = uAuthority {
+                name = "vcu.my_car_vin"
+
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1", uProtocolUri)
     }
@@ -707,10 +776,15 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote cloud authority with service and version")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("cloud.uprotocol.example.com").build())
-                .setEntity(use).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "cloud.uprotocol.example.com" }
+            entity = use
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//cloud.uprotocol.example.com/body.access/1", uProtocolUri)
     }
@@ -718,10 +792,16 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(UResource.newBuilder().setName("door").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource { name = "door" }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri)
     }
@@ -729,10 +809,16 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(UResource.newBuilder().setName("door").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource { name = "door" }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door", uProtocolUri)
     }
@@ -740,10 +826,19 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource with instance no message")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_no_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri)
     }
@@ -751,12 +846,19 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote cloud authority with service and version with resource with instance no message")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version_with_resource_with_instance_no_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("cloud.uprotocol.example.com").build())
-                .setEntity(use).setResource(
-                UResource.newBuilder().setName("door").setInstance("front_left").build()
-            ).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "cloud.uprotocol.example.com" }
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//cloud.uprotocol.example.com/body.access/1/door.front_left", uProtocolUri)
     }
@@ -764,10 +866,18 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource with instance no message")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_no_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").build()).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door.front_left", uProtocolUri)
     }
@@ -775,12 +885,21 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource with instance and message")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_and_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(
-                    UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door").build()
-                ).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
+
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left#Door", uProtocolUri)
     }
@@ -788,12 +907,19 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource with instance and message")
     fun test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_and_getMessage() {
-        val use: UEntity = UEntity.newBuilder().setName("body.access").build()
-        val uuri: UUri =
-            UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.my_car_vin").build()).setEntity(use)
-                .setResource(
-                    UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door").build()
-                ).build()
+        val use: UEntity = uEntity {
+            name = "body.access"
+        }
+        val uuri: UUri = uUri {
+            authority = uAuthority { name = "vcu.my_car_vin" }
+            entity = use
+            resource = uResource {
+                name = "door"
+                instance = "front_left"
+                message = "Door"
+            }
+        }
+
         val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door.front_left#Door", uProtocolUri)
     }
@@ -801,44 +927,72 @@ class LongUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI for the source part of an RPC request, where the source is local")
     fun test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_local() {
-        val use: UEntity = UEntity.newBuilder().setName("petapp").setVersionMajor(1).build()
-        val resource: UResource = UResource.newBuilder().setName("rpc").setInstance("response").build()
-        val uProtocolUri: String =
-            LongUriSerializer.instance().serialize(UUri.newBuilder().setEntity(use).setResource(resource).build())
+        val use: UEntity = uEntity {
+            name = "petapp"
+            versionMajor = 1
+        }
+        val uResource: UResource = uResource {
+            name = "rpc"
+            instance = "response"
+        }
+        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+            entity = use
+            resource = uResource
+        })
         assertEquals("/petapp/1/rpc.response", uProtocolUri)
     }
 
     @Test
     @DisplayName("Test Create a uProtocol URI for the source part of an RPC request, where the source is microRemote")
     fun test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_remote() {
-        val uAuthority: UAuthority = UAuthority.newBuilder().setName("cloud.uprotocol.example.com").build()
-        val use: UEntity = UEntity.newBuilder().setName("petapp").build()
-        val resource: UResource = UResource.newBuilder().setName("rpc").setInstance("response").build()
-        val uProtocolUri: String = LongUriSerializer.instance()
-            .serialize(UUri.newBuilder().setAuthority(uAuthority).setEntity(use).setResource(resource).build())
+        val uAuthority: UAuthority = uAuthority { name = "cloud.uprotocol.example.com" }
+        val use: UEntity = uEntity {
+            name = "petapp"
+        }
+        val uResource: UResource = uResource {
+            name = "rpc"
+            instance = "response"
+        }
+        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+            authority = uAuthority
+            entity = use
+            resource = uResource
+        })
         assertEquals("//cloud.uprotocol.example.com/petapp//rpc.response", uProtocolUri)
     }
 
     @Test
     @DisplayName("Test Create a uProtocol URI from the parts of  URI Object with a microRemote authority with service and version with resource")
     fun test_build_protocol_uri_from__uri_parts_when__uri_has_remote_authority_service_and_version_with_resource() {
-        val uAuthority: UAuthority = UAuthority.newBuilder().setName("vcu.my_car_vin").build()
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uResource: UResource = UResource.newBuilder().setName("door").build()
-        val uProtocolUri: String = LongUriSerializer.instance()
-            .serialize(UUri.newBuilder().setAuthority(uAuthority).setEntity(use).setResource(uResource).build())
+        val uAuthority: UAuthority = uAuthority { name = "vcu.my_car_vin" }
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uResource: UResource = uResource { name = "door" }
+        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+            authority = uAuthority
+            entity = use
+            resource = uResource
+        })
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri)
     }
 
     @Test
     @DisplayName("Test Create a custom URI using no scheme")
     fun test_custom_scheme_no_scheme() {
-        val uAuthority: UAuthority = UAuthority.newBuilder().setName("vcu.my_car_vin").build()
-        val use: UEntity = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build()
-        val uResource: UResource = UResource.newBuilder().setName("door").build()
-        val ucustomUri: String = LongUriSerializer.instance().serialize(
-            UUri.newBuilder().setAuthority(uAuthority)
-                .setEntity(use).setResource(uResource).build()
+        val uAuthority: UAuthority = uAuthority { name = "vcu.my_car_vin" }
+        val use: UEntity = uEntity {
+            name = "body.access"
+            versionMajor = 1
+        }
+        val uResource: UResource = uResource { name = "door" }
+        val ucustomUri: String = LongUriSerializer.instance().serialize(uUri {
+            authority = uAuthority
+            entity = use
+            resource = uResource
+        }
+
         )
         assertEquals("//vcu.my_car_vin/body.access/1/door", ucustomUri)
     }

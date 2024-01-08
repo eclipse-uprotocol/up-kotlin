@@ -24,8 +24,9 @@
 
 package org.eclipse.uprotocol.uri.builder
 
-import java.util.Objects
 import org.eclipse.uprotocol.v1.UResource
+import org.eclipse.uprotocol.v1.uResource
+import java.util.*
 
 interface UResourceBuilder {
     companion object {
@@ -36,11 +37,11 @@ interface UResourceBuilder {
          * @return Returns a UResource for an RPC response.
          */
         fun forRpcResponse(): UResource {
-            return UResource.newBuilder()
-                .setName("rpc")
-                .setInstance("response")
-                .setId(0)
-                .build()
+            return uResource {
+                name = "rpc"
+                instance = "response"
+                id = 0
+            }
         }
 
         /**
@@ -58,15 +59,12 @@ interface UResourceBuilder {
          * @param id The ID of the request.
          * @return Returns a UResource for an RPC request.
          */
-        private fun forRpcRequest(method: String?, id: Int?): UResource {
-            val builder: UResource.Builder = UResource.newBuilder().setName("rpc")
-            if (method != null) {
-                builder.setInstance(method)
+        fun forRpcRequest(method: String?, idRes: Int?): UResource {
+            return uResource {
+                name = "rpc"
+                if (method != null) instance = method
+                if (idRes != null) id = idRes
             }
-            if (id != null) {
-                builder.setId(id)
-            }
-            return builder.build()
         }
 
         /**
@@ -84,9 +82,9 @@ interface UResourceBuilder {
          * @param id The ID of the request.
          * @return Returns a UResource for an RPC request.
          */
-        fun fromId(id: Int): UResource {
-            Objects.requireNonNull(id, "id cannot be null")
-            return if (id < MAX_RPC_ID) forRpcRequest(id) else UResource.newBuilder().setId(id).build()
+        fun fromId(idRes: Int): UResource {
+            Objects.requireNonNull(idRes, "id cannot be null")
+            return if (idRes < MAX_RPC_ID) forRpcRequest(idRes) else uResource { id= idRes}
         }
     }
 }

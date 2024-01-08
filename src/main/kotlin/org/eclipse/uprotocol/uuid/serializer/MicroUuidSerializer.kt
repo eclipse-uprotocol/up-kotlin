@@ -24,16 +24,20 @@
 package org.eclipse.uprotocol.uuid.serializer
 
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uUID
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class MicroUuidSerializer private constructor() : UuidSerializer<ByteArray?> {
     override fun deserialize(uuid: ByteArray?): UUID {
-        if (uuid==null ||uuid.size != 16) {
+        if (uuid == null || uuid.size != 16) {
             return UUID.getDefaultInstance()
         }
         val byteBuffer = ByteBuffer.wrap(uuid)
-        return UUID.newBuilder().setMsb(byteBuffer.getLong()).setLsb(byteBuffer.getLong()).build()
+        return uUID {
+            msb = byteBuffer.getLong()
+            lsb = byteBuffer.getLong()
+        }
     }
 
     override fun serialize(uuid: UUID?): ByteArray {

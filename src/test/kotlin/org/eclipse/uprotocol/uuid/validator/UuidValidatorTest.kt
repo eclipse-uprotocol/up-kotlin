@@ -28,11 +28,12 @@ import org.eclipse.uprotocol.uuid.validate.UuidValidator
 import org.eclipse.uprotocol.v1.UCode
 import org.eclipse.uprotocol.v1.UStatus
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uUID
 import org.eclipse.uprotocol.validation.ValidationResult
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
 
 class UuidValidatorTest {
     @Test
@@ -47,15 +48,18 @@ class UuidValidatorTest {
     @Test
     @DisplayName("Test Good uuid Check")
     fun test_good_uuid_string() {
-        val status: UStatus = UuidValidator.Validators.UPROTOCOL.validator()
-            .validate(UuidFactory.Factories.UPROTOCOL.factory().create())
+        val status: UStatus =
+            UuidValidator.Validators.UPROTOCOL.validator().validate(UuidFactory.Factories.UPROTOCOL.factory().create())
         assertEquals(status, ValidationResult.STATUS_SUCCESS)
     }
 
     @Test
     @DisplayName("Test fetching the invalid Validator for when UUID passed is garbage")
     fun test_invalid_uuid() {
-        val uuid: UUID = UUID.newBuilder().setMsb(0L).setLsb(0L).build()
+        val uuid: UUID = uUID {
+            msb = 0L
+            lsb = 0L
+        }
         val status: UStatus = UuidValidator.getValidator(uuid).validate(uuid)
         assertEquals(UCode.INVALID_ARGUMENT, status.code)
         assertEquals("Invalid UUID Version,Invalid UUID Variant,Invalid UUID Time", status.message)
@@ -84,10 +88,15 @@ class UuidValidatorTest {
     @DisplayName("Test UUIDv8 validator for invalid types")
     fun test_uuidv8_with_invalid_types() {
         val uuidv6: UUID = UuidFactory.Factories.UUIDV6.factory().create()
-        val uuid: UUID = UUID.newBuilder().setMsb(0L).setLsb(0L).build()
+        val uuid: UUID = uUID {
+            msb = 0L
+            lsb = 0L
+        }
         val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
-        val uuidv4: UUID = UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
-            .setLsb(uuidJava.leastSignificantBits).build()
+        val uuidv4: UUID = uUID {
+            msb = uuidJava.mostSignificantBits
+            lsb = uuidJava.leastSignificantBits
+        }
         val validator: UuidValidator = UuidValidator.Validators.UPROTOCOL.validator()
         assertNotNull(validator)
         val status: UStatus = validator.validate(uuidv6)
@@ -114,7 +123,7 @@ class UuidValidatorTest {
     @Test
     @DisplayName("Test UUIDv6 with bad variant")
     fun test_uuidv6_with_bad_variant() {
-        val uuid: UUID =LongUuidSerializer.instance().deserialize("1ee57e66-d33a-65e0-4a77-3c3f061c1e9e")
+        val uuid: UUID = LongUuidSerializer.instance().deserialize("1ee57e66-d33a-65e0-4a77-3c3f061c1e9e")
         assertFalse(uuid == UUID.getDefaultInstance())
         val validator: UuidValidator = UuidValidator.getValidator(uuid)
         assertNotNull(validator)
@@ -126,7 +135,10 @@ class UuidValidatorTest {
     @Test
     @DisplayName("Test UUIDv6 with invalid UUID")
     fun test_uuidv6_with_invalid_uuid() {
-        val uuid: UUID = UUID.newBuilder().setMsb(9 shl 12).setLsb(0L).build()
+        val uuid: UUID = uUID {
+            msb = 9 shl 12
+            lsb = 0L
+        }
         val validator: UuidValidator = UuidValidator.Validators.UUIDV6.validator()
         assertNotNull(validator)
         val status: UStatus = validator.validate(uuid)

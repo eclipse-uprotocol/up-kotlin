@@ -26,9 +26,9 @@ package org.eclipse.uprotocol.uuid.factory
 
 import com.github.f4b6a3.uuid.UuidCreator
 import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.uUID
 import java.time.Instant
-import java.util.Objects
-import java.util.Random
+import java.util.*
 
 abstract class UuidFactory {
     fun create(): UUID {
@@ -37,8 +37,7 @@ abstract class UuidFactory {
 
     abstract fun create(instant: Instant?): UUID
     enum class Factories(private val factory: UuidFactory) {
-        UUIDV6(Uuidv6Factory()),
-        UPROTOCOL(Uuidv8Factory());
+        UUIDV6(Uuidv6Factory()), UPROTOCOL(Uuidv8Factory());
 
         fun factory(): UuidFactory {
             return factory
@@ -48,11 +47,12 @@ abstract class UuidFactory {
     private class Uuidv6Factory : UuidFactory() {
         override fun create(instant: Instant?): UUID {
             val uuidJava: java.util.UUID = UuidCreator.getTimeOrdered(
-                Objects.requireNonNullElse(instant, Instant.now()),
-                null, null
+                Objects.requireNonNullElse(instant, Instant.now()), null, null
             )
-            return UUID.newBuilder().setMsb(uuidJava.mostSignificantBits)
-                .setLsb(uuidJava.leastSignificantBits).build()
+            return uUID {
+                msb = uuidJava.mostSignificantBits
+                lsb = uuidJava.leastSignificantBits
+            }
         }
     }
 
@@ -95,27 +95,31 @@ abstract class UuidFactory {
             val time: Long = Objects.requireNonNullElse(instant, Instant.now())!!.toEpochMilli()
 
             // Check if the current time is the same as the previous time
-            if (time == msb shr 16) {
+            if (time == msBits shr 16) {
                 // Increment the counter if we are not at MAX_COUNT
-                if (msb and 0xFFFL < MAX_COUNT) {
-                    msb++
+                if (msBits and 0xFFFL < MAX_COUNT) {
+                    msBits++
                 }
 
                 // The previous time is not the same tick as the current, so we reset msb
             } else {
-                msb = time shl 16 or (8L shl 12)
+                msBits = time shl 16 or (8L shl 12)
             }
-            return UUID.newBuilder().setMsb(msb).setLsb(lsb).build()
+            return uUID {
+                msb = msBits
+                lsb = lsBits
+            }
         }
 
         companion object {
             const val UUIDV8_VERSION = 8
             private const val MAX_COUNT = 0xfff
+
             //private val lsb: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (-0x8000000000000000L).toLong()
-            private val lsb: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (1L shl 63)
+            private val lsBits: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (1L shl 63)
 
             // Keep track of the time and counters
-            private var msb = (UUIDV8_VERSION shl 12 // Version is 8
+            private var msBits = (UUIDV8_VERSION shl 12 // Version is 8
                     ).toLong()
         }
     }

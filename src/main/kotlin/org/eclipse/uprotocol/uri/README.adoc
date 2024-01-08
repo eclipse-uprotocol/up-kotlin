@@ -16,35 +16,35 @@ IMPORTANT: For more details about the data model, various formats (object, long,
 When building UUri, you can choose to populate it with only names, only numbers, or both (resolved). When you should use each is described the best practice section of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
 
 === Building an RPC Method
-[,java]
+[,kotlin]
 ----
-UUri uri = UUri.newBuilder()
-    .setAuthority(UAuthority.newBuilder()
-        .setName("MyDevice")
-        .setIp(ByteString.copyFrom(InetAddress.getByName("192.168.1.100").getAddress()))
-        .setId(ByteString.copyFrom("3GTU2NEC8HG403825").build()))
-    .setEntity(UEntity.newBuilder()
-        .setName("HartleyService")
-        .setId(10203)
-        .setVersionMajor(1)
-        .build())
-    .setResource(UResourceBuilder.forRpcRequest("Raise", 10))
-    .build();
+val uri = uUri {
+            authority = uAuthority {
+                name = "MyDevice"
+                ip = ByteString.copyFrom(InetAddress.getByName("192.168.1.100").address)
+            }
+            entity = uEntity {
+                name = "Service"
+                id = 10203
+                versionMajor = 1
+            }
+            resource = UResourceBuilder.forRpcRequest("Raise", 10)
+        }
 ----
 
 === Validating
-[,java]
+[,kotlin]
 ----
-final ValidationResult status = UriValidator.validateRpcMethod(uuri);
-            assertTrue(status.isSuccess());
+        val status:ValidationResult = UriValidator.validateRpcMethod(uuri)
+        assertTrue(status.isSuccess())
 ----
 
 === Serializing & Deserializing
-[,java]
+[,kotlin]
 ----
-        UUri uri = .../* UUri example above */
-        byte[] micro = MicroUriSerializer.instance().serialize(uri);
-        String long = LongUriSerializer.instance().serialize(uri);
-        UUri uri2 = UriSerializer.buildResolved(long, micro);
-        assertTrue(uri.equals(uri2));
+        val uri: UUri = .../* UUri example above */
+        val micro: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val long: String = LongUriSerializer.instance().serialize(uri)
+        val uri2: UUri = UriSerializer.buildResolved(long, micro)
+        assertTrue(uri.equals(uri2))
 ----

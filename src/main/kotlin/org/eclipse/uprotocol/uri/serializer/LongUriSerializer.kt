@@ -24,13 +24,9 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import java.util.Objects
-import java.util.Optional
 import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UEntity
-import org.eclipse.uprotocol.v1.UResource
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
+import java.util.*
 
 /**
  * UUri Serializer that serializes a UUri to a long format string per
@@ -66,9 +62,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         if (uri.isNullOrBlank()) {
             return UUri.getDefaultInstance()
         }
-        val uuri: String =
-            if (uri.contains(":")) uri.substring(uri.indexOf(":") + 1) else uri
-                .replace('\\', '/')
+        val uuri: String = if (uri.contains(":")) uri.substring(uri.indexOf(":") + 1) else uri.replace('\\', '/')
         val isLocal: Boolean = !uuri.startsWith("//")
         val uriParts: List<String> = removeEmpty(uuri.split("/".toRegex()))
         val numberOfPartsInUri = uriParts.size
@@ -94,7 +88,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
             if (uriParts[2].isBlank()) {
                 return UUri.getDefaultInstance()
             }
-            uAuthority = UAuthority.newBuilder().setName(uriParts[2]).build()
+            uAuthority = uAuthority { name = uriParts[2] }
             if (uriParts.size > 3) {
                 useName = uriParts[3]
                 if (numberOfPartsInUri > 4) {
@@ -106,9 +100,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
                     }
                 }
             } else {
-                return UUri.newBuilder()
-                    .setAuthority(uAuthority)
-                    .build()
+                return uUri { authority = uAuthority }
             }
         }
         var useVersionInt: Int? = null
@@ -119,18 +111,22 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         } catch (ignored: NumberFormatException) {
             return UUri.getDefaultInstance()
         }
-        val uEntityBuilder: UEntity.Builder = UEntity.newBuilder().setName(useName)
-        if (useVersionInt != null) {
-            uEntityBuilder.setVersionMajor(useVersionInt)
+
+        return uUri {
+            if (uAuthority != null) {
+                authority = uAuthority
+            }
+            if (uResource != null) {
+                resource = uResource
+            }
+            entity = uEntity {
+                name = useName
+                if (useVersionInt != null) {
+                    versionMajor = useVersionInt
+                }
+            }
+
         }
-        val uriBuilder: UUri.Builder = UUri.newBuilder().setEntity(uEntityBuilder)
-        if (uAuthority != null) {
-            uriBuilder.setAuthority(uAuthority)
-        }
-        if (uResource != null) {
-            uriBuilder.setResource(uResource)
-        }
-        return uriBuilder.build()
     }
 
     companion object {
@@ -196,14 +192,16 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
             val resourceName = nameAndInstanceParts[0]
             val resourceInstance = if (nameAndInstanceParts.size > 1) nameAndInstanceParts[1] else null
             val resourceMessage = if (parts.size > 1) parts[1] else null
-            val uResourceBuilder: UResource.Builder = UResource.newBuilder().setName(resourceName)
-            if (resourceInstance != null) {
-                uResourceBuilder.setInstance(resourceInstance)
+
+            return uResource {
+                name = resourceName
+                if (resourceInstance != null) {
+                    instance = resourceInstance
+                }
+                if (resourceMessage != null) {
+                    message = resourceMessage
+                }
             }
-            if (resourceMessage != null) {
-                uResourceBuilder.setMessage(resourceMessage)
-            }
-            return uResourceBuilder.build()
         }
 
         fun removeEmpty(parts: List<String>): List<String> {

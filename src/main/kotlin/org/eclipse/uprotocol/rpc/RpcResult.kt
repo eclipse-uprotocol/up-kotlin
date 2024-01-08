@@ -26,6 +26,7 @@ package org.eclipse.uprotocol.rpc
 
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.uStatus
 import java.util.function.Function
 import java.util.function.Supplier
 
@@ -88,11 +89,17 @@ sealed class RpcResult<T> {
 
     class Failure<T> internal constructor(internal val value: UStatus) : RpcResult<T>() {
 
-        constructor(code: UCode, message: String) : this(UStatus.newBuilder().setCode(code).setMessage(message).build())
+        constructor(ucode: UCode, msg: String) : this(uStatus {
+            code = ucode
+            message = msg
+        })
 
         companion object {
             fun <T> fromException(e: Exception): RpcResult<T> {
-                return Failure(UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage(e.message).build())
+                return Failure(uStatus {
+                    code = UCode.UNKNOWN
+                    message = e.message!!
+                })
             }
         }
 
@@ -132,7 +139,9 @@ sealed class RpcResult<T> {
         fun <T> success(value: T): Success<T> = Success(value)
         fun <T> failure(value: UStatus): RpcResult<T> = Failure(value)
         fun <T, U> failure(failure: Failure<U>): RpcResult<T> = Failure(failure.value)
-        fun <T> failure(message: String, e: Throwable): RpcResult<T> = Failure.fromException(IllegalStateException(message, e))
+        fun <T> failure(message: String, e: Throwable): RpcResult<T> =
+            Failure.fromException(IllegalStateException(message, e))
+
         fun <T> failure(code: UCode, message: String): RpcResult<T> = Failure(code, message)
 
         fun <T> flatten(result: RpcResult<RpcResult<T>>): RpcResult<T> = result.flatMap { it }
