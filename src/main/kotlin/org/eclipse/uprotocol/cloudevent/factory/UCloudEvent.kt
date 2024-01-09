@@ -27,14 +27,15 @@ package org.eclipse.uprotocol.cloudevent.factory
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.Message
-import org.eclipse.uprotocol.v1.UCode;
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UuidUtils
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
-import org.eclipse.uprotocol.v1.UMessageType
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.v1.UUID
+import java.net.URI
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -102,8 +103,7 @@ interface UCloudEvent {
          * otherwise an Optional.empty() is returned.
          */
         fun getTtl(cloudEvent: CloudEvent): Optional<Int> {
-            return extractStringValueFromExtension("ttl", cloudEvent)
-                .map(Integer::valueOf)
+            return extractStringValueFromExtension("ttl", cloudEvent).map(Integer::valueOf)
         }
 
         /**
@@ -125,8 +125,7 @@ interface UCloudEvent {
          */
         fun getCommunicationStatus(cloudEvent: CloudEvent): Int {
             return try {
-                extractIntegerValueFromExtension("commstatus", cloudEvent)
-                    .orElse(UCode.OK_VALUE)
+                extractIntegerValueFromExtension("commstatus", cloudEvent).orElse(UCode.OK_VALUE)
             } catch (e: Exception) {
                 UCode.OK_VALUE
             }
@@ -264,11 +263,10 @@ interface UCloudEvent {
          * @return returns the String representation of the CloudEvent containing only the id, source, type and maybe a sink.
          */
         fun toString(cloudEvent: CloudEvent?): String {
-            return if (cloudEvent != null) (((("CloudEvent{id='" + cloudEvent.id) +
-                    "', source='" + cloudEvent.source) + "'" +
-                    getSink(cloudEvent).map { sink -> String.format(", sink='%s'", sink) }
-                        .orElse("")) +
-                    ", type='" + cloudEvent.type) + "'}" else "null"
+            return if (cloudEvent != null) (((("CloudEvent{id='" + cloudEvent.id) + "', source='" + cloudEvent.source) + "'" + getSink(
+                cloudEvent
+            ).map { sink -> String.format(", sink='%s'", sink) }
+                .orElse("")) + ", type='" + cloudEvent.type) + "'}" else "null"
         }
 
         /**
@@ -297,8 +295,7 @@ interface UCloudEvent {
          * or an Optional.empty() is the value does not exist.
          */
         private fun extractIntegerValueFromExtension(extensionName: String, cloudEvent: CloudEvent): Optional<Int> {
-            return extractStringValueFromExtension(extensionName, cloudEvent)
-                .map(Integer::valueOf)
+            return extractStringValueFromExtension(extensionName, cloudEvent).map(Integer::valueOf)
         }
 
         fun getEventType(type: UMessageType?): String {
@@ -317,6 +314,135 @@ interface UCloudEvent {
                 "res.v1" -> UMessageType.UMESSAGE_TYPE_RESPONSE
                 else -> UMessageType.UMESSAGE_TYPE_UNSPECIFIED
             }
+        }
+
+        /**
+         * Get the UMessage from the cloud event
+         * @param event The CloudEvent containing the data.
+         * @return returns the UMessage
+         */
+        fun toMessage(event: CloudEvent): UMessage {
+            val sourceUUri = LongUriSerializer.instance().deserialize(getSource(event))
+
+            val msgPayload = uPayload {
+                format = getUPayloadFormatFromContentType(event.dataContentType)
+                value = getPayload(event).toByteString()
+            }
+
+            val msgAttributes = uAttributes {
+                id = LongUuidSerializer.instance().deserialize(event.id)
+                type = getMessageType(event.type)
+                if (hasCommunicationStatusProblem(event)) {
+                    commstatus = getCommunicationStatus(event)
+                }
+
+
+                getPriority(event).ifPresent {
+                    val adjustedPriority = if (it.startsWith("UPRIORITY_")) it else "UPRIORITY_$it"
+                    priority = UPriority.valueOf(adjustedPriority)
+                }
+
+                getSink(event).ifPresent { sink = LongUriSerializer.instance().deserialize(it) }
+
+                getRequestId(event).ifPresent { reqid = LongUuidSerializer.instance().deserialize(it) }
+
+                getTtl(event).ifPresent { ttl = it }
+
+                getToken(event).ifPresent { token = it }
+
+                extractIntegerValueFromExtension("plevel", event).ifPresent { permissionLevel = it }
+
+            }
+            return uMessage {
+                attributes = msgAttributes
+                payload = msgPayload
+                source = sourceUUri
+            }
+        }
+
+        /**
+         * Get the Cloudevent from the UMessage<br>
+         * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
+         * needs to be copied to CloudEvent.</b>
+         * @param message The UMessage protobuf containing the data
+         * @return returns the cloud event
+         */
+        fun fromMessage(message: UMessage): CloudEvent {
+            val attributes: UAttributes = message.attributes
+            val builder: CloudEventBuilder =
+                CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.id))
+            builder.withType(getEventType(attributes.type))
+            builder.withSource(URI.create(LongUriSerializer.instance().serialize(message.source)))
+            val contentType = getContentTypeFromUPayloadFormat(message.payload.format)
+            if (contentType.isNotEmpty()) {
+                builder.withDataContentType(contentType)
+            }
+            // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
+            if (message.payload.hasValue()) {
+                builder.withData(message.payload.value.toByteArray())
+            }
+
+            if (attributes.hasTtl()) {
+                builder.withExtension("ttl", attributes.ttl)
+            }
+            if (attributes.hasToken()) {
+                builder.withExtension("token", attributes.token)
+            }
+
+            if (attributes.priorityValue > 0) {
+                builder.withExtension("priority", attributes.priority.name)
+            }
+
+            if (attributes.hasSink()) {
+                builder.withExtension("sink", URI.create(LongUriSerializer.instance().serialize(attributes.sink)))
+            }
+
+            if (attributes.hasCommstatus()) {
+                builder.withExtension("commstatus", attributes.commstatus)
+            }
+
+            if (attributes.hasReqid()) {
+                builder.withExtension("reqid", LongUuidSerializer.instance().serialize(attributes.reqid))
+            }
+
+            if (attributes.hasPermissionLevel()) {
+                builder.withExtension("plevel", attributes.permissionLevel)
+            }
+
+            return builder.build()
+
+        }
+
+        /**
+         * Retrieves the payload format enumeration based on the provided content type.
+         *
+         * @param contentType The content type string representing the format of the payload.
+         * @return The corresponding UPayloadFormat enumeration based on the content type.
+         */
+        private fun getUPayloadFormatFromContentType(contentType: String?): UPayloadFormat {
+            return when (contentType) {
+                "application/json" -> UPayloadFormat.UPAYLOAD_FORMAT_JSON
+                "application/octet-stream" -> UPayloadFormat.UPAYLOAD_FORMAT_RAW
+                "text/plain" -> UPayloadFormat.UPAYLOAD_FORMAT_TEXT
+                "application/x-someip" -> UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP
+                "application/x-someip_tlv" -> UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV
+                else -> UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF
+            }
+        }
+
+        /**
+         * Retrieves the content type string based on the provided UPayloadFormat enumeration.
+         *
+         * @param format The UPayloadFormat enumeration representing the payload format.
+         * @return The corresponding content type string based on the payload format.
+         */
+        private fun getContentTypeFromUPayloadFormat(format: UPayloadFormat): String = when (format) {
+            UPayloadFormat.UPAYLOAD_FORMAT_JSON -> "application/json"
+            UPayloadFormat.UPAYLOAD_FORMAT_RAW -> "application/octet-stream"
+            UPayloadFormat.UPAYLOAD_FORMAT_TEXT -> "text/plain"
+            UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP -> "application/x-someip"
+            UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV -> "application/x-someip_tlv"
+            else -> ""
         }
     }
 }

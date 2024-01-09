@@ -600,7 +600,257 @@ internal class UCloudEventTest {
         assertTrue(uCloudEventType.isBlank())
     }
 
-    private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {
+    @Test
+    fun test_to_message_with_valid_event() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
+                .build()
+
+        // CloudEvent
+        val cloudEvent = CloudEventFactory.publish(
+            buildSourceForTest(), buildProtoPayloadForTest(), uCloudEventAttributes
+        )
+
+        val uMessage = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(uMessage)
+    }
+
+    @Test
+    fun test_from_message_with_valid_message() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
+                .build()
+
+        // CloudEvent
+        val cloudEvent = CloudEventFactory.publish(
+            buildSourceForTest(), buildProtoPayloadForTest(), uCloudEventAttributes
+        )
+        val uMessage = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(uMessage)
+
+        val cloudEvent1 = UCloudEvent.fromMessage(uMessage)
+        assertNotNull(cloudEvent1)
+        assertEquals(cloudEvent, cloudEvent1)
+    }
+
+    @Test
+    fun test_to_from_message_from_request_cloudevent() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2)
+                .withToken("someOAuthToken").withTtl(3).build()
+
+        // CloudEvent
+        val cloudEvent = CloudEventFactory.request(
+            buildSourceForTest(),
+            "//bo.cloud/petapp/1/rpc" + ".response",
+            buildProtoPayloadForTest(),
+            uCloudEventAttributes
+        )
+        val result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.attributes.ttl)
+        assertTrue(UCloudEvent.getToken(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getToken(cloudEvent).get(), result.attributes.getToken())
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
+        assertEquals(
+            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+        )
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
+        assertEquals(UCloudEvent.getSource(cloudEvent), LongUriSerializer.instance().serialize(result.source))
+        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.attributes.getPriority().name)
+
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent, cloudEvent1)
+
+    }
+
+    @Test
+    fun test_to_from_message_from_request_cloudevent_without_attributes() {
+        // Additional attributes
+        val uCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().build()
+
+        // CloudEvent
+        val cloudEvent = CloudEventFactory.request(
+            buildSourceForTest(), "//bo.cloud/petapp/1/rpc.response", buildProtoPayloadForTest(), uCloudEventAttributes
+        )
+        val result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertFalse(result.attributes.hasTtl())
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
+        assertEquals(
+            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+        )
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
+        assertEquals(UCloudEvent.getSource(cloudEvent), LongUriSerializer.instance().serialize(result.source))
+        assertEquals(result.attributes.getPriority().getNumber(), 0)
+
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent, cloudEvent1)
+
+    }
+
+    @Test
+    fun test_to_from_message_from_response_cloudevent() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
+                .build()
+
+        // CloudEvent
+        val cloudEvent = CloudEventFactory.response(
+            buildSourceForTest(),
+            "//bo.cloud/petapp/1/rpc" + ".response",
+            LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
+            buildProtoPayloadForTest(),
+            uCloudEventAttributes
+        )
+        val result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent)
+        assertEquals(
+            UCloudEvent.getRequestId(cloudEvent).get(), LongUuidSerializer.instance().serialize(result.attributes.reqid)
+        )
+        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.attributes.ttl)
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
+        assertEquals(
+            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+        )
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
+        assertEquals(UCloudEvent.getSource(cloudEvent), LongUriSerializer.instance().serialize(result.source))
+        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.attributes.getPriority().name)
+
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent, cloudEvent1)
+
+    }
+
+    @Test
+    fun test_umessage_has_platform_error_when_platform_error_exists() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
+                .build()
+
+        val protoPayload = buildProtoPayloadForTest()
+        val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
+            LongUuidSerializer.instance().serialize(
+                UuidFactory.Factories.UPROTOCOL.factory().create()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+        )
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+            .withExtension("commstatus", UCode.ABORTED_VALUE).withExtension("plevel", 2)
+        val cloudEvent = cloudEventBuilder.build()
+        val result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(2, result.attributes.permissionLevel)
+
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent, cloudEvent1)
+
+    }
+
+    @Test
+    fun test_to_from_message_from_cloudevent_with_all_payload_formats() {
+        // Additional attributes
+        val uCloudEventAttributes =
+            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
+                .build()
+        val protoPayload = buildProtoPayloadForTest()
+        val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
+            LongUuidSerializer.instance().serialize(
+                UuidFactory.Factories.UPROTOCOL.factory().create()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+        )
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+
+        val cloudEvent = cloudEventBuilder.build()
+        var result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, result.payload.getFormat())
+
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent, cloudEvent1)
+        assertNull(cloudEvent1.dataContentType)
+
+        val cloudEvent2 = cloudEventBuilder.withDataContentType("").build()
+        result = UCloudEvent.toMessage(cloudEvent2)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, result.payload.getFormat())
+        val cloudEvent3 = UCloudEvent.fromMessage(result)
+        assertNull(cloudEvent3.dataContentType)
+
+        val cloudEvent4 = cloudEventBuilder.withDataContentType("application/json").build()
+        result = UCloudEvent.toMessage(cloudEvent4)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_JSON, result.payload.getFormat())
+        val cloudEvent5 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent4, cloudEvent5)
+        assertEquals("application/json", cloudEvent5.dataContentType)
+
+        val cloudEvent6 = cloudEventBuilder.withDataContentType("application/octet-stream").build()
+        result = UCloudEvent.toMessage(cloudEvent6)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_RAW, result.payload.getFormat())
+        val cloudEvent7 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent6, cloudEvent7)
+        assertEquals("application/octet-stream", cloudEvent7.dataContentType)
+
+        val cloudEvent8 = cloudEventBuilder.withDataContentType("text/plain").build()
+        result = UCloudEvent.toMessage(cloudEvent8)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT, result.payload.getFormat())
+        val cloudEvent9 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent8, cloudEvent9)
+        assertEquals("text/plain", cloudEvent9.dataContentType)
+
+        val cloudEvent10 = cloudEventBuilder.withDataContentType("application/x-someip").build()
+        result = UCloudEvent.toMessage(cloudEvent10)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP, result.payload.getFormat())
+        val cloudEvent11 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent10, cloudEvent11)
+        assertEquals("application/x-someip", cloudEvent11.dataContentType)
+
+        val cloudEvent12 = cloudEventBuilder.withDataContentType("application/x-someip_tlv").build()
+        result = UCloudEvent.toMessage(cloudEvent12)
+        assertNotNull(result)
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV, result.payload.getFormat())
+        val cloudEvent13 = UCloudEvent.fromMessage(result)
+        assertEquals(cloudEvent12, cloudEvent13)
+        assertEquals("application/x-someip_tlv", cloudEvent13.dataContentType)
+    }
+
+    @Test
+    fun test_to_from_message_from_UCP_cloudevent() {
+        // Additional attributes
+        val uCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withTtl(3).build()
+        val protoPayload = buildProtoPayloadForTest()
+        val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
+            LongUuidSerializer.instance().serialize(
+                UuidFactory.Factories.UPROTOCOL.factory().create()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+        )
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+        cloudEventBuilder.withExtension("priority", "CS4")
+        val cloudEvent = cloudEventBuilder.build()
+
+        val result = UCloudEvent.toMessage(cloudEvent)
+        assertNotNull(result)
+        assertEquals(UPriority.UPRIORITY_CS4.name, result.attributes.getPriority().name)
+        val cloudEvent1 = UCloudEvent.fromMessage(result)
+        assertTrue(UCloudEvent.getPriority(cloudEvent1).isPresent)
+        assertEquals(UPriority.UPRIORITY_CS4.name, UCloudEvent.getPriority(cloudEvent1).get())
+    }
+
+    private fun buildSourceForTest(): String {
         // source
         val uUri: UUri = uUri {
             entity = uEntity { name = "body.access" }
@@ -611,7 +861,12 @@ internal class UCloudEventTest {
             }
         }
 
-        val source: String = LongUriSerializer.instance().serialize(uUri)
+        return LongUriSerializer.instance().serialize(uUri)
+    }
+
+    private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {
+        // source
+        val source: String = buildSourceForTest()
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
