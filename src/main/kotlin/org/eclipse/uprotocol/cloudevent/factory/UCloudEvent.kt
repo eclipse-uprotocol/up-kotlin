@@ -263,10 +263,11 @@ interface UCloudEvent {
          * @return returns the String representation of the CloudEvent containing only the id, source, type and maybe a sink.
          */
         fun toString(cloudEvent: CloudEvent?): String {
-            return if (cloudEvent != null) (((("CloudEvent{id='" + cloudEvent.id) + "', source='" + cloudEvent.source) + "'" + getSink(
-                cloudEvent
-            ).map { sink -> String.format(", sink='%s'", sink) }
-                .orElse("")) + ", type='" + cloudEvent.type) + "'}" else "null"
+            return if (cloudEvent != null) {
+                "CloudEvent{id='" + cloudEvent.id + "', source='" + cloudEvent.source + "'" + getSink(
+                    cloudEvent
+                ).map { sink -> String.format(", sink='%s'", sink) }.orElse("") + ", type='" + cloudEvent.type + "'}"
+            } else "null"
         }
 
         /**
