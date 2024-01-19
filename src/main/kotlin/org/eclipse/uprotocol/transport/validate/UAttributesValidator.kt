@@ -24,15 +24,10 @@
 
 package org.eclipse.uprotocol.transport.validate
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.uuid.factory.UuidUtils
-import org.eclipse.uprotocol.v1.UAttributes
-import org.eclipse.uprotocol.v1.UMessageType
-import org.eclipse.uprotocol.v1.UUID
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
-import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -231,7 +226,7 @@ abstract class UAttributesValidator {
         override fun validateSink(attributes: UAttributes): ValidationResult {
             return if (!attributes.hasSink()) {
                 ValidationResult.failure("Missing Sink")
-            } else UriValidator.validateRpcResponse(attributes.sink)
+            } else UriValidator.validateRpcMethod(attributes.sink)
         }
 
         /**
@@ -280,13 +275,10 @@ abstract class UAttributesValidator {
          * @return Returns a [ValidationResult] that is success or failed with a failure message.
          */
         override fun validateSink(attributes: UAttributes): ValidationResult {
-            Objects.requireNonNull(attributes, "UAttributes cannot be null.")
-            val result = UriValidator.validateRpcMethod(attributes.sink)
-            return if (result.isSuccess()) {
-                result
-            } else {
-                ValidationResult.failure("Missing Sink")
+            if (!attributes.hasSink() || attributes.sink === UUri.getDefaultInstance()) {
+                return ValidationResult.failure("Missing Sink")
             }
+            return UriValidator.validateRpcResponse(attributes.sink)
         }
 
         /**

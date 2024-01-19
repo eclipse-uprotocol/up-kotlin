@@ -593,6 +593,60 @@ internal class UAttributesValidatorTest {
         val status: ValidationResult = validator.validate(attributes)
         assertEquals(ValidationResult.success(), status)
     }
+    @Test
+    @DisplayName("test_valid_request_methoduri_in_sink")
+    fun test_valid_request_methoduri_in_sink() {
+        val sink = LongUriSerializer.instance().deserialize("/test.service/1/rpc.method")
+        val attributes = UAttributesBuilder.request(UPriority.UPRIORITY_CS0, sink, 3000).build()
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Request", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals(ValidationResult.success(), status)
+    }
+
+    @Test
+    @DisplayName("test_invalid_request_methoduri_in_sink")
+    fun test_invalid_request_methoduri_in_sink() {
+        val sink = LongUriSerializer.instance().deserialize("/test.client/1/test.response")
+        val attributes = UAttributesBuilder.request(UPriority.UPRIORITY_CS0, sink, 3000).build()
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Request", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals(
+            "Invalid RPC method uri. Uri should be the method to be called, or method from response.",
+            status.getMessage()
+        )
+    }
+
+    @Test
+    @DisplayName("test_valid_response_uri_in_sink")
+    fun test_valid_response_uri_in_sink() {
+        val sink = LongUriSerializer.instance().deserialize("/test.client/1/rpc.response")
+        val attributes = UAttributesBuilder.response(
+            UPriority.UPRIORITY_CS0,
+            sink,
+            UuidFactory.Factories.UPROTOCOL.factory().create()
+        ).build()
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Response", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals(ValidationResult.success(), status)
+    }
+
+    @Test
+    @DisplayName("test_invalid_response_uri_in_sink")
+    fun test_invalid_response_uri_in_sink() {
+        val sink = LongUriSerializer.instance().deserialize("/test.client/1/rpc.method")
+        val attributes = UAttributesBuilder.response(
+            UPriority.UPRIORITY_CS0,
+            sink,
+            UuidFactory.Factories.UPROTOCOL.factory().create()
+        ).build()
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Response", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals("Invalid RPC response type.", status.getMessage())
+    }
 
     private fun buildSink(): UUri {
         return uUri {
