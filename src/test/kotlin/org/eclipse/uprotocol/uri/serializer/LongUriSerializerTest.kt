@@ -20,14 +20,11 @@
  */
 package org.eclipse.uprotocol.uri.serializer
 
-import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.InetAddress
 import java.util.*
 
 
@@ -37,7 +34,7 @@ class LongUriSerializerTest {
     fun test_using_the_serializers() {
         val uri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = UResourceBuilder.forRpcRequest("raise")
+            resource = uResource { forRpcRequest("raise") }
         }
 
         val strUri: String = LongUriSerializer.instance().serialize(uri)

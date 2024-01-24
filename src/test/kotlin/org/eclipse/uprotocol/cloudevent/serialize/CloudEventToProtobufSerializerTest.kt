@@ -52,9 +52,13 @@ internal class CloudEventToProtobufSerializerTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // configure cloud event
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS0).withTtl(3).build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS0
+            ttl = 3
+            token = "someOAuthToken"
+        }
+
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "hello", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
@@ -123,9 +127,12 @@ internal class CloudEventToProtobufSerializerTest {
         val protoPayload = buildProtoPayloadForTest1()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(

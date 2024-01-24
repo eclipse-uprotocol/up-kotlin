@@ -21,6 +21,7 @@
 package org.eclipse.uprotocol.cloudevent.datamodel
 
 import nl.jqno.equalsverifier.EqualsVerifier
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.v1.UPriority
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -36,25 +37,25 @@ internal class UCloudEventAttributesTest {
     @Test
     @DisplayName("Make sure the toString works")
     fun testToString() {
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
-        val expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}"
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
+        val expected = "UCloudEventAttributes(hash=somehash, priority=UPRIORITY_CS1, ttl=3, token=someOAuthToken)"
         assertEquals(expected, uCloudEventAttributes.toString())
     }
 
     @Test
     @DisplayName("Test creating a valid attributes object")
     fun test_create_valid() {
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS6)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS6
+            ttl = 3
+            token = "someOAuthToken"
+        }
         assertTrue(uCloudEventAttributes.hash().isPresent)
         assertEquals("somehash", uCloudEventAttributes.hash().get())
         assertTrue(uCloudEventAttributes.priority().isPresent)
@@ -79,10 +80,10 @@ internal class UCloudEventAttributesTest {
     @Test
     @DisplayName("Test the isEmpty when built with blank strings function")
     fun test_Isempty_function_when_built_with_blank_strings() {
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("  ")
-            .withToken("  ")
-            .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "  "
+            token = "  "
+        }
         assertTrue(uCloudEventAttributes.isEmpty)
         assertTrue(uCloudEventAttributes.hash().isEmpty)
         assertTrue(uCloudEventAttributes.priority().isEmpty)
@@ -93,28 +94,28 @@ internal class UCloudEventAttributesTest {
     @Test
     @DisplayName("Test the isEmpty permutations")
     fun test_Isempty_function_permutations() {
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("  ")
-            .withToken("  ")
-            .build()
+        val uCloudEventAttributes= uCloudEventAttributes {
+            hash = "  "
+            token = "  "
+        }
         assertTrue(uCloudEventAttributes.isEmpty)
-        val uCloudEventAttributes2: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("someHash")
-            .withToken("  ")
-            .build()
+        val uCloudEventAttributes2 = uCloudEventAttributes {
+            hash = "someHash"
+            token = "  "
+        }
         assertFalse(uCloudEventAttributes2.isEmpty)
-        val uCloudEventAttributes3: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash(" ")
-            .withToken("SomeToken")
-            .build()
+        val uCloudEventAttributes3 = uCloudEventAttributes {
+            hash = "  "
+            token = "SomeToken"
+        }
         assertFalse(uCloudEventAttributes3.isEmpty)
-        val uCloudEventAttributes4: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withPriority(UPriority.UPRIORITY_CS0)
-            .build()
+        val uCloudEventAttributes4 = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS0
+        }
         assertFalse(uCloudEventAttributes4.isEmpty)
-        val uCloudEventAttributes5: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withTtl(8)
-            .build()
+        val uCloudEventAttributes5 = uCloudEventAttributes {
+            ttl = 8
+        }
         assertFalse(uCloudEventAttributes5.isEmpty)
     }
 }

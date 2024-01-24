@@ -25,39 +25,19 @@
 package org.eclipse.uprotocol.cloudevent.datamodel
 
 import org.eclipse.uprotocol.v1.UPriority
-import java.util.*
+import java.util.Optional
 
 /**
  * Specifies the properties that can configure the UCloudEvent.
  */
-class UCloudEventAttributes {
-    private val hash: String?
-    private val priority: UPriority?
-    private val ttl: Int?
-    private val token: String?
-
-    /**
-     * Construct the properties object.
-     *
-     * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @param priority uProtocol Prioritization classifications.
-     * @param ttl      How long this event should live for after it was generated (in milliseconds).
-     * Events without this attribute (or value is 0) MUST NOT timeout.
-     * @param token    Oauth2 access token to perform the access request defined in the request message.
-     */
-    private constructor(hash: String?, priority: UPriority?, ttl: Int?, token: String?) {
-        this.hash = hash
-        this.priority = priority
-        this.ttl = ttl
-        this.token = token
-    }
-
-    private constructor(builder: UCloudEventAttributesBuilder) {
-        hash = builder.hash
-        priority = builder.priority
-        ttl = builder.ttl
-        token = builder.token
-    }
+data class UCloudEventAttributes internal constructor(
+    private val hash: String? = null,
+    private val priority: UPriority? = null,
+    private val ttl: Int? = null,
+    private val token: String? = null
+) {
+    private constructor(builder: UCloudEventAttributesBuilder)
+            : this(builder.hash, builder.priority, builder.ttl, builder.token)
 
     val isEmpty: Boolean
         /**
@@ -101,93 +81,41 @@ class UCloudEventAttributes {
     /**
      * Builder for constructing the UCloudEventAttributes.
      */
-    class UCloudEventAttributesBuilder {
-        var hash: String? = null
-        var priority: UPriority? = null
-        var ttl: Int? = null
-        var token: String? = null
-
+    class UCloudEventAttributesBuilder @PublishedApi internal constructor() {
         /**
          * add an HMAC generated on the data portion of the CloudEvent message using the device key.
-         * @param hash an HMAC generated on the data portion of the CloudEvent message using the device key.
-         * @return Returns the UCloudEventAttributesBuilder with the configured hash.
          */
-        fun withHash(hash: String?): UCloudEventAttributesBuilder {
-            this.hash = hash
-            return this
-        }
+        var hash: String? = null
 
         /**
          * add a uProtocol Prioritization classifications.
-         * @param priority uProtocol Prioritization classifications.
-         * @return Returns the UCloudEventAttributesBuilder with the configured priority.
          */
-        fun withPriority(priority: UPriority?): UCloudEventAttributesBuilder {
-            this.priority = priority
-            return this
-        }
+        var priority: UPriority? = null
 
         /**
          * add a time to live which is how long this event should live for after it was generated (in milliseconds).
          * Events without this attribute (or value is 0) MUST NOT timeout.
-         * @param ttl How long this event should live for after it was generated (in milliseconds).
-         * Events without this attribute (or value is 0) MUST NOT timeout.
-         * @return Returns the UCloudEventAttributesBuilder with the configured time to live.
          */
-        fun withTtl(ttl: Int?): UCloudEventAttributesBuilder {
-            this.ttl = ttl
-            return this
-        }
-
+        var ttl: Int? = null
         /**
          * Add an Oauth2 access token to perform the access request defined in the request message.
-         * @param token An Oauth2 access token to perform the access request defined in the request message.
-         * @return Returns the UCloudEventAttributesBuilder with the configured OAuth token.
          */
-        fun withToken(token: String?): UCloudEventAttributesBuilder {
-            this.token = token
-            return this
-        }
+        var token: String? = null
 
         /**
          * Construct the UCloudEventAttributes from the builder.
          * @return Returns a constructed UProperty.
          */
-        fun build(): UCloudEventAttributes {
+        @JvmSynthetic
+        @PublishedApi
+        internal fun build(): UCloudEventAttributes {
             // validation if needed
             return UCloudEventAttributes(this)
         }
     }
 
-
-    @Override
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass !== other.javaClass) return false
-        val that = other as UCloudEventAttributes
-        return Objects.equals(hash, that.hash) && priority == that.priority && Objects.equals(
-            ttl,
-            that.ttl
-        ) && Objects.equals(token, that.token)
-    }
-
-    @Override
-    override fun hashCode(): Int {
-        return Objects.hash(hash, priority, ttl, token)
-    }
-
-    @Override
-    override fun toString(): String {
-        return "UCloudEventAttributes{" +
-                "hash='" + hash + '\'' +
-                ", priority=" + priority +
-                ", ttl=" + ttl +
-                ", token='" + token + '\'' +
-                '}'
-    }
-
     companion object {
-        private val EMPTY = UCloudEventAttributes(null, null, null, null)
+        private val EMPTY = UCloudEventAttributes()
 
         /**
          * Static factory method for creating an empty  cloud event attributes object, to avoid working with null<br></br>
@@ -197,5 +125,9 @@ class UCloudEventAttributes {
         fun empty(): UCloudEventAttributes {
             return EMPTY
         }
+
+        @JvmName("-initializeUCloudEventAttributes")
+        inline fun uCloudEventAttributes(block: UCloudEventAttributesBuilder.() -> Unit) =
+            UCloudEventAttributesBuilder().apply(block).build()
     }
 }

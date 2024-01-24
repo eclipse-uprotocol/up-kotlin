@@ -158,12 +158,12 @@ internal class CloudEventToJsonSerializerTest {
         val protoPayload = buildProtoPayloadForTest1()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(

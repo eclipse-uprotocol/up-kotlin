@@ -25,7 +25,6 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.v1.*
 import java.io.ByteArrayOutputStream
@@ -196,7 +195,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                 id = ueId
                 versionMajor = uiVersion
             }
-            resource = UResourceBuilder.fromId(uResourceId)
+            resource = uResource { fromId(uResourceId) }
 
             if (uAuthority != null) {
                 authority = uAuthority

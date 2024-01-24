@@ -22,7 +22,7 @@
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more
     </description>
 
-    <version>1.5.2-SNAPSHOT</version>
+    <version>1.5.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>

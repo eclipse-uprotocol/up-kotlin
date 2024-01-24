@@ -24,97 +24,43 @@
 
 package org.eclipse.uprotocol.rpc
 
-import java.util.Objects
-import java.util.Optional
 
 /**
  * This class is used when making uRPC calls to pass additional options. Copied from Misha's class.
+ * @property timeout a timeout in milliseconds
+ * @property token An optional OAuth2 access token
  */
-class CallOptions private constructor(private val mTimeout: Int, token: String?) {
-    private val mToken: String
-
-    private constructor(builder: Builder) : this(builder.mTimeout, builder.mToken)
-
-    init {
-        mToken = token ?: ""
-    }
-
-    /**
-     * Get a timeout.
-     *
-     * @return A timeout in milliseconds.
-     */
-    fun timeout(): Int {
-        return mTimeout
-    }
-
-    /**
-     * Get an OAuth2 access token.
-     *
-     * @return An Optional OAuth2 access token.
-     */
-    fun token(): Optional<String> {
-        return if (mToken.isBlank()) Optional.empty() else Optional.of(mToken)
-    }
+data class CallOptions internal constructor(
+    val timeout: Int = TIMEOUT_DEFAULT,
+    val token: String = TOKEN_DEFAULT
+) {
+    private constructor(builder: Builder) : this(builder.timeout, builder.token)
 
     /**
      * Builder for constructing `CallOptions`.
+     * @property timeout a timeout in milliseconds
+     * @property token an OAuth2 access token
      */
-    class Builder {
-        var mTimeout = TIMEOUT_DEFAULT
-        var mToken = ""
-
-        /**
-         * Add a timeout.
-         *
-         * @param timeout A timeout in milliseconds.
-         * @return This builder.
-         */
-        fun withTimeout(timeout: Int): Builder {
-            mTimeout = if (timeout <= 0) TIMEOUT_DEFAULT else timeout
-            return this
-        }
-
-        /**
-         * Add an OAuth2 access token.
-         *
-         * @param token An OAuth2 access token.
-         * @return This builder.
-         */
-        fun withToken(token: String): Builder {
-            mToken = token
-            return this
-        }
+    class Builder @PublishedApi internal constructor() {
+        var timeout = TIMEOUT_DEFAULT
+            set(value) {
+                field = value.takeIf { it >= 0 } ?: TIMEOUT_DEFAULT
+            }
+        var token = TOKEN_DEFAULT
+            set(value) {
+                field = value.ifBlank { TOKEN_DEFAULT }
+            }
 
         /**
          * Construct a `CallOptions` from this builder.
          *
          * @return A constructed `CallOptions`.
          */
-        fun build(): CallOptions {
+        @JvmSynthetic
+        @PublishedApi
+        internal fun build(): CallOptions {
             return CallOptions(this)
         }
-    }
-
-    @Override
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass !== other.javaClass) return false
-        val that = other as CallOptions
-        return mTimeout == that.mTimeout && Objects.equals(mToken, that.mToken)
-    }
-
-    @Override
-    override fun hashCode(): Int {
-        return Objects.hash(mTimeout, mToken)
-    }
-
-    @Override
-    override fun toString(): String {
-        return "CallOptions{" +
-                "mTimeout=" + mTimeout +
-                ", mToken='" + mToken + '\'' +
-                '}'
     }
 
     companion object {
@@ -124,17 +70,17 @@ class CallOptions private constructor(private val mTimeout: Int, token: String?)
         const val TIMEOUT_DEFAULT = 10000
 
         /**
-         * Default instance.
+         * Default token
          */
-        val DEFAULT = CallOptions(TIMEOUT_DEFAULT, "")
+        const val TOKEN_DEFAULT = ""
 
         /**
-         * Constructs a new builder.
-         *
-         * @return A builder.
+         * Default instance.
          */
-        fun newBuilder(): Builder {
-            return Builder()
-        }
+        val DEFAULT = CallOptions(TIMEOUT_DEFAULT, TOKEN_DEFAULT)
+
+        @JvmName("-initializeCallOptions")
+        inline fun callOptions(block: Builder.() -> Unit) =
+            Builder().apply(block).build()
     }
 }
