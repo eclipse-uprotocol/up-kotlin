@@ -371,6 +371,14 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Kotlin Coroutine Test -->
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-test</artifactId>
+            <version>1.8.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
