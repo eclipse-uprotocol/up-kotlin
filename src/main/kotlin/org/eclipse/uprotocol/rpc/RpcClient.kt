@@ -24,6 +24,7 @@
 
 package org.eclipse.uprotocol.rpc
 
+import kotlinx.coroutines.flow.Flow
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UUri
@@ -41,7 +42,7 @@ interface RpcClient {
      * @param topic topic of the method to be invoked (i.e. the name of the API we are calling).
      * @param payload The request message to be sent to the server.
      * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
-     * @return Returns the Result with UPayload.
+     * @return Returns a Flow Contain the Result with UPayload.
      */
-    suspend fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): Result<UPayload>
+    fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): Flow<Result<UPayload>>
 }
