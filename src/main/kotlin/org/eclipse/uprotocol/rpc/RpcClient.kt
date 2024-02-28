@@ -38,11 +38,16 @@ import org.eclipse.uprotocol.v1.UUri
  */
 interface RpcClient {
     /**
-     * Support for RPC method invocation.
-     * @param topic topic of the method to be invoked (i.e. the name of the API we are calling).
-     * @param payload The request message to be sent to the server.
-     * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
-     * @return Returns a Flow Contain the Result with UPayload.
+     * API for clients to invoke a method (send an RPC request) and receive the response (the returned
+     * {@link CompletionStage} {@link UPayload}. <br>
+     * Client will set method to be the URI of the method they want to invoke,
+     * payload to the request message, and attributes with the various metadata for the
+     * method invocation.
+     * @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
+     * @param requestPayload The request message to be sent to the server.
+     * @param options RPC method invocation call options, see {@link CallOptions}
+     * @return Returns the Flow with the response message or exception with the failure
+     * reason as {@link UStatus}.
      */
-    fun invokeMethod(topic: UUri, payload: UPayload, attributes: UAttributes): Flow<Result<UPayload>>
+    fun invokeMethod(methodUri: UUri, requestPayload: UPayload, options: CallOptions): Flow<UPayload>
 }
