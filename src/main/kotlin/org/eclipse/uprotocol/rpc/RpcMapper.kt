@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,41 +30,54 @@ import com.google.protobuf.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import org.eclipse.uprotocol.v1.UPayload
+import org.eclipse.uprotocol.v1.UCode
+import org.eclipse.uprotocol.v1.UMessage
 import org.eclipse.uprotocol.v1.UStatus
 import java.util.concurrent.CompletionException
 
 /**
- * Inline function to map Flow&lt;UPayload&gt; from Link into a Flow containing the declared expected return type
+ * Inline function to map Flow&lt;UMessage&gt; from Link into a Flow containing the declared expected return type
  * of the RPC method or throw an exception.
  * @return Returns Flow containing the declared expected return type of the RPC method.
  * @param <T> The declared expected return type of the RPC method.
 </T> */
-inline fun <reified T: Message> Flow<UPayload>.toResponse():Flow<T>{
-    return catch { exception->
+inline fun <reified T : Message> Flow<UMessage>.toResponse(): Flow<T> {
+    return catch { exception ->
         throw CompletionException(exception.message, exception)
-    }.map{payload->
-        val any = Any.parseFrom(payload.value)
-        if (any.`is`(T::class.java)) {
-            unpackPayload(any)
-        } else {
-            throw RuntimeException("Unknown payload type [${any.typeUrl}]. Expected [${T::class.java.name}]")
+    }.map { message ->
+        if (!message.hasPayload()) {
+            throw RuntimeException("Server returned a null payload. Expected [${T::class.java.name}]")
+        }
+        try {
+            val any = Any.parseFrom(message.payload.value)
+            if (any.`is`(T::class.java)) {
+                any.unpack(T::class.java)
+            } else {
+                throw RuntimeException("Unknown payload type [${any.typeUrl}]. Expected [${T::class.java.name}]")
+            }
+        } catch (e: InvalidProtocolBufferException) {
+            throw RuntimeException("${e.message} [${UStatus::class.java.name}]", e)
         }
     }
 }
 
 /**
- * Inline function to unpack a payload of type [Any] into an object of type T, which is what was
- * packing into the [Any] object.
- * @param payload an [Any] message containing a type of expectedClazz.
- * @return Returns an object of type T and of the class name specified, that was packed into the [Any] object.
- * @param <T> The message type of the object packed into the [Any].
- * </T> */
-@PublishedApi
-internal inline fun <reified T : Message> unpackPayload(payload: Any): T {
-    return try {
-        payload.unpack(T::class.java)
-    } catch (e: InvalidProtocolBufferException) {
-        throw RuntimeException("${e.message} [${UStatus::class.java.name}]", e)
+ * Map a response of Flow&lt;Any&gt; from Link into a Flow containing a Result containing
+ * the declared expected return type T.
+ * @return Returns a Flow containing an Result containing the declared expected return type T, if T is UStatus
+ * and has code not equals to OK, failure Result will be emitted.
+ * @param <T> The declared expected return type of the RPC method.
+ */
+inline fun <reified T : Message> Flow<UMessage>.toResult(): Flow<Result<T>> {
+    return toResponse<T>().map { response ->
+        response.runCatching {
+            if (this is UStatus && code != UCode.OK) {
+                throw IllegalStateException("${message}, UStatus: $code")
+            } else {
+                this
+            }
+        }
+    }.catch {
+        emit(Result.failure(it))
     }
 }
