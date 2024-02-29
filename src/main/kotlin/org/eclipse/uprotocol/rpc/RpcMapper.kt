@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,21 +30,25 @@ import com.google.protobuf.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import org.eclipse.uprotocol.v1.UMessage
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UStatus
 import java.util.concurrent.CompletionException
 
 /**
- * Inline function to map Flow&lt;UPayload&gt; from Link into a Flow containing the declared expected return type
+ * Inline function to map Flow&lt;UMessage&gt; from Link into a Flow containing the declared expected return type
  * of the RPC method or throw an exception.
  * @return Returns Flow containing the declared expected return type of the RPC method.
  * @param <T> The declared expected return type of the RPC method.
 </T> */
-inline fun <reified T: Message> Flow<UPayload>.toResponse():Flow<T>{
-    return catch { exception->
+inline fun <reified T : Message> Flow<UMessage>.toResponse(): Flow<T> {
+    return catch { exception ->
         throw CompletionException(exception.message, exception)
-    }.map{payload->
-        val any = Any.parseFrom(payload.value)
+    }.map { message ->
+        if (!message.hasPayload()){
+            throw RuntimeException("Server returned a null payload. Expected [${T::class.java.name}]")
+        }
+        val any = Any.parseFrom(message.payload.value)
         if (any.`is`(T::class.java)) {
             unpackPayload(any)
         } else {

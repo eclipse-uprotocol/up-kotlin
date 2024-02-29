@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,12 +20,17 @@
  */
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import com.google.protobuf.ByteString
+import org.eclipse.uprotocol.core.usubscription.v3.Update
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder.fromProto
+import org.eclipse.uprotocol.uri.validator.UriValidator.isEmpty
+import org.eclipse.uprotocol.uri.validator.UriValidator.isMicroForm
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.util.*
+
 
 class UriSerializerTest {
     @Test
@@ -41,6 +46,7 @@ class UriSerializerTest {
         }
 
         val microUUri: UUri = uUri {
+            authority = uAuthority { id = ByteString.copyFromUtf8("abcdefg") }
             entity = uEntity {
                 id = 29999
                 versionMajor = 254
@@ -51,9 +57,10 @@ class UriSerializerTest {
 
         val microuri: ByteArray = MicroUriSerializer.instance().serialize(microUUri)
         val longuri: String = LongUriSerializer.instance().serialize(longUUri)
+
         val resolvedUUri: Optional<UUri> = LongUriSerializer.instance().buildResolved(longuri, microuri)
         assertTrue(resolvedUUri.isPresent)
-        assertFalse(UriValidator.isEmpty(resolvedUUri.get()))
+        assertFalse(isEmpty(resolvedUUri.get()))
         assertEquals("testauth", resolvedUUri.get().authority.name)
         assertEquals("neelam", resolvedUUri.get().entity.name)
         assertEquals(29999, resolvedUUri.get().entity.id)
@@ -71,7 +78,7 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, null)
         assertTrue(result.isPresent)
         // Assert that the result is empty
-        assertTrue(UriValidator.isEmpty(result.get()))
+        assertTrue(isEmpty(result.get()))
     }
 
     @Test
@@ -82,7 +89,7 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, ByteArray(0))
         assertTrue(result.isPresent)
         // Assert that the result is empty
-        assertTrue(UriValidator.isEmpty(result.get()))
+        assertTrue(isEmpty(result.get()))
     }
 
     @Test
@@ -93,6 +100,17 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved("", ByteArray(0))
         assertTrue(result.isPresent)
         // Assert that the result is not empty
-        assertTrue(UriValidator.isEmpty(result.get()))
+        assertTrue(isEmpty(result.get()))
+    }
+
+    @Test
+    @DisplayName("Test building uSubscription Update message  Notification topic without using generated stubs")
+    fun test_build_resolved_full_information() {
+        val uUri = uUri {
+            entity = uEntity { id = 0 }
+            resource = fromProto(Update.Resources.subscriptions)
+        }
+        assertFalse(isEmpty(uUri))
+        assertTrue(isMicroForm(uUri))
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,19 +20,21 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
+import org.eclipse.uprotocol.uri.validator.UriValidator.isRemote
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
+
 
 internal class UriValidatorTest {
     @Test
@@ -515,15 +517,45 @@ internal class UriValidatorTest {
     fun test_valid_rpc_response_uri() {
         val uuri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = uResource {
-                name = "rpc"
-                id = 19999
-            }
+            resource = forRpcResponse()
         }
 
         val status: ValidationResult = UriValidator.validateRpcResponse(uuri)
         assertTrue(UriValidator.isRpcResponse(uuri))
         assertTrue(status.isSuccess())
+    }
+
+    @Test
+    @DisplayName("Test invalid rpc response uri")
+    @Throws(IOException::class)
+    fun test_invalid_rpc_response_uri(){
+        val uuri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource {
+                name = "rpc"
+                id = 19999
+            }
+        }
+        val status = UriValidator.validateRpcResponse(uuri)
+        assertFalse(UriValidator.isRpcResponse(uuri))
+        assertFalse(status.isSuccess())
+    }
+
+    @Test
+    @DisplayName("Test invalid rpc response uri")
+    @Throws(IOException::class)
+    fun test_another_invalid_rpc_response_uri() {
+        val uuri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource {
+                name = "hello"
+                id = 19999
+            }
+        }
+
+        val status = UriValidator.validateRpcResponse(uuri)
+        assertFalse(UriValidator.isRpcResponse(uuri))
+        assertFalse(status.isSuccess())
     }
 
     @Test
@@ -537,6 +569,18 @@ internal class UriValidatorTest {
             val status: ValidationResult = UriValidator.validateRpcResponse(uuri)
             assertTrue(status.isFailure())
         }
+    }
+
+    @Test
+    @DisplayName("Test is Remote is false for URI without UAuthority")
+    fun test_is_remote_is_false_for_uri_without_uauthority() {
+        val uri = uUri {
+            authority = uAuthority {  }
+            entity = uEntity { name = "hartley" }
+            resource = forRpcResponse()
+        }
+        assertFalse(isRemote(UAuthority.getDefaultInstance()))
+        assertFalse(isRemote(uri.authority))
     }
 
     @get:Throws(IOException::class)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -34,11 +34,15 @@ class UAttributesBuilder
 /**
  * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
  *
+ * @param source   Source address of the message.
  * @param uuid       Unique identifier for the message.
  * @param messageType     Message type such as Publish a state change, RPC request or RPC response.
  * @param uPriority uProtocol Prioritization classifications.
  */ private constructor(
-    private val uuid: UUID, private val messageType: UMessageType, private val uPriority: UPriority
+    private val source: UUri,
+    private val uuid: UUID,
+    private val messageType: UMessageType,
+    private val uPriority: UPriority
 ) {
     private var timeToLive: Int? = null
     private var tokenAttr: String? = null
@@ -46,6 +50,7 @@ class UAttributesBuilder
     private var plevel: Int? = null
     private var commStatus: Int? = null
     private var reqId: UUID? = null
+    private var traceparentAttr: String? = null
 
     /**
      * Add the time to live in milliseconds.
@@ -114,6 +119,17 @@ class UAttributesBuilder
     }
 
     /**
+     * Add the traceparent.
+     *
+     * @param traceparent the trace parent.
+     * @return Returns the UAttributesBuilder with the configured traceparent.
+     */
+    fun withTraceparent(traceparent: String): UAttributesBuilder {
+        this.traceparentAttr = traceparent
+        return this
+    }
+
+    /**
      * Construct the UAttributes from the builder.
      *
      * @return Returns a constructed
@@ -123,74 +139,75 @@ class UAttributesBuilder
             id = uuid
             type = messageType
             priority = uPriority
-            if (sinkUUri != null) {
-                sink = sinkUUri!!
-            }
-            if (timeToLive != null) {
-                ttl = timeToLive!!
-            }
-            if (plevel != null) {
-                permissionLevel = plevel!!
-            }
-            if (commStatus != null) {
-                commstatus = commStatus!!
-            }
-            if (reqId != null) {
-                reqid = reqId!!
-            }
-            if (tokenAttr != null) {
-                token = tokenAttr!!
-            }
+            sinkUUri?.let { sink = it }
+            timeToLive?.let { ttl = it }
+            plevel?.let { permissionLevel = it }
+            commStatus?.let { commstatus = it }
+            reqId?.let { reqid = it }
+            tokenAttr?.let { token = it }
+            traceparentAttr?.let { traceparent = it }
         }
     }
 
     companion object {
         /**
          * Construct a UAttributesBuilder for a publish message.
+         * @param source   Source address of the message.
          * @param priority The priority of the message.
          * @return Returns the UAttributesBuilder with the configured priority.
          */
-        fun publish(priority: UPriority): UAttributesBuilder {
+        fun publish(source: UUri, priority: UPriority): UAttributesBuilder {
             return UAttributesBuilder(
-                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_PUBLISH, priority
             )
         }
 
         /**
          * Construct a UAttributesBuilder for a notification message.
-         * @param priority The priority of the message.
+         * @param source   Source address of the message.
          * @param sink The destination URI.
+         * @param priority The priority of the message.
          * @return Returns the UAttributesBuilder with the configured priority and sink.
          */
-        fun notification(priority: UPriority, sink: UUri): UAttributesBuilder {
+        fun notification(source: UUri, sink: UUri, priority: UPriority): UAttributesBuilder {
             return UAttributesBuilder(
-                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_PUBLISH, priority
             ).withSink(sink)
         }
 
         /**
          * Construct a UAttributesBuilder for a request message.
-         * @param priority The priority of the message.
+         * @param source   Source address of the message.
          * @param sink The destination URI.
+         * @param priority The priority of the message.
          * @param ttl The time to live in milliseconds.
          * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
          */
-        fun request(priority: UPriority, sink: UUri, ttl: Int): UAttributesBuilder {
+        fun request(source: UUri, sink: UUri, priority: UPriority, ttl: Int): UAttributesBuilder {
             return UAttributesBuilder(
-                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_REQUEST, priority
             ).withTtl(ttl).withSink(sink)
         }
 
         /**
          * Construct a UAttributesBuilder for a response message.
-         * @param priority The priority of the message.
+         * @param source   Source address of the message.
          * @param sink The destination URI.
+         * @param priority The priority of the message.
          * @param reqid The original request UUID used to correlate the response to the request.
          * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
          */
-        fun response(priority: UPriority, sink: UUri, reqid: UUID): UAttributesBuilder {
+        fun response(source: UUri, sink: UUri, priority: UPriority, reqid: UUID): UAttributesBuilder {
             return UAttributesBuilder(
-                UuidFactory.Factories.UPROTOCOL.factory().create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_RESPONSE, priority
             ).withSink(sink).withReqId(reqid)
         }
     }

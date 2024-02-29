@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +21,7 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,6 +63,8 @@ class MicroUriSerializerTest {
 
         val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
         val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        assertTrue(UriValidator.isMicroForm(uri))
+        assertTrue(bytes.isNotEmpty())
         assertEquals(uri, uri2)
     }
 
@@ -155,7 +157,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = UResourceBuilder.forRpcRequest(99)
+            resource = UResourceBuilder.forRpcRequest(id = 99)
         }
 
 

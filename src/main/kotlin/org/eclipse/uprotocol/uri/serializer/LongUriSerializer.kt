@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -200,6 +200,9 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
                 }
                 if (resourceMessage != null) {
                     message = resourceMessage
+                }
+                if (resourceName.contains("rpc") && resourceInstance != null && resourceInstance.contains("response")) {
+                    id = 0
                 }
             }
         }

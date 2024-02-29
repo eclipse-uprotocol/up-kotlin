@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,12 +27,13 @@ package org.eclipse.uprotocol.rpc
 import kotlinx.coroutines.flow.Flow
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UAttributes
+import org.eclipse.uprotocol.v1.UMessage
 import org.eclipse.uprotocol.v1.UUri
 
 /**
  * RpcClient is an interface used by code generators for uProtocol services defined in proto files such as
  * the core uProtocol services found in https://github.com/eclipse-uprotocol/uprotocol-core-api. the interface
- * provides a clean contract for all transports to implement to be able to support RPC on their platform. Each
+ * provides a clean contract for mapping a RPC request to a response. Each
  * platform MUST implement this interface. For more details please refer to
  * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/README.adoc[RpcClient Specifications]
  */
@@ -49,5 +50,5 @@ interface RpcClient {
      * @return Returns the Flow with the response message or exception with the failure
      * reason as {@link UStatus}.
      */
-    fun invokeMethod(methodUri: UUri, requestPayload: UPayload, options: CallOptions): Flow<UPayload>
+    fun invokeMethod(methodUri: UUri, requestPayload: UPayload, options: CallOptions): Flow<UMessage>
 }

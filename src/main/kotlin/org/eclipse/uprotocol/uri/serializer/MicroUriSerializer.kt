@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,7 +25,7 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder
 import org.eclipse.uprotocol.uri.validator.UriValidator
 import org.eclipse.uprotocol.v1.*
 import java.io.ByteArrayOutputStream
@@ -68,28 +68,21 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         val os = ByteArrayOutputStream()
         // UP_VERSION
         os.write(UP_VERSION.toInt())
-        val type: AddressType = when (uri.authority.remoteCase) {
-            UAuthority.RemoteCase.REMOTE_NOT_SET -> AddressType.LOCAL
-            UAuthority.RemoteCase.IP -> {
-                val length: Int = uri.authority.ip.size()
-                when (length) {
-                    4 -> {
-                        AddressType.IPv4
-                    }
-
-                    16 -> {
-                        AddressType.IPv6
-                    }
-
-                    else -> {
-                        return ByteArray(0)
-                    }
-                }
+        val type = if (uri.authority.hasIp()) {
+            val length = uri.authority.getIp().size()
+            if (length == 4) {
+                AddressType.IPv4
+            } else if (length == 16) {
+                AddressType.IPv6
+            } else {
+                return ByteArray(0)
             }
-
-            UAuthority.RemoteCase.ID -> AddressType.ID
-            else -> return ByteArray(0)
+        } else if (uri.authority.hasId()) {
+            AddressType.ID
+        } else {
+            AddressType.LOCAL
         }
+
         os.write(type.getValue().toInt())
 
         // URESOURCE_ID
@@ -115,10 +108,10 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                 os.write(uri.authority.id.size())
             }
             try {
-                when (uri.authority.remoteCase) {
-                    UAuthority.RemoteCase.IP -> os.write(uri.authority.ip.toByteArray())
-                    UAuthority.RemoteCase.ID -> os.write(uri.authority.id.toByteArray())
-                    else -> {}
+                if (uri.authority.hasIp()) {
+                    os.write(uri.authority.getIp().toByteArray())
+                } else if (uri.authority.hasId()) {
+                    os.write(uri.authority.getId().toByteArray())
                 }
             } catch (e: IOException) {
                 // TODO Auto-generated catch block
@@ -206,7 +199,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
 
     companion object {
         const val LOCAL_MICRO_URI_LENGTH = 8 // local micro URI length
-        const val IPV4_MICRO_URI_LENGTH = 12 // IPv4 micro URI length 
+        const val IPV4_MICRO_URI_LENGTH = 12 // IPv4 micro URI length
         const val IPV6_MICRO_URI_LENGTH = 24 // IPv6 micro UriPart length
         const val UP_VERSION: Byte = 0x1 // UP version
         private val INSTANCE = MicroUriSerializer()
