@@ -23,15 +23,13 @@ package org.eclipse.uprotocol.rpc
 
 import com.google.protobuf.Any
 import com.google.protobuf.Int32Value
-import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.kotlin.toByteString
 import io.cloudevents.v1.proto.CloudEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletionException
@@ -51,7 +49,7 @@ internal class RpcTest {
     }
     private var happyPath: RpcClient = object : RpcClient {
         override fun invokeMethod(methodUri: UUri, requestPayload: UPayload, options: CallOptions): Flow<UMessage> {
-            return flowOf(buildUMessage())
+            return flowOf(testUMessage)
         }
     }
     private var withStatusCodeInsteadOfHappyPath: RpcClient = object : RpcClient {
@@ -94,7 +92,7 @@ internal class RpcTest {
             })
         }
     }
-    private var thatCompletesWithAnException: RpcClient = object : RpcClient {
+    private var thatFlowWithAnException: RpcClient = object : RpcClient {
         override fun invokeMethod(methodUri: UUri, requestPayload: UPayload, options: CallOptions): Flow<UMessage> {
             return flow {
                 throw RuntimeException("Boom")
@@ -124,10 +122,10 @@ internal class RpcTest {
     fun test_compose_happy_path() = runTest {
         val payload: UPayload = buildUPayload()
         returnsNumber3.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResponse<Int32Value>().map {
-                Int32Value.of(it.value + 5)
-            }.first().run {
-                assertEquals(Int32Value.of(8), this)
-            }
+            Int32Value.of(it.value + 5)
+        }.first().run {
+            assertEquals(Int32Value.of(8), this)
+        }
     }
 
     @Test
@@ -150,8 +148,8 @@ internal class RpcTest {
     fun test_success_invoke_method_happy_flow_using_toResponse() = runTest {
         val payload: UPayload = buildUPayload()
         happyPath.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResponse<CloudEvent>().first().run {
-                assertEquals(buildCloudEvent(), this)
-            }
+            assertEquals(buildCloudEvent(), this)
+        }
     }
 
     @Test
@@ -176,7 +174,7 @@ internal class RpcTest {
     fun test_fail_invoke_method_when_invoke_method_threw_an_exception_using_toResponse() = runTest {
         val payload: UPayload = buildUPayload()
         try {
-            thatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUCallOptions())
+            thatFlowWithAnException.invokeMethod(buildTopic(), payload, buildUCallOptions())
                 .toResponse<CloudEvent>().first()
             fail("should not reach here")
         } catch (e: Exception) {
@@ -228,11 +226,11 @@ internal class RpcTest {
                 .first()
             fail("should not reach here")
         } catch (e: Exception) {
-            assertThrows(InvalidProtocolBufferException::class.java) {
+            assertThrows(RuntimeException::class.java) {
                 throw e
             }
             assertEquals(
-                "Protocol message contained an invalid tag (zero).",
+                "Protocol message contained an invalid tag (zero). [org.eclipse.uprotocol.v1.UStatus]",
                 e.message,
             )
         }
@@ -242,7 +240,8 @@ internal class RpcTest {
     fun test_no_payload_in_umessage() = runTest {
         val payload: UPayload = buildUPayload()
         try {
-            thatReturnsUMessageWithoutPayload.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResponse<CloudEvent>()
+            thatReturnsUMessageWithoutPayload.invokeMethod(buildTopic(), payload, buildUCallOptions())
+                .toResponse<CloudEvent>()
                 .first()
             fail("should not reach here")
         } catch (e: Exception) {
@@ -254,6 +253,99 @@ internal class RpcTest {
                 e.message,
             )
         }
+    }
+
+
+    @Test
+    fun test_toResult_nonUStatus_happy_path() = runTest {
+        val payload = buildUPayload()
+        returnsNumber3.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResult<Int32Value>().first().run {
+            assertTrue(isSuccess)
+            assertEquals(Int32Value.of(3), getOrNull())
+        }
+    }
+
+    @Test
+    fun test_toResult_uStatus_happy_path() = runTest {
+        val payload = buildUPayload()
+        withStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResult<UStatus>().first()
+            .run {
+                assertTrue(isSuccess)
+                assertEquals(UCode.OK, getOrNull()?.code)
+                assertEquals("all good", getOrNull()?.message)
+
+            }
+    }
+
+    @Test
+    fun test_toResult_uStatus_not_ok() = runTest {
+        val payload = buildUPayload()
+        withStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUCallOptions()).toResult<UStatus>()
+            .first().run {
+                assertTrue(isFailure)
+                assertTrue(exceptionOrNull() is IllegalStateException)
+                assertEquals("boom, UStatus: INVALID_ARGUMENT", exceptionOrNull()?.message)
+            }
+    }
+
+    @Test
+    fun test_toResult_no_payload_in_umessage() = runTest {
+        val payload: UPayload = buildUPayload()
+        thatReturnsUMessageWithoutPayload.invokeMethod(buildTopic(), payload, buildUCallOptions())
+            .toResult<CloudEvent>()
+            .first().run {
+                assertTrue(isFailure)
+                assertTrue(exceptionOrNull() is RuntimeException)
+                assertEquals(
+                    "Server returned a null payload. Expected [io.cloudevents.v1.proto.CloudEvent]",
+                    exceptionOrNull()?.message
+                )
+            }
+    }
+
+
+    @Test
+    fun test_fail_invoke_method_when_invoke_method_threw_an_exception_using_toResult() = runTest {
+        val payload: UPayload = buildUPayload()
+        thatFlowWithAnException.invokeMethod(buildTopic(), payload, buildUCallOptions())
+            .toResult<CloudEvent>().first().run {
+                assertTrue(isFailure)
+                assertTrue(exceptionOrNull() is CompletionException)
+                assertEquals(
+                    "Boom",
+                    exceptionOrNull()?.message
+                )
+            }
+    }
+
+    @Test
+    fun test_fail_invoke_method_when_invoke_method_returns_a_status_using_toResult() = runTest {
+        val payload: UPayload = buildUPayload()
+        withStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUCallOptions())
+            .toResult<CloudEvent>().first().run {
+                assertTrue(isFailure)
+                assertTrue(exceptionOrNull() is RuntimeException)
+                assertEquals(
+                    "Unknown payload type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [io.cloudevents.v1.proto.CloudEvent]",
+                    exceptionOrNull()?.message
+                )
+            }
+    }
+
+    @Test
+    @DisplayName("test toResult with invalid payload that is not of type any")
+    fun test_invalid_payload_that_is_not_type_any_toResult() = runTest {
+        val payload: UPayload = buildUPayload()
+        thatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUCallOptions())
+            .toResult<CloudEvent>().first().run {
+                assertTrue(isFailure)
+                assertTrue(exceptionOrNull() is RuntimeException)
+                assertEquals(
+                    "Protocol message contained an invalid tag (zero). [org.eclipse.uprotocol.v1.UStatus]",
+                    exceptionOrNull()?.message
+                )
+            }
+
     }
 
     private fun buildCloudEvent(): CloudEvent {
@@ -269,10 +361,8 @@ internal class RpcTest {
         }
     }
 
-    private fun buildUMessage(): UMessage {
-        return uMessage {
-            payload = buildUPayload()
-        }
+    private val testUMessage = uMessage {
+        payload = buildUPayload()
     }
 
     private fun buildTopic(): UUri {

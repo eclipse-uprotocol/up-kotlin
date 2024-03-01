@@ -26,7 +26,6 @@ package org.eclipse.uprotocol.rpc
 
 import kotlinx.coroutines.flow.Flow
 import org.eclipse.uprotocol.v1.UPayload
-import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UMessage
 import org.eclipse.uprotocol.v1.UUri
 
