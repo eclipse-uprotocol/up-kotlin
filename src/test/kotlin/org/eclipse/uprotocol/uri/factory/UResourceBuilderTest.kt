@@ -21,9 +21,9 @@
 
 package org.eclipse.uprotocol.uri.factory
 
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcRequest
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.fromId
+import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcRequest
+import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcResponse
+import org.eclipse.uprotocol.uri.factory.UResourceFactory.from
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
@@ -31,7 +31,7 @@ import kotlin.random.Random
 class UResourceBuilderTest{
     @Test
     fun test_forRpcResponse(){
-        val resource = forRpcResponse()
+        val resource = createForRpcResponse()
         assertEquals("rpc", resource.name)
         assertEquals("response", resource.instance)
         assertEquals(0, resource.id)
@@ -39,7 +39,7 @@ class UResourceBuilderTest{
 
     @Test
     fun test_forRpcRequest_without_argu(){
-        val resource = forRpcRequest()
+        val resource = createForRpcRequest()
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(0, resource.id)
@@ -47,7 +47,7 @@ class UResourceBuilderTest{
 
     @Test
     fun test_forRpcRequest_with_method(){
-        val resource = forRpcRequest(method = "test")
+        val resource = createForRpcRequest(method = "test")
         assertEquals("rpc", resource.name)
         assertEquals("test", resource.instance)
         assertEquals(0, resource.id)
@@ -55,7 +55,7 @@ class UResourceBuilderTest{
 
     @Test
     fun test_forRpcRequest_with_id(){
-        val resource = forRpcRequest(id = 999)
+        val resource = createForRpcRequest(id = 999)
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(999, resource.id)
@@ -63,7 +63,7 @@ class UResourceBuilderTest{
 
     @Test
     fun test_forRpcRequest(){
-        val resource = forRpcRequest(method = "test", id = 999)
+        val resource = createForRpcRequest(method = "test", id = 999)
         assertEquals("rpc", resource.name)
         assertEquals("test", resource.instance)
         assertEquals(999, resource.id)
@@ -72,7 +72,7 @@ class UResourceBuilderTest{
     @Test
     fun test_fromId_valid_id(){
         val idTest= Random.nextInt(0,999)
-        val resource = fromId(idTest)
+        val resource = from(idTest)
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(idTest, resource.id)
@@ -81,7 +81,7 @@ class UResourceBuilderTest{
     @Test
     fun test_fromId_invalid_id(){
         val idTest= Random.nextInt(1000,Int.MAX_VALUE)
-        val resource = fromId(idTest)
+        val resource = from(idTest)
         assertEquals("", resource.name)
         assertEquals("", resource.instance)
         assertEquals(idTest, resource.id)

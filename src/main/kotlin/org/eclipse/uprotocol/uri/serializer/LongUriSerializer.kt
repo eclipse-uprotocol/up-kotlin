@@ -113,17 +113,11 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         }
 
         return uUri {
-            if (uAuthority != null) {
-                authority = uAuthority
-            }
-            if (uResource != null) {
-                resource = uResource
-            }
+            uAuthority?.let { authority = it }
+            uResource?.let { resource = it }
             entity = uEntity {
                 name = useName
-                if (useVersionInt != null) {
-                    versionMajor = useVersionInt
-                }
+                useVersionInt?.let { versionMajor = it }
             }
 
         }
@@ -195,12 +189,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
 
             return uResource {
                 name = resourceName
-                if (resourceInstance != null) {
-                    instance = resourceInstance
-                }
-                if (resourceMessage != null) {
-                    message = resourceMessage
-                }
+                resourceInstance?.let { instance = it }
+                resourceMessage?.let { message = it }
                 if (resourceName.contains("rpc") && resourceInstance != null && resourceInstance.contains("response")) {
                     id = 0
                 }

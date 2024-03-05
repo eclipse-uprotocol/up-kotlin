@@ -186,10 +186,7 @@ class UCloudEventAttributes private constructor(
     }
 
     override fun toString(): String {
-        var traceParentString = ""
-        if (traceparent != null) {
-            traceParentString = ", traceparent='$traceparent'"
-        }
+        val traceParentString = traceparent?.let { ", traceparent='$it'" }?:""
         return "UCloudEventAttributes{" +
                 "hash='" + hash + '\'' +
                 ", priority=" + priority +

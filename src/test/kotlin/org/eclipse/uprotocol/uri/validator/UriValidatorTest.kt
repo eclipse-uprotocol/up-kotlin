@@ -20,7 +20,7 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
+import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
@@ -33,7 +33,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
-
 
 internal class UriValidatorTest {
     @Test
@@ -516,7 +515,7 @@ internal class UriValidatorTest {
     fun test_valid_rpc_response_uri() {
         val uuri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = forRpcResponse()
+            resource = UResourceFactory.createForRpcResponse()
         }
 
         val status: ValidationResult = uuri.validateRpcResponse()
@@ -576,7 +575,7 @@ internal class UriValidatorTest {
         val uri = uUri {
             authority = uAuthority {  }
             entity = uEntity { name = "hartley" }
-            resource = forRpcResponse()
+            resource = UResourceFactory.createForRpcResponse()
         }
         assertFalse(UAuthority.getDefaultInstance().isRemote())
         assertFalse(uri.authority.isRemote())

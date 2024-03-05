@@ -21,13 +21,14 @@
  * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.eclipse.uprotocol.uri.validator
 
 import org.eclipse.uprotocol.v1.UAuthority
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.validation.ValidationResult
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Validate a [UUri] to ensure that it has at least a name for the uEntity.
@@ -45,7 +46,6 @@ fun UUri.validate(): ValidationResult {
         ValidationResult.failure("Uri is missing uSoftware Entity name.")
     } else ValidationResult.success()
 }
-
 
 /**
  * Validate a [UUri] that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
@@ -76,8 +76,6 @@ fun UUri.validateRpcResponse(): ValidationResult {
         ValidationResult.failure("Invalid RPC response type.")
     } else ValidationResult.success()
 }
-
-
 
 /**
  * Returns true if URI is of type RPC.
@@ -167,7 +165,11 @@ fun UUri.isLongForm(): Boolean {
  *
  * @return Returns true if URI contains names so that it can be serialized into long format.
  */
+@OptIn(ExperimentalContracts::class)
 fun UAuthority?.isLongForm(): Boolean {
+    contract {
+        returns(true) implies (this@isLongForm is UAuthority)
+    }
     return (this != null) && this.hasName() && this.name.isNotBlank()
 }
 
@@ -185,7 +187,11 @@ fun UAuthority?.isLocal(): Boolean {
  *
  * @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
  */
+@OptIn(ExperimentalContracts::class)
 fun UAuthority?.isRemote(): Boolean {
+    contract {
+        returns(true) implies (this@isRemote is UAuthority)
+    }
     return (this != null) && this != UAuthority.getDefaultInstance() &&
             (this.isLongForm() || this.isMicroForm())
 }

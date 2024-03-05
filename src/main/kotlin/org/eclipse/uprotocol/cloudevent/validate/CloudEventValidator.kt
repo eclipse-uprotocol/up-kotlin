@@ -33,7 +33,6 @@ import org.eclipse.uprotocol.uri.validator.validate
 import org.eclipse.uprotocol.v1.*
 import java.util.Optional
 
-
 /**
  * Validates a CloudEvent using google.grpc.Status<br></br>
  *

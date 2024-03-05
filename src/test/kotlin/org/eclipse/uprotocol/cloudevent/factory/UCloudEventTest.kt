@@ -481,7 +481,7 @@ internal class UCloudEventTest {
             .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent")).withData(cloudEventData)
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         val data: CloudEventData? = cloudEvent.data
-        val dataAsAny: Any = Any.parseFrom(data!!.toBytes())
+        val dataAsAny: Any = Any.parseFrom(data?.toBytes())
         val extracted: Any = UCloudEvent.getPayload(cloudEvent)
         assertEquals(dataAsAny, extracted)
     }

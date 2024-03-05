@@ -28,7 +28,7 @@ val uri = uUri {
                 id = 10203
                 versionMajor = 1
             }
-            resource = UResourceBuilder.forRpcRequest("Raise", 10)
+            resource = UResourceFactory.createRpcRequest("Raise", 10)
         }
 ----
 

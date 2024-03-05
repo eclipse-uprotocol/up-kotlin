@@ -22,7 +22,7 @@ package org.eclipse.uprotocol.transport.validator
 
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
+import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcResponse
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.v1.*
@@ -701,7 +701,7 @@ internal class UAttributesValidatorTest {
             name = "petapp.ultifi.gm.com"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = createForRpcResponse()
     }
 
     private val source: UUri = uUri {
@@ -709,6 +709,6 @@ internal class UAttributesValidatorTest {
             name = "hartley_app"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = createForRpcResponse()
     }
 }

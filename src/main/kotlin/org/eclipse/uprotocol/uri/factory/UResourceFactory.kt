@@ -28,15 +28,15 @@ import com.google.protobuf.ProtocolMessageEnum
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.uResource
 
-
-object UResourceBuilder {
+object UResourceFactory {
     private const val MAX_RPC_ID = 1000
 
     /**
-     * Builds a UResource for an RPC response.
+     * Create a UResource for an RPC response.
      * @return Returns a UResource for an RPC response.
      */
-    fun forRpcResponse(): UResource {
+    fun createForRpcResponse(): UResource {
+
         return uResource {
             name = "rpc"
             instance = "response"
@@ -45,12 +45,12 @@ object UResourceBuilder {
     }
 
     /**
-     * Builds a UResource for an RPC request with at least an ID or a method name
+     * Create a UResource for an RPC request with at least an ID or a method name
      * @param method The method to be invoked.
      * @param id The ID of the request.
      * @return Returns a UResource for an RPC request.
      */
-    fun forRpcRequest(method: String? = null, id: Int? = null): UResource {
+    fun createForRpcRequest(method: String? = null, id: Int? = null): UResource {
         return uResource {
             name = "rpc"
             if (method != null) instance = method
@@ -59,15 +59,14 @@ object UResourceBuilder {
     }
 
     /**
-     * Build a UResource from an ID. This method will determine if
+     * Create a UResource from an ID. This method will determine if
      * the id is an RPC or topic ID based on the range
      * @param id The ID of the request.
      * @return Returns a UResource for an RPC request.
      */
-    fun fromId(id: Int): UResource {
-        return if (id < MAX_RPC_ID) forRpcRequest(id = id) else uResource { this.id = id }
+    fun from(id: Int): UResource {
+        return if (id < MAX_RPC_ID) createForRpcRequest(id = id) else uResource { this.id = id }
     }
-
 
     /**
      * Build a UResource from a protobuf message. This method will determine if
@@ -75,11 +74,12 @@ object UResourceBuilder {
      * @param message The protobuf message.
      * @return Returns a UResource for an RPC request.
      */
-    fun fromProto(message: ProtocolMessageEnum): UResource {
+    fun from(message: ProtocolMessageEnum): UResource {
         return uResource {
             message.descriptorForType.containingType.name?.let { name = it }
             message.valueDescriptor.name?.let { instance = it }
             id = message.number
         }
     }
+
 }

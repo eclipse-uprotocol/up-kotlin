@@ -77,7 +77,7 @@ object UPayloadBuilder {
                 }
                 UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF -> {
                     val defaultInstance = Internal.getDefaultInstance(clazz)
-                    defaultInstance!!.parserForType.parseFrom(payload.value) as T
+                    defaultInstance.parserForType.parseFrom(payload.value) as T
                 }
                 else -> null
             }
