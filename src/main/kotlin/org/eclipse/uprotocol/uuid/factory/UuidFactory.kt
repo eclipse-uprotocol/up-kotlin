@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,32 +30,38 @@ import org.eclipse.uprotocol.v1.uUID
 import java.time.Instant
 import java.util.*
 
-abstract class UuidFactory {
-    fun create(): UUID {
-        return this.create(Instant.now())
-    }
 
-    abstract fun create(instant: Instant?): UUID
-    enum class Factories(private val factory: UuidFactory) {
-        UUIDV6(Uuidv6Factory()), UPROTOCOL(Uuidv8Factory());
+sealed class UuidFactory {
+    abstract operator fun invoke(instant: Instant = Instant.now()): UUID
+}
 
-        fun factory(): UuidFactory {
-            return factory
+/**
+ * Factory to generate UUID following Uuidv6 data model.
+ *
+ * @param instant An instantaneous point on the time-line
+ * @return return UUID generated in UUIDV6
+ */
+@Suppress("KDocUnresolvedReference")
+data object UUIDV6 : UuidFactory() {
+    override operator fun invoke(instant: Instant): UUID {
+        val uuidJava: java.util.UUID = UuidCreator.getTimeOrdered(
+            Objects.requireNonNullElse(instant, Instant.now()), null, null
+        )
+        return uUID {
+            msb = uuidJava.mostSignificantBits
+            lsb = uuidJava.leastSignificantBits
         }
     }
+}
 
-    private class Uuidv6Factory : UuidFactory() {
-        override fun create(instant: Instant?): UUID {
-            val uuidJava: java.util.UUID = UuidCreator.getTimeOrdered(
-                Objects.requireNonNullElse(instant, Instant.now()), null, null
-            )
-            return uUID {
-                msb = uuidJava.mostSignificantBits
-                lsb = uuidJava.leastSignificantBits
-            }
-        }
-    }
-
+/**
+ * Factory to generate UUID following Uuidv8 data model.
+ *
+ * @param instant An instantaneous point on the time-line
+ * @return return UUID generated in UUIDV8
+ */
+@Suppress("KDocUnresolvedReference")
+data object UUIDV8 : UuidFactory() {
     /**
      * uProtocol UUIDv8 data model
      * UUIDv8 can only be built using the static factory methods of the class
@@ -89,38 +95,34 @@ abstract class UuidFactory {
      * |rand_b      | MUST 62 bits random number that is generated at initialization time of the uE only and reused
      * otherwise |
      */
-    private class Uuidv8Factory : UuidFactory() {
-        @Synchronized
-        override fun create(instant: Instant?): UUID {
-            val time: Long = Objects.requireNonNullElse(instant, Instant.now())!!.toEpochMilli()
+    private const val UUIDV8_VERSION = 8
+    private const val MAX_COUNT = 0xfff
 
-            // Check if the current time is the same as the previous time
-            if (time == msBits shr 16) {
-                // Increment the counter if we are not at MAX_COUNT
-                if (msBits and 0xFFFL < MAX_COUNT) {
-                    msBits++
-                }
+    //private val lsb: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (-0x8000000000000000L).toLong()
+    private val lsBits: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (1L shl 63)
 
-                // The previous time is not the same tick as the current, so we reset msb
-            } else {
-                msBits = time shl 16 or (8L shl 12)
+    // Keep track of the time and counters
+    private var msBits = (UUIDV8_VERSION shl 12 // Version is 8
+            ).toLong()
+
+    @Synchronized
+    override operator fun invoke(instant: Instant): UUID {
+        val time: Long = instant.toEpochMilli()
+
+        // Check if the current time is the same as the previous time
+        if (time == msBits shr 16) {
+            // Increment the counter if we are not at MAX_COUNT
+            if (msBits and 0xFFFL < MAX_COUNT) {
+                msBits++
             }
-            return uUID {
-                msb = msBits
-                lsb = lsBits
-            }
+
+            // The previous time is not the same tick as the current, so we reset msb
+        } else {
+            msBits = time shl 16 or (8L shl 12)
         }
-
-        companion object {
-            const val UUIDV8_VERSION = 8
-            private const val MAX_COUNT = 0xfff
-
-            //private val lsb: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (-0x8000000000000000L).toLong()
-            private val lsBits: Long = (Random().nextLong() and 0x3fffffffffffffffL) or (1L shl 63)
-
-            // Keep track of the time and counters
-            private var msBits = (UUIDV8_VERSION shl 12 // Version is 8
-                    ).toLong()
+        return uUID {
+            msb = msBits
+            lsb = lsBits
         }
     }
 }

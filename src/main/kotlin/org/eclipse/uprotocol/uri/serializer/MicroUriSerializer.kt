@@ -26,7 +26,8 @@ package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.uri.validator.isEmpty
+import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -60,7 +61,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
      * @return Returns a byte[] representing the serialized [UUri].
      */
     override fun serialize(uri: UUri?): ByteArray {
-        if (uri == null || UriValidator.isEmpty(uri) || !UriValidator.isMicroForm(uri)) {
+        if (uri == null || uri.isEmpty() || !uri.isMicroForm()) {
             return ByteArray(0)
         }
         val maybeUeId: Optional<Int> = Optional.ofNullable(uri.entity.id)
@@ -70,12 +71,16 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         os.write(UP_VERSION.toInt())
         val type = if (uri.authority.hasIp()) {
             val length = uri.authority.getIp().size()
-            if (length == 4) {
-                AddressType.IPv4
-            } else if (length == 16) {
-                AddressType.IPv6
-            } else {
-                return ByteArray(0)
+            when (length) {
+                4 -> {
+                    AddressType.IPv4
+                }
+                16 -> {
+                    AddressType.IPv6
+                }
+                else -> {
+                    return ByteArray(0)
+                }
             }
         } else if (uri.authority.hasId()) {
             AddressType.ID

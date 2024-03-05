@@ -35,7 +35,7 @@ val uri = uUri {
 === Validating
 [,kotlin]
 ----
-        val status:ValidationResult = UriValidator.validateRpcMethod(uuri)
+        val status:ValidationResult = uuri.validateRpcMethod()
         assertTrue(status.isSuccess())
 ----
 
@@ -43,8 +43,8 @@ val uri = uUri {
 [,kotlin]
 ----
         val uri: UUri = .../* UUri example above */
-        val micro: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        val long: String = LongUriSerializer.instance().serialize(uri)
+        val micro: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val long: String = LongUriSerializer.INSTANCE.serialize(uri)
         val uri2: UUri = UriSerializer.buildResolved(long, micro)
         assertTrue(uri.equals(uri2))
 ----

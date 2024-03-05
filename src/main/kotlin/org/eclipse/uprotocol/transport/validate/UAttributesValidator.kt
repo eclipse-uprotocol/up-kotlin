@@ -24,8 +24,11 @@
 
 package org.eclipse.uprotocol.transport.validate
 
-import org.eclipse.uprotocol.uri.validator.UriValidator
-import org.eclipse.uprotocol.uuid.factory.UuidUtils
+import org.eclipse.uprotocol.uri.validator.validate
+import org.eclipse.uprotocol.uri.validator.validateRpcMethod
+import org.eclipse.uprotocol.uri.validator.validateRpcResponse
+import org.eclipse.uprotocol.uuid.factory.getTime
+import org.eclipse.uprotocol.uuid.factory.isUuid
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import java.util.stream.Collectors
@@ -51,7 +54,7 @@ abstract class UAttributesValidator {
      * invalid configurations.
      */
     fun validate(attributes: UAttributes): ValidationResult {
-        val errorMessage = Stream.of<ValidationResult>(validateType(attributes),
+        val errorMessage = Stream.of(validateType(attributes),
                 validateTtl(attributes), validateSink(attributes),
                 validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map { obj: ValidationResult -> obj.getMessage() }.collect(Collectors.joining(","))
@@ -69,14 +72,14 @@ abstract class UAttributesValidator {
      */
     fun isExpired(uAttributes: UAttributes): Boolean {
         val ttl = uAttributes.ttl
-        val maybeTime = UuidUtils.getTime(uAttributes.id)
+        val maybeTime = uAttributes.id.getTime()
 
         // if the message does not have a ttl or the original time is not present or the ttl is less than 0
-        if (!uAttributes.hasTtl() || maybeTime.isEmpty || ttl <= 0) {
+        if (!uAttributes.hasTtl() || maybeTime==null || ttl <= 0) {
             return false
         }
         // the original time plus the ttl is less than the current time, the message has expired
-        return (maybeTime.get() + ttl) < System.currentTimeMillis();
+        return (maybeTime + ttl) < System.currentTimeMillis()
     }
 
     /**
@@ -104,7 +107,7 @@ abstract class UAttributesValidator {
      */
     open fun validateSink(attributes: UAttributes): ValidationResult {
         return if (attributes.hasSink()) {
-            UriValidator.validate(attributes.sink)
+            attributes.sink.validate()
         } else {
             ValidationResult.success()
         }
@@ -154,7 +157,7 @@ abstract class UAttributesValidator {
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
     open fun validateReqId(attributes: UAttributes): ValidationResult {
-        return if (attributes.hasReqid() && !UuidUtils.isUuid(attributes.reqid)) {
+        return if (attributes.hasReqid() && !attributes.reqid.isUuid()) {
             ValidationResult.failure("Invalid UUID")
         } else {
             ValidationResult.success()
@@ -226,7 +229,7 @@ abstract class UAttributesValidator {
         override fun validateSink(attributes: UAttributes): ValidationResult {
             return if (!attributes.hasSink()) {
                 ValidationResult.failure("Missing Sink")
-            } else UriValidator.validateRpcMethod(attributes.sink)
+            } else attributes.sink.validateRpcMethod()
         }
 
         /**
@@ -278,7 +281,7 @@ abstract class UAttributesValidator {
             if (!attributes.hasSink() || attributes.sink === UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink")
             }
-            return UriValidator.validateRpcResponse(attributes.sink)
+            return attributes.sink.validateRpcResponse()
         }
 
         /**
@@ -291,7 +294,7 @@ abstract class UAttributesValidator {
             if (!attributes.hasReqid() || attributes.reqid === UUID.getDefaultInstance()) {
                 return ValidationResult.failure("Missing correlationId")
             }
-            return if (!UuidUtils.isUuid(attributes.reqid)) {
+            return if (!attributes.reqid.isUuid()) {
                 ValidationResult.failure(String.format("Invalid correlationId [%s]", attributes.reqid))
             } else {
                 ValidationResult.success()

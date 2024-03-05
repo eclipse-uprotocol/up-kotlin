@@ -23,8 +23,8 @@ package org.eclipse.uprotocol.uri.serializer
 import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.core.usubscription.v3.Update
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder.fromProto
-import org.eclipse.uprotocol.uri.validator.UriValidator.isEmpty
-import org.eclipse.uprotocol.uri.validator.UriValidator.isMicroForm
+import org.eclipse.uprotocol.uri.validator.isEmpty
+import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -60,7 +60,7 @@ class UriSerializerTest {
 
         val resolvedUUri: Optional<UUri> = LongUriSerializer.instance().buildResolved(longuri, microuri)
         assertTrue(resolvedUUri.isPresent)
-        assertFalse(isEmpty(resolvedUUri.get()))
+        assertFalse(resolvedUUri.get().isEmpty())
         assertEquals("testauth", resolvedUUri.get().authority.name)
         assertEquals("neelam", resolvedUUri.get().entity.name)
         assertEquals(29999, resolvedUUri.get().entity.id)
@@ -78,7 +78,7 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, null)
         assertTrue(result.isPresent)
         // Assert that the result is empty
-        assertTrue(isEmpty(result.get()))
+        assertTrue(result.get().isEmpty())
     }
 
     @Test
@@ -89,7 +89,7 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved(null, ByteArray(0))
         assertTrue(result.isPresent)
         // Assert that the result is empty
-        assertTrue(isEmpty(result.get()))
+        assertTrue(result.get().isEmpty())
     }
 
     @Test
@@ -100,7 +100,7 @@ class UriSerializerTest {
         val result: Optional<UUri> = MicroUriSerializer.instance().buildResolved("", ByteArray(0))
         assertTrue(result.isPresent)
         // Assert that the result is not empty
-        assertTrue(isEmpty(result.get()))
+        assertTrue(result.get().isEmpty())
     }
 
     @Test
@@ -110,7 +110,7 @@ class UriSerializerTest {
             entity = uEntity { id = 0 }
             resource = fromProto(Update.Resources.subscriptions)
         }
-        assertFalse(isEmpty(uUri))
-        assertTrue(isMicroForm(uUri))
+        assertFalse(uUri.isEmpty())
+        assertTrue(uUri.isMicroForm())
     }
 }

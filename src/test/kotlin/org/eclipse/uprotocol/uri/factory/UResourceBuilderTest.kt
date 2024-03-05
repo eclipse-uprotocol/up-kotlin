@@ -21,13 +21,9 @@
 
 package org.eclipse.uprotocol.uri.factory
 
-import com.google.protobuf.*
-import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcRequest
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder.fromId
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.fromProto
-import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random

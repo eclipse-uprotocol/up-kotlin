@@ -29,7 +29,7 @@ import com.google.protobuf.Empty
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
-import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UUID
@@ -42,185 +42,184 @@ import java.net.URI
  * to formulate all kinds of  events (messages) that will be sent to and from devices.<br></br>
  * The CloudEvent factory knows how to generate CloudEvents of the 4 core types: req.v1, res.v1, pub.v1, and file.v1<br></br>
  */
-interface CloudEventFactory {
-    companion object {
-        /**
-         * Create a CloudEvent for an event for the use case of: RPC Request message.
-         *
-         * @param applicationUriForRPC   The uri for the application requesting the RPC.
-         * @param serviceMethodUri       The uri for the method to be called on the service Ex.: :/body.access/1/rpc.UpdateDoor
-         * @param protoPayload           Protobuf Any object with the Message command to be executed on the sink service.
-         * @param attributes             Additional attributes such as ttl, hash, priority and token.
-         * @return Returns an  request CloudEvent.
-         */
-        fun request(
-            applicationUriForRPC: String,
-            serviceMethodUri: String,
-            protoPayload: Any,
-            attributes: UCloudEventAttributes
-        ): CloudEvent {
-            val id = generateCloudEventId()
-            return buildBaseCloudEvent(
-                id,
-                applicationUriForRPC,
-                protoPayload.toByteArray(),
-                protoPayload.typeUrl,
-                attributes
-            )
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
-                .withExtension("sink", URI.create(serviceMethodUri))
-                .build()
-        }
+object CloudEventFactory {
+    /**
+     * Create a CloudEvent for an event for the use case of: RPC Request message.
+     *
+     * @param applicationUriForRPC   The uri for the application requesting the RPC.
+     * @param serviceMethodUri       The uri for the method to be called on the service Ex.: :/body.access/1/rpc.UpdateDoor
+     * @param protoPayload           Protobuf Any object with the Message command to be executed on the sink service.
+     * @param attributes             Additional attributes such as ttl, hash, priority and token.
+     * @return Returns an  request CloudEvent.
+     */
+    fun request(
+        applicationUriForRPC: String,
+        serviceMethodUri: String,
+        protoPayload: Any,
+        attributes: UCloudEventAttributes
+    ): CloudEvent {
+        val id = generateCloudEventId()
+        return buildBaseCloudEvent(
+            id,
+            applicationUriForRPC,
+            protoPayload.toByteArray(),
+            protoPayload.typeUrl,
+            attributes
+        )
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
+            .withExtension("sink", URI.create(serviceMethodUri))
+            .build()
+    }
 
-        /**
-         * Create a CloudEvent for an event for the use case of: RPC Response message.
-         *
-         * @param applicationUriForRPC  The destination of the response. The uri for the original application that requested the RPC and this response is for.
-         * @param serviceMethodUri      The uri for the method that was called on the service Ex.: :/body.access/1/rpc.UpdateDoor
-         * @param requestId             The cloud event id from the original request cloud event that this response if for.
-         * @param protoPayload          The protobuf serialized response message as defined by the application interface or the
-         * google.rpc.Status message containing the details of an error.
-         * @param attributes            Additional attributes such as ttl, hash and priority.
-         * @return Returns an  response CloudEvent.
-         */
-        fun response(
-            applicationUriForRPC: String,
-            serviceMethodUri: String,
-            requestId: String,
-            protoPayload: Any,
-            attributes: UCloudEventAttributes
-        ): CloudEvent {
-            val id = generateCloudEventId()
-            return buildBaseCloudEvent(
-                id,
-                serviceMethodUri,
-                protoPayload.toByteArray(),
-                protoPayload.typeUrl,
-                attributes
-            )
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
-                .withExtension("sink", URI.create(applicationUriForRPC))
-                .withExtension("reqid", requestId)
-                .build()
-        }
+    /**
+     * Create a CloudEvent for an event for the use case of: RPC Response message.
+     *
+     * @param applicationUriForRPC  The destination of the response. The uri for the original application that requested the RPC and this response is for.
+     * @param serviceMethodUri      The uri for the method that was called on the service Ex.: :/body.access/1/rpc.UpdateDoor
+     * @param requestId             The cloud event id from the original request cloud event that this response if for.
+     * @param protoPayload          The protobuf serialized response message as defined by the application interface or the
+     * google.rpc.Status message containing the details of an error.
+     * @param attributes            Additional attributes such as ttl, hash and priority.
+     * @return Returns an  response CloudEvent.
+     */
+    fun response(
+        applicationUriForRPC: String,
+        serviceMethodUri: String,
+        requestId: String,
+        protoPayload: Any,
+        attributes: UCloudEventAttributes
+    ): CloudEvent {
+        val id = generateCloudEventId()
+        return buildBaseCloudEvent(
+            id,
+            serviceMethodUri,
+            protoPayload.toByteArray(),
+            protoPayload.typeUrl,
+            attributes
+        )
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
+            .withExtension("sink", URI.create(applicationUriForRPC))
+            .withExtension("reqid", requestId)
+            .build()
+    }
 
-        /**
-         * Create a CloudEvent for an event for the use case of: RPC Response message that failed.
-         *
-         * @param applicationUriForRPC  The destination of the response. The uri for the original application that requested the RPC and this response is for.
-         * @param serviceMethodUri      The uri for the method that was called on the service Ex.: :/body.access/1/rpc.UpdateDoor
-         * @param requestId             The cloud event id from the original request cloud event that this response if for.
-         * @param communicationStatus   A UCode value that indicates of a platform communication error while delivering this CloudEvent.
-         * @param attributes            Additional attributes such as ttl, hash and priority.
-         * @return Returns a response CloudEvent Response for the use case of RPC Response message that failed.
-         */
-        fun failedResponse(
-            applicationUriForRPC: String,
-            serviceMethodUri: String,
-            requestId: String,
-            communicationStatus: Int,
-            attributes: UCloudEventAttributes
-        ): CloudEvent {
-            val id = generateCloudEventId()
-            val protoPayload: Any = Any.pack(Empty.getDefaultInstance())
-            return buildBaseCloudEvent(
-                id,
-                serviceMethodUri,
-                protoPayload.toByteArray(),
-                protoPayload.typeUrl,
-                attributes
-            )
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
-                .withExtension("sink", URI.create(applicationUriForRPC))
-                .withExtension("reqid", requestId)
-                .withExtension("commstatus", communicationStatus)
-                .build()
-        }
+    /**
+     * Create a CloudEvent for an event for the use case of: RPC Response message that failed.
+     *
+     * @param applicationUriForRPC  The destination of the response. The uri for the original application that requested the RPC and this response is for.
+     * @param serviceMethodUri      The uri for the method that was called on the service Ex.: :/body.access/1/rpc.UpdateDoor
+     * @param requestId             The cloud event id from the original request cloud event that this response if for.
+     * @param communicationStatus   A UCode value that indicates of a platform communication error while delivering this CloudEvent.
+     * @param attributes            Additional attributes such as ttl, hash and priority.
+     * @return Returns a response CloudEvent Response for the use case of RPC Response message that failed.
+     */
+    fun failedResponse(
+        applicationUriForRPC: String,
+        serviceMethodUri: String,
+        requestId: String,
+        communicationStatus: Int,
+        attributes: UCloudEventAttributes
+    ): CloudEvent {
+        val id = generateCloudEventId()
+        val protoPayload: Any = Any.pack(Empty.getDefaultInstance())
+        return buildBaseCloudEvent(
+            id,
+            serviceMethodUri,
+            protoPayload.toByteArray(),
+            protoPayload.typeUrl,
+            attributes
+        )
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
+            .withExtension("sink", URI.create(applicationUriForRPC))
+            .withExtension("reqid", requestId)
+            .withExtension("commstatus", communicationStatus)
+            .build()
+    }
 
-        /**
-         * Create a CloudEvent for an event for the use case of: Publish generic message.
-         *
-         * @param source The  uri of the topic being published.
-         * @param protoPayload protobuf Any object with the Message to be published.
-         * @param attributes Additional attributes such as ttl, hash and priority.
-         * @return Returns a publish CloudEvent.
-         */
-        fun publish(source: String, protoPayload: Any, attributes: UCloudEventAttributes): CloudEvent {
-            val id = generateCloudEventId()
-            return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .build()
-        }
+    /**
+     * Create a CloudEvent for an event for the use case of: Publish generic message.
+     *
+     * @param source The  uri of the topic being published.
+     * @param protoPayload protobuf Any object with the Message to be published.
+     * @param attributes Additional attributes such as ttl, hash and priority.
+     * @return Returns a publish CloudEvent.
+     */
+    fun publish(source: String, protoPayload: Any, attributes: UCloudEventAttributes): CloudEvent {
+        val id = generateCloudEventId()
+        return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+            .build()
+    }
 
-        /**
-         * Create a CloudEvent for an event for the use case of: Publish a notification message.<br></br>
-         * A published event containing the sink (destination) is often referred to as a notification, it is an event sent to a specific consumer.
-         *
-         * @param source        The  uri of the topic being published.
-         * @param sink          The  uri of the destination of this notification.
-         * @param protoPayload  protobuf Any object with the Message to be published.
-         * @param attributes    Additional attributes such as ttl, hash and priority.
-         * @return Returns a publish CloudEvent.
-         */
-        fun notification(
-            source: String,
-            sink: String,
-            protoPayload: Any,
-            attributes: UCloudEventAttributes
-        ): CloudEvent {
-            val id = generateCloudEventId()
-            return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withExtension("sink", URI.create(sink))
-                .build()
-        }
+    /**
+     * Create a CloudEvent for an event for the use case of: Publish a notification message.<br></br>
+     * A published event containing the sink (destination) is often referred to as a notification, it is an event sent to a specific consumer.
+     *
+     * @param source        The  uri of the topic being published.
+     * @param sink          The  uri of the destination of this notification.
+     * @param protoPayload  protobuf Any object with the Message to be published.
+     * @param attributes    Additional attributes such as ttl, hash and priority.
+     * @return Returns a publish CloudEvent.
+     */
+    fun notification(
+        source: String,
+        sink: String,
+        protoPayload: Any,
+        attributes: UCloudEventAttributes
+    ): CloudEvent {
+        val id = generateCloudEventId()
+        return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+            .withExtension("sink", URI.create(sink))
+            .build()
+    }
 
-        /**
-         * @return Returns a UUIDv8 id.
-         */
-        private fun generateCloudEventId(): String {
-            val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-            return LongUuidSerializer.instance().serialize(uuid)
-        }
+    /**
+     * @return Returns a UUIDv8 id.
+     */
+    private fun generateCloudEventId(): String {
+        val uuid: UUID = UUIDV8()
+        return LongUuidSerializer.INSTANCE.serialize(uuid)
+    }
 
-        /**
-         * Base CloudEvent builder that is the same for all CloudEvent types.
-         *
-         * @param id                 Event unique identifier.
-         * @param source             Identifies who is sending this event in the format of a uProtocol URI that
-         * can be built from a [UUri] object.
-         * @param protoPayloadBytes  The serialized Event data with the content type of "application/x-protobuf".
-         * @param protoPayloadSchema The schema of the proto payload bytes, for example you can use `protoPayload.typeUrl` on your service/app object.
-         * @param attributes        Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they
-         * were configured.
-         * @return Returns a CloudEventBuilder that can be additionally configured and then by calling .build() construct a CloudEvent
-         * ready to be serialized and sent to the transport layer.
-         */
-        fun buildBaseCloudEvent(
-            id: String?, source: String,
-            protoPayloadBytes: ByteArray,
-            protoPayloadSchema: String?,
-            attributes: UCloudEventAttributes
-        ): CloudEventBuilder {
-            val cloudEventBuilder: CloudEventBuilder = CloudEventBuilder.v1()
-                .withId(id)
-                .withSource(URI.create(source)) /* Not needed:
+    /**
+     * Base CloudEvent builder that is the same for all CloudEvent types.
+     *
+     * @param id                 Event unique identifier.
+     * @param source             Identifies who is sending this event in the format of a uProtocol URI that
+     * can be built from a [UUri] object.
+     * @param protoPayloadBytes  The serialized Event data with the content type of "application/x-protobuf".
+     * @param protoPayloadSchema The schema of the proto payload bytes, for example you can use `protoPayload.typeUrl` on your service/app object.
+     * @param attributes        Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they
+     * were configured.
+     * @return Returns a CloudEventBuilder that can be additionally configured and then by calling .build() construct a CloudEvent
+     * ready to be serialized and sent to the transport layer.
+     */
+    fun buildBaseCloudEvent(
+        id: String?, source: String,
+        protoPayloadBytes: ByteArray,
+        protoPayloadSchema: String?,
+        attributes: UCloudEventAttributes
+    ): CloudEventBuilder {
+        val cloudEventBuilder: CloudEventBuilder = CloudEventBuilder.v1()
+            .withId(id)
+            .withSource(URI.create(source)) /* Not needed:
                 .withDataContentType(PROTOBUF_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayloadSchema))
                 */
-                .withData(protoPayloadBytes)
-            attributes.ttl().ifPresent { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
-            attributes.priority()
-                .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
-            attributes.hash().ifPresent { hash -> cloudEventBuilder.withExtension("hash", hash) }
-            attributes.token().ifPresent { token -> cloudEventBuilder.withExtension("token", token) }
-            attributes.traceparent().ifPresent { traceparent: String ->
-                cloudEventBuilder.withExtension("traceparent", traceparent)
-            }
-
-            return cloudEventBuilder
+            .withData(protoPayloadBytes)
+        attributes.ttl().ifPresent { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
+        attributes.priority()
+            .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
+        attributes.hash().ifPresent { hash -> cloudEventBuilder.withExtension("hash", hash) }
+        attributes.token().ifPresent { token -> cloudEventBuilder.withExtension("token", token) }
+        attributes.traceparent().ifPresent { traceparent: String ->
+            cloudEventBuilder.withExtension("traceparent", traceparent)
         }
 
-        const val PROTOBUF_CONTENT_TYPE = "application/x-protobuf"
+        return cloudEventBuilder
     }
+
+    const val PROTOBUF_CONTENT_TYPE = "application/x-protobuf"
 }
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,16 +31,15 @@ import io.cloudevents.protobuf.ProtobufFormat
  * CloudEventSerializer to serialize and deserialize CloudEvents to protobuf format.
  */
 class CloudEventToProtobufSerializer : CloudEventSerializer {
-
-    companion object {
-        private val serializer: ProtobufFormat = ProtobufFormat()
-    }
-
     override fun serialize(cloudEvent: CloudEvent): ByteArray {
         return serializer.serialize(cloudEvent)
     }
 
     override fun deserialize(bytes: ByteArray): CloudEvent {
         return serializer.deserialize(bytes)
+    }
+
+    companion object {
+        private val serializer: ProtobufFormat = ProtobufFormat()
     }
 }

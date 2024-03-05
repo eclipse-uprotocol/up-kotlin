@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.transport.builder
 
-import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.v1.*
 
 /**
@@ -159,7 +159,7 @@ class UAttributesBuilder
         fun publish(source: UUri, priority: UPriority): UAttributesBuilder {
             return UAttributesBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UUIDV8(),
                 UMessageType.UMESSAGE_TYPE_PUBLISH, priority
             )
         }
@@ -174,7 +174,7 @@ class UAttributesBuilder
         fun notification(source: UUri, sink: UUri, priority: UPriority): UAttributesBuilder {
             return UAttributesBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UUIDV8(),
                 UMessageType.UMESSAGE_TYPE_PUBLISH, priority
             ).withSink(sink)
         }
@@ -190,7 +190,7 @@ class UAttributesBuilder
         fun request(source: UUri, sink: UUri, priority: UPriority, ttl: Int): UAttributesBuilder {
             return UAttributesBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UUIDV8(),
                 UMessageType.UMESSAGE_TYPE_REQUEST, priority
             ).withTtl(ttl).withSink(sink)
         }
@@ -206,7 +206,7 @@ class UAttributesBuilder
         fun response(source: UUri, sink: UUri, priority: UPriority, reqid: UUID): UAttributesBuilder {
             return UAttributesBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UUIDV8(),
                 UMessageType.UMESSAGE_TYPE_RESPONSE, priority
             ).withSink(sink).withReqId(reqid)
         }

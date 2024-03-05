@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,28 +29,26 @@ import java.util.Base64
 /**
  * Helper for serializing Base64 protobuf data.
  */
-interface Base64ProtobufSerializer {
-    companion object {
-        /**
-         * Deserialize a base64 protobuf payload into a Base64 String.
-         * @param bytes byte[] data
-         * @return Returns a String from the base64 protobuf payload.
-         */
-        fun deserialize(bytes: ByteArray?): String {
-            return if (bytes == null) {
-                ""
-            } else Base64.getEncoder().encodeToString(bytes)
-        }
+object Base64ProtobufSerializer {
+    /**
+     * Deserialize a base64 protobuf payload into a Base64 String.
+     * @param bytes byte[] data
+     * @return Returns a String from the base64 protobuf payload.
+     */
+    fun deserialize(bytes: ByteArray?): String {
+        return if (bytes == null) {
+            ""
+        } else Base64.getEncoder().encodeToString(bytes)
+    }
 
-        /**
-         * Serialize a String into Base64 format.
-         * @param stringToSerialize String to serialize.
-         * @return Returns the Base64 formatted String as a byte[].
-         */
-        fun serialize(stringToSerialize: String?): ByteArray {
-            return if (stringToSerialize == null) {
-                ByteArray(0)
-            } else Base64.getDecoder().decode(stringToSerialize.toByteArray())
-        }
+    /**
+     * Serialize a String into Base64 format.
+     * @param stringToSerialize String to serialize.
+     * @return Returns the Base64 formatted String as a byte[].
+     */
+    fun serialize(stringToSerialize: String?): ByteArray {
+        return if (stringToSerialize == null) {
+            ByteArray(0)
+        } else Base64.getDecoder().decode(stringToSerialize.toByteArray())
     }
 }

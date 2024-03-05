@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.v1.*
 import java.util.*
 
@@ -39,7 +39,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
      * @return Returns the String format of the supplied [UUri] that can be used as a sink or a source in a uProtocol publish communication.
      */
     override fun serialize(uri: UUri?): String {
-        if (uri == null || UriValidator.isEmpty(uri)) {
+        if (uri == null || uri.isEmpty()) {
             return ""
         }
         val sb = StringBuilder()

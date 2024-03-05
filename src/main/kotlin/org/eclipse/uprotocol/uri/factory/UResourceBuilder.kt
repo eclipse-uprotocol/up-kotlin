@@ -27,7 +27,6 @@ package org.eclipse.uprotocol.uri.factory
 import com.google.protobuf.ProtocolMessageEnum
 import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.uResource
-import java.util.*
 
 
 object UResourceBuilder {

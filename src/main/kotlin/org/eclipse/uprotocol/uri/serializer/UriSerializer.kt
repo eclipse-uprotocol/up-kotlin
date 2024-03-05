@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.uri.validator.isResolved
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.copy
 import org.eclipse.uprotocol.v1.uUri
@@ -77,6 +77,6 @@ interface UriSerializer<T> {
             }
         }
 
-        return if (UriValidator.isResolved(uri)) Optional.of(uri) else Optional.empty()
+        return if (uri.isResolved()) Optional.of(uri) else Optional.empty()
     }
 }

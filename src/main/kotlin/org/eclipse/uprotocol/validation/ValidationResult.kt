@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,17 +33,6 @@ import java.util.*
  * Class wrapping a ValidationResult of success or failure wrapping the value of a google.rpc.Status.
  */
 sealed class ValidationResult {
-
-    companion object {
-        val STATUS_SUCCESS: UStatus = uStatus {
-            code = UCode.OK
-            message = "OK"
-        }
-        private val SUCCESS: ValidationResult = Success
-
-        fun success(): ValidationResult = SUCCESS
-        fun failure(message: String): ValidationResult = Failure(message)
-    }
 
     fun isFailure(): Boolean {
         return !isSuccess()
@@ -95,5 +84,16 @@ sealed class ValidationResult {
         override fun toString(): String {
             return "ValidationResult.Success()"
         }
+    }
+
+    companion object {
+        val STATUS_SUCCESS: UStatus = uStatus {
+            code = UCode.OK
+            message = "OK"
+        }
+        private val SUCCESS: ValidationResult = Success
+
+        fun success(): ValidationResult = SUCCESS
+        fun failure(message: String): ValidationResult = Failure(message)
     }
 }

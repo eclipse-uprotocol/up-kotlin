@@ -30,7 +30,6 @@ import com.google.protobuf.Message
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UPayloadFormat
 import org.eclipse.uprotocol.v1.uPayload
-import java.util.*
 
 
 object UPayloadBuilder {
