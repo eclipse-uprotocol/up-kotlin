@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
-class UResourceBuilderTest{
+class UResourceFactoryTest{
     @Test
     fun test_forRpcResponse(){
         val resource = createForRpcResponse()
