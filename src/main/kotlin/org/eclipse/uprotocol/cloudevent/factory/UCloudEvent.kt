@@ -33,7 +33,8 @@ import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.UprotocolOptions
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.uuid.factory.UuidUtils
+import org.eclipse.uprotocol.uuid.factory.getTime
+import org.eclipse.uprotocol.uuid.factory.isUuid
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.v1.UUID
@@ -168,14 +169,14 @@ object UCloudEvent {
     }
 
     /**
-     * Extract the timestamp from the UUIDV8 CloudEvent Id, with Unix epoch as the
+     * Extract the timestamp from the UUIDV8 CloudEvent ID, with Unix epoch as the
      * @param cloudEvent The CloudEvent with the timestamp to extract.
-     * @return Return the timestamp from the UUIDV8 CloudEvent Id or an empty Optional if timestamp can't be extracted.
+     * @return Return the timestamp from the UUIDV8 CloudEvent ID or an empty Optional if timestamp can't be extracted.
      */
     fun getCreationTimestamp(cloudEvent: CloudEvent): Optional<Long> {
         val cloudEventId = cloudEvent.id
-        val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
-        return UuidUtils.getTime(uuid)
+        val uuid = LongUuidSerializer.INSTANCE.deserialize(cloudEventId)
+        return Optional.ofNullable(uuid.getTime())
     }
 
     /**
@@ -215,11 +216,11 @@ object UCloudEvent {
             return false
         }
         val cloudEventId: String = cloudEvent.id
-        val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
+        val uuid = LongUuidSerializer.INSTANCE.deserialize(cloudEventId)
         if (uuid == UUID.getDefaultInstance()) {
             return false
         }
-        val delta: Long = System.currentTimeMillis() - UuidUtils.getTime(uuid).orElse(0L)
+        val delta: Long = System.currentTimeMillis() - (uuid.getTime()?:0L)
         return delta >= ttl
     }
 
@@ -230,8 +231,8 @@ object UCloudEvent {
      */
     fun isCloudEventId(cloudEvent: CloudEvent): Boolean {
         val cloudEventId: String = cloudEvent.id
-        val uuid = LongUuidSerializer.instance().deserialize(cloudEventId)
-        return UuidUtils.isUuid(uuid)
+        val uuid = LongUuidSerializer.INSTANCE.deserialize(cloudEventId)
+        return uuid.isUuid()
     }
 
     /**
@@ -352,7 +353,7 @@ object UCloudEvent {
         }
 
         val msgAttributes = uAttributes {
-            id = LongUuidSerializer.instance().deserialize(event.id)
+            id = LongUuidSerializer.INSTANCE.deserialize(event.id)
             type = getMessageType(event.type)
             source = LongUriSerializer.instance().deserialize(event.source.toString())
             if (hasCommunicationStatusProblem(event)) {
@@ -367,7 +368,7 @@ object UCloudEvent {
 
             getSink(event).ifPresent { sink = LongUriSerializer.instance().deserialize(it) }
 
-            getRequestId(event).ifPresent { reqid = LongUuidSerializer.instance().deserialize(it) }
+            getRequestId(event).ifPresent { reqid = LongUuidSerializer.INSTANCE.deserialize(it) }
 
             getTtl(event).ifPresent { ttl = it }
 
@@ -395,7 +396,7 @@ object UCloudEvent {
         val attributes: UAttributes = message.attributes ?: UAttributes.getDefaultInstance()
         val payload = message.payload ?: UPayload.getDefaultInstance()
         val builder: CloudEventBuilder =
-            CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.id))
+            CloudEventBuilder.v1().withId(LongUuidSerializer.INSTANCE.serialize(attributes.id))
         builder.withType(getEventType(attributes.type))
         builder.withSource(URI.create(LongUriSerializer.instance().serialize(attributes.source)))
         val contentType = getContentTypeFromUPayloadFormat(payload.format)
@@ -427,7 +428,7 @@ object UCloudEvent {
         }
 
         if (attributes.hasReqid()) {
-            builder.withExtension("reqid", LongUuidSerializer.instance().serialize(attributes.reqid))
+            builder.withExtension("reqid", LongUuidSerializer.INSTANCE.serialize(attributes.reqid))
         }
 
         if (attributes.hasPermissionLevel()) {

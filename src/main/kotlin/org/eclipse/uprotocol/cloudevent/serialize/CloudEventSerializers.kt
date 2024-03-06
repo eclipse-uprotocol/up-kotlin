@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,16 +27,11 @@ package org.eclipse.uprotocol.cloudevent.serialize
 /**
  * Provides Singleton instances of the CloudEvent Serializers.
  */
-enum class CloudEventSerializers(cloudEventSerializer: CloudEventSerializer) {
+enum class CloudEventSerializers(private val cloudEventSerializer: CloudEventSerializer) {
     JSON(CloudEventToJsonSerializer()),
     PROTOBUF(CloudEventToProtobufSerializer());
 
-    private val cloudEventSerializer: CloudEventSerializer
     fun serializer(): CloudEventSerializer {
         return cloudEventSerializer
-    }
-
-    init {
-        this.cloudEventSerializer = cloudEventSerializer
     }
 }

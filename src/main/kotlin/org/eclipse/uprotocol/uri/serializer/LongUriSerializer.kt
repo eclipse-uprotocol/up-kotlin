@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.v1.*
 import java.util.*
 
@@ -39,7 +39,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
      * @return Returns the String format of the supplied [UUri] that can be used as a sink or a source in a uProtocol publish communication.
      */
     override fun serialize(uri: UUri?): String {
-        if (uri == null || UriValidator.isEmpty(uri)) {
+        if (uri == null || uri.isEmpty()) {
             return ""
         }
         val sb = StringBuilder()
@@ -113,17 +113,11 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         }
 
         return uUri {
-            if (uAuthority != null) {
-                authority = uAuthority
-            }
-            if (uResource != null) {
-                resource = uResource
-            }
+            uAuthority?.let { authority = it }
+            uResource?.let { resource = it }
             entity = uEntity {
                 name = useName
-                if (useVersionInt != null) {
-                    versionMajor = useVersionInt
-                }
+                useVersionInt?.let { versionMajor = it }
             }
 
         }
@@ -195,12 +189,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
 
             return uResource {
                 name = resourceName
-                if (resourceInstance != null) {
-                    instance = resourceInstance
-                }
-                if (resourceMessage != null) {
-                    message = resourceMessage
-                }
+                resourceInstance?.let { instance = it }
+                resourceMessage?.let { message = it }
                 if (resourceName.contains("rpc") && resourceInstance != null && resourceInstance.contains("response")) {
                     id = 0
                 }

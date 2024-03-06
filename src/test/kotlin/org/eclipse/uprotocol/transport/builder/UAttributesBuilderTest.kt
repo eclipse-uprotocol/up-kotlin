@@ -20,7 +20,7 @@
  */
 package org.eclipse.uprotocol.transport.builder
 
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
+import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -98,7 +98,7 @@ class UAttributesBuilderTest {
             name = "petapp.ultifi.gm.com"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = UResourceFactory.createForRpcResponse()
     }
 
 
@@ -114,6 +114,6 @@ class UAttributesBuilderTest {
             name = "hartley_app"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = UResourceFactory.createForRpcResponse()
     }
 }

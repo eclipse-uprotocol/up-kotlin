@@ -10,29 +10,26 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
 
 [source,kotlin]
 ----
-    val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-    val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid);
-    val time: Optional<Long> = UuidUtils.getTime(uuid);
-    val bytes = MicroUuidSerializer.instance().serialize(uuid)
-    val uuidString = LongUuidSerializer.instance().serialize(uuid)
+    val uuid: UUID = UUIDV8()
+    val version: UUIDVersion = uuid.getVersion()
+    val time: Long? = uuid.getTime()
+    val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
+    val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
 
     assertNotNull(uuid)
-    assertFalse(UuidUtils.isUuidv6(uuid))
-    assertFalse(UuidUtils.isUProtocol(uuid))
+    assertFalse(uuid.isUuidv6())
+    assertFalse(uuid.isUProtocol())
     assertTrue(version.isPresent)
     assertEquals(version.get(), UuidUtils.Version.VERSION_UNKNOWN)
     assertFalse(time.isPresent)
     assertTrue(bytes.isNotEmpty())
     assertFalse(uuidString.isBlank())
-    assertFalse(UuidUtils.isUuidv6(null))
-    assertFalse(UuidUtils.isUProtocol(null))
-    assertFalse(UuidUtils.isUuid(null))
 
-    val uuid1: UUID = MicroUuidSerializer.instance().deserialize(bytes)
+    val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
     assertTrue(uuid1 == UUID.getDefaultInstance())
     assertEquals(uuid, uuid1)
 
-    val uuid2: UUID = LongUuidSerializer.instance().deserialize(uuidString)
+    val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
     assertTrue(uuid2 == UUID.getDefaultInstance())
     assertEquals(uuid, uuid2)
 ----

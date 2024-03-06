@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -50,9 +50,6 @@ class LongUuidSerializer private constructor() : UuidSerializer<String?> {
     }
 
     companion object {
-        private val INSTANCE = LongUuidSerializer()
-        fun instance(): LongUuidSerializer {
-            return INSTANCE
-        }
+            val INSTANCE : LongUuidSerializer by lazy { LongUuidSerializer() }
     }
 }

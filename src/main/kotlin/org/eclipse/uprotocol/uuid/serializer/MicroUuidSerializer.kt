@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -49,9 +49,6 @@ class MicroUuidSerializer private constructor() : UuidSerializer<ByteArray?> {
     }
 
     companion object {
-        private val INSTANCE = MicroUuidSerializer()
-        fun instance(): MicroUuidSerializer {
-            return INSTANCE
-        }
+        val INSTANCE = MicroUuidSerializer()
     }
 }

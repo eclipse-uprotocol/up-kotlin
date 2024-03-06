@@ -22,9 +22,9 @@ package org.eclipse.uprotocol.transport.validator
 
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
+import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcResponse
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.junit.jupiter.api.Assertions.*
@@ -49,7 +49,7 @@ internal class UAttributesValidatorTest {
         val response: UAttributesValidator = UAttributesValidator.getValidator(
             UAttributesBuilder.response(
                 source, sink,
-                UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+                UPriority.UPRIORITY_CS4, UUIDV8()
             ).build()
         )
         assertEquals("UAttributesValidator.Response", response.toString())
@@ -70,7 +70,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_publish_message_payload_all_values() {
         val attributes: UAttributes =
             UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS0).withTtl(1000).withSink(sink)
-                .withPermissionLevel(2).withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .withPermissionLevel(2).withCommStatus(3).withReqId(UUIDV8())
                 .build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -83,7 +83,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_publish_message_payload_invalid_type() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS0, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS0, UUIDV8()
         ).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -168,7 +168,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_request_message_payload_all_values() {
         val attributes: UAttributes =
             UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, 1000).withPermissionLevel(2)
-                .withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create()).build()
+                .withCommStatus(3).withReqId(UUIDV8()).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.REQUEST.validator()
         val status: ValidationResult = validator.validate(attributes)
         assertTrue(status.isSuccess())
@@ -180,7 +180,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_request_message_payload_invalid_type() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).withTtl(1000).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.REQUEST.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -257,7 +257,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_response_message_payload() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -270,7 +270,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_response_message_payload_all_values() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).withPermissionLevel(2).withCommStatus(3).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -294,7 +294,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_response_message_payload_invalid_ttl() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).withTtl(-1).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -326,7 +326,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_response_message_payload_invalid_permission_level() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).withPermissionLevel(-42).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -339,7 +339,7 @@ internal class UAttributesValidatorTest {
     fun test_validate_uAttributes_for_rpc_response_message_payload_invalid_communication_status() {
         val attributes: UAttributes = UAttributesBuilder.response(
             source, sink,
-            UPriority.UPRIORITY_CS4, UuidFactory.Factories.UPROTOCOL.factory().create()
+            UPriority.UPRIORITY_CS4, UUIDV8()
         ).withCommStatus(-42).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         val status: ValidationResult = validator.validate(attributes)
@@ -489,7 +489,7 @@ internal class UAttributesValidatorTest {
     @DisplayName("test validating valid ReqId attribute")
     fun test_validating_valid_ReqId_attribute() {
         val attributes: UAttributes = UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS0)
-            .withReqId(UuidFactory.Factories.UPROTOCOL.factory().create()).build()
+            .withReqId(UUIDV8()).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.PUBLISH.validator()
         val status: ValidationResult = validator.validateReqId(attributes)
         assertEquals(ValidationResult.success(), status)
@@ -593,7 +593,7 @@ internal class UAttributesValidatorTest {
             source,
             LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"),
             UPriority.UPRIORITY_CS6,
-            UuidFactory.Factories.UPROTOCOL.factory().create()
+            UUIDV8()
         ).withTtl(-1).build()
         val validator: UAttributesValidator = UAttributesValidator.Validators.RESPONSE.validator()
         assertEquals("UAttributesValidator.Response", validator.toString())
@@ -671,7 +671,7 @@ internal class UAttributesValidatorTest {
             source,
             sink,
             UPriority.UPRIORITY_CS0,
-            UuidFactory.Factories.UPROTOCOL.factory().create()
+            UUIDV8()
         ).build()
         val validator = UAttributesValidator.getValidator(attributes)
         assertEquals("UAttributesValidator.Response", validator.toString())
@@ -687,7 +687,7 @@ internal class UAttributesValidatorTest {
             source,
             sink,
             UPriority.UPRIORITY_CS0,
-            UuidFactory.Factories.UPROTOCOL.factory().create()
+            UUIDV8()
         ).build()
         val validator = UAttributesValidator.getValidator(attributes)
         assertEquals("UAttributesValidator.Response", validator.toString())
@@ -701,7 +701,7 @@ internal class UAttributesValidatorTest {
             name = "petapp.ultifi.gm.com"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = createForRpcResponse()
     }
 
     private val source: UUri = uUri {
@@ -709,6 +709,6 @@ internal class UAttributesValidatorTest {
             name = "hartley_app"
             versionMajor = 1
         }
-        resource = forRpcResponse()
+        resource = createForRpcResponse()
     }
 }

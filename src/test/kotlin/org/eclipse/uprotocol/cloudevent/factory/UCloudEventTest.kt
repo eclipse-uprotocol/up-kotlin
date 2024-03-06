@@ -27,7 +27,7 @@ import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.uuid.factory.UuidFactory
+import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.v1.UUID
@@ -278,8 +278,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test extracting creation timestamp from the CloudEvent UUIDV8 id when the id is valid.")
     fun test_extract_creation_timestamp_from_cloudevent_UUIDV8_Id_when_UUIDV8_id_is_valid() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
 
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
@@ -363,8 +363,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when no ttl is configured.")
     fun test_cloudevent_is_not_expired_when_no_ttl_configured() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl").withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isExpired(cloudEvent))
@@ -373,8 +373,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is zero.")
     fun test_cloudevent_is_not_expired_when_ttl_is_zero() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 0).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isExpired(cloudEvent))
@@ -383,8 +383,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is minus one.")
     fun test_cloudevent_is_not_expired_when_ttl_is_minus_one() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", -1).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isExpired(cloudEvent))
@@ -393,8 +393,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is large number.")
     fun test_cloudevent_is_not_expired_when_ttl_is_large_number_mili() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder =
             buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
@@ -407,8 +407,8 @@ internal class UCloudEventTest {
         InterruptedException::class
     )
     fun test_cloudevent_is_expired_when_ttl_1_mili() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 1).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         Thread.sleep(800)
@@ -426,8 +426,8 @@ internal class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent has a UUIDV8 id.")
     fun test_cloudevent_has_a_UUIDV8_id() {
-        val uuid: UUID = UuidFactory.Factories.UPROTOCOL.factory().create()
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val uuid: UUID = UUIDV8()
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertTrue(UCloudEvent.isCloudEventId(cloudEvent))
@@ -441,7 +441,7 @@ internal class UCloudEventTest {
             msb = uuidJava.mostSignificantBits
             lsb = uuidJava.leastSignificantBits
         }
-        val strUuid = LongUuidSerializer.instance().serialize(uuid)
+        val strUuid = LongUuidSerializer.INSTANCE.serialize(uuid)
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3).withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.isCloudEventId(cloudEvent))
@@ -481,7 +481,7 @@ internal class UCloudEventTest {
             .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent")).withData(cloudEventData)
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         val data: CloudEventData? = cloudEvent.data
-        val dataAsAny: Any = Any.parseFrom(data!!.toBytes())
+        val dataAsAny: Any = Any.parseFrom(data?.toBytes())
         val extracted: Any = UCloudEvent.getPayload(cloudEvent)
         assertEquals(dataAsAny, extracted)
     }
@@ -737,7 +737,7 @@ internal class UCloudEventTest {
         val cloudEvent = CloudEventFactory.response(
             buildSourceForTest(),
             "//bo.cloud/petapp/1/rpc" + ".response",
-            LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
+            LongUuidSerializer.INSTANCE.serialize(UUIDV8()),
             buildProtoPayloadForTest(),
             uCloudEventAttributes
         )
@@ -745,7 +745,7 @@ internal class UCloudEventTest {
         assertNotNull(result)
         assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent)
         assertEquals(
-            UCloudEvent.getRequestId(cloudEvent).get(), LongUuidSerializer.instance().serialize(result.attributes.reqid)
+            UCloudEvent.getRequestId(cloudEvent).get(), LongUuidSerializer.INSTANCE.serialize(result.attributes.reqid)
         )
         assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent)
         assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.attributes.ttl)
@@ -775,9 +775,9 @@ internal class UCloudEventTest {
 
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            LongUuidSerializer.instance().serialize(
-                UuidFactory.Factories.UPROTOCOL.factory().create()
-            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+            LongUuidSerializer.INSTANCE.serialize(
+                UUIDV8()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withExtension("commstatus", UCode.ABORTED_VALUE).withExtension("plevel", 2)
@@ -800,9 +800,9 @@ internal class UCloudEventTest {
                 .build()
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            LongUuidSerializer.instance().serialize(
-                UuidFactory.Factories.UPROTOCOL.factory().create()
-            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+            LongUuidSerializer.INSTANCE.serialize(
+                UUIDV8()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
@@ -869,9 +869,9 @@ internal class UCloudEventTest {
         val uCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withTtl(3).build()
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            LongUuidSerializer.instance().serialize(
-                UuidFactory.Factories.UPROTOCOL.factory().create()
-            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes
+            LongUuidSerializer.INSTANCE.serialize(
+                UUIDV8()
+            ), buildSourceForTest(), protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         cloudEventBuilder.withExtension("priority", "CS4")

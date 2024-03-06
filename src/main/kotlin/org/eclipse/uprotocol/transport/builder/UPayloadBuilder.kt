@@ -30,7 +30,6 @@ import com.google.protobuf.Message
 import org.eclipse.uprotocol.v1.UPayload
 import org.eclipse.uprotocol.v1.UPayloadFormat
 import org.eclipse.uprotocol.v1.uPayload
-import java.util.*
 
 
 object UPayloadBuilder {
@@ -78,7 +77,7 @@ object UPayloadBuilder {
                 }
                 UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF -> {
                     val defaultInstance = Internal.getDefaultInstance(clazz)
-                    defaultInstance!!.parserForType.parseFrom(payload.value) as T
+                    defaultInstance.parserForType.parseFrom(payload.value) as T
                 }
                 else -> null
             }

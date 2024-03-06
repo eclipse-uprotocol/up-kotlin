@@ -28,10 +28,10 @@ import io.cloudevents.CloudEvent
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
-import org.eclipse.uprotocol.uri.validator.UriValidator
+import org.eclipse.uprotocol.uri.validator.isRpcMethod
+import org.eclipse.uprotocol.uri.validator.validate
 import org.eclipse.uprotocol.v1.*
 import java.util.Optional
-
 
 /**
  * Validates a CloudEvent using google.grpc.Status<br></br>
@@ -324,7 +324,7 @@ abstract class CloudEventValidator {
         }
 
         private fun validateUEntityUri(uri: UUri): ValidationResult {
-            return UriValidator.validate(uri)
+            return uri.validate()
         }
 
         /**
@@ -405,7 +405,7 @@ abstract class CloudEventValidator {
                     )
                 )
             }
-            return if (!UriValidator.isRpcMethod(uri)) {
+            return if (!uri.isRpcMethod()) {
                 ValidationResult.failure("Invalid RPC method uri. UriPart should be the method to be called, or method from response.")
             } else ValidationResult.success()
         }

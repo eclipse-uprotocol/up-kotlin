@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,27 +25,22 @@
 package org.eclipse.uprotocol.uuid.validate
 
 import com.github.f4b6a3.uuid.enums.UuidVariant
-import org.eclipse.uprotocol.uuid.factory.UuidUtils
+import org.eclipse.uprotocol.uuid.factory.*
 import org.eclipse.uprotocol.v1.UCode
 import org.eclipse.uprotocol.v1.UStatus
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.uStatus
 import org.eclipse.uprotocol.validation.ValidationResult
-import java.util.*
+
 
 /**
  * UUID Validator class that validates UUIDs
  */
-abstract class UuidValidator {
-    enum class Validators(private val uuidValidator: UuidValidator) {
-        UNKNOWN(InvalidValidator()), UUIDV6(UUIDv6Validator()), UPROTOCOL(UUIDv8Validator());
+sealed class UuidValidator {
+    abstract fun validateVersion(uuid: UUID): ValidationResult
+    abstract fun validateVariant(uuid: UUID): ValidationResult
 
-        fun validator(): UuidValidator {
-            return uuidValidator
-        }
-    }
-
-    fun validate(uuid: UUID?): UStatus {
+    fun validate(uuid: UUID): UStatus {
         val errorMessages = listOf(
             validateVersion(uuid), validateVariant(uuid), validateTime(uuid)
         ).filter { it.isFailure() }.joinToString(",") { it.getMessage() }
@@ -57,66 +52,69 @@ abstract class UuidValidator {
         }
     }
 
-
-    abstract fun validateVersion(uuid: UUID?): ValidationResult
-    private fun validateTime(uuid: UUID?): ValidationResult {
-        val time: Optional<Long> = UuidUtils.getTime(uuid)
-        return if (time.isPresent && time.get() > 0) ValidationResult.success() else ValidationResult.failure(
-            String.format(
-                "Invalid UUID Time"
-            )
-        )
-    }
-
-    abstract fun validateVariant(uuid: UUID?): ValidationResult
-    private class InvalidValidator : UuidValidator() {
-        override fun validateVersion(uuid: UUID?): ValidationResult {
-            return ValidationResult.failure(String.format("Invalid UUID Version"))
-        }
-
-        override fun validateVariant(uuid: UUID?): ValidationResult {
-            return ValidationResult.failure(String.format("Invalid UUID Variant"))
-        }
-    }
-
-    private class UUIDv6Validator : UuidValidator() {
-        override fun validateVersion(uuid: UUID?): ValidationResult {
-            val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
-            return if (version.isPresent && version.get() == UuidUtils.Version.VERSION_TIME_ORDERED) ValidationResult.success() else ValidationResult.failure(
-                String.format("Not a UUIDv6 Version")
-            )
-        }
-
-        override fun validateVariant(uuid: UUID?): ValidationResult {
-            val variant: Optional<Int> = UuidUtils.getVariant(uuid)
-            return if (variant.isPresent && variant.get() == UuidVariant.VARIANT_RFC_4122.value) ValidationResult.success() else ValidationResult.failure(
-                String.format("Invalid UUIDv6 variant")
-            )
-        }
-    }
-
-    private class UUIDv8Validator : UuidValidator() {
-        override fun validateVersion(uuid: UUID?): ValidationResult {
-            val version: Optional<UuidUtils.Version> = UuidUtils.getVersion(uuid)
-            return if (version.isPresent && version.get() == UuidUtils.Version.VERSION_UPROTOCOL) ValidationResult.success() else ValidationResult.failure(
-                String.format("Invalid UUIDv8 Version")
-            )
-        }
-
-        override fun validateVariant(uuid: UUID?): ValidationResult {
-            return ValidationResult.success()
+    private fun validateTime(uuid: UUID): ValidationResult {
+        val time = uuid.getTime()
+        return if (time != null && time > 0) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Invalid UUID Time")
         }
     }
 
     companion object {
-        fun getValidator(uuid: UUID?): UuidValidator {
-            return if (UuidUtils.isUuidv6(uuid)) {
-                Validators.UUIDV6.validator()
-            } else if (UuidUtils.isUProtocol(uuid)) {
-                Validators.UPROTOCOL.validator()
+        fun getValidator(uuid: UUID): UuidValidator {
+            return if (uuid.isUuidv6()) {
+                UUIDv6Validator
+            } else if (uuid.isUProtocol()) {
+                UUIDv8Validator
             } else {
-                Validators.UNKNOWN.validator()
+                InvalidValidator
             }
         }
     }
 }
+
+data object InvalidValidator : UuidValidator() {
+    override fun validateVersion(uuid: UUID): ValidationResult {
+        return ValidationResult.failure("Invalid UUID Version")
+    }
+
+    override fun validateVariant(uuid: UUID): ValidationResult {
+        return ValidationResult.failure("Invalid UUID Variant")
+    }
+}
+
+data object UUIDv6Validator : UuidValidator() {
+    override fun validateVersion(uuid: UUID): ValidationResult {
+        return if (uuid.getVersion() == UUIDVersion.VERSION_TIME_ORDERED) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Not a UUIDv6 Version")
+        }
+    }
+
+    override fun validateVariant(uuid: UUID): ValidationResult {
+        return if (uuid.getVariant() == UuidVariant.VARIANT_RFC_4122.value) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Invalid UUIDv6 variant")
+        }
+    }
+}
+
+data object UUIDv8Validator : UuidValidator() {
+    override fun validateVersion(uuid: UUID): ValidationResult {
+        return if (uuid.getVersion() == UUIDVersion.VERSION_UPROTOCOL) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Invalid UUIDv8 Version")
+        }
+    }
+
+    override fun validateVariant(uuid: UUID): ValidationResult {
+        return ValidationResult.success()
+    }
+}
+
+
+
