@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -214,6 +214,10 @@ interface CloudEventFactory {
                 .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
             attributes.hash().ifPresent { hash -> cloudEventBuilder.withExtension("hash", hash) }
             attributes.token().ifPresent { token -> cloudEventBuilder.withExtension("token", token) }
+            attributes.traceparent().ifPresent { traceparent: String ->
+                cloudEventBuilder.withExtension("traceparent", traceparent)
+            }
+
             return cloudEventBuilder
         }
 

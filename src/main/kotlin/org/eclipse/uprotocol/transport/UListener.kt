@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,20 +24,17 @@
 
 package org.eclipse.uprotocol.transport
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UAttributes
-import org.eclipse.uprotocol.v1.UUri
-import org.eclipse.uprotocol.v1.UPayload
+import org.eclipse.uprotocol.v1.UMessage
+
+
 /**
  * For any implementation that defines some kind of callback or function that will be called to handle incoming messages.
  */
 interface UListener {
     /**
-     * Method called to handle/process events.
-     * @param topic Topic the underlying source of the message.
-     * @param payload Payload of the message.
-     * @param attributes Transportation attributes
+     * Method called to handle/process messages.
+     * @param message Message received.
      * @return Returns an Ack every time a message is received and processed.
      */
-    fun onReceive(topic: UUri, payload: UPayload, attributes: UAttributes): UStatus
+    fun onReceive(message: UMessage)
 }

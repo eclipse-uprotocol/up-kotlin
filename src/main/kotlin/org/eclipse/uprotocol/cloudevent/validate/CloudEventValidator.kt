@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -58,15 +58,15 @@ abstract class CloudEventValidator {
      * @param cloudEvent The CloudEvent to validate.
      * @return Returns a UStatus with success or a UUStatuswith failure containing all the errors that were found.
      */
-    fun validate(cloudEvent: CloudEvent): ValidationResult{
+    fun validate(cloudEvent: CloudEvent): ValidationResult {
         val errorMessage = listOf(
-                validateVersion(cloudEvent),
-                validateId(cloudEvent),
-                validateSource(cloudEvent),
-                validateType(cloudEvent),
-                validateSink(cloudEvent)
+            validateVersion(cloudEvent),
+            validateId(cloudEvent),
+            validateSource(cloudEvent),
+            validateType(cloudEvent),
+            validateSink(cloudEvent)
         )
-                .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
+            .filter { it.isFailure() }.joinToString(",") { it.getMessage() }
 
         return if (errorMessage.isBlank()) {
             ValidationResult.success()
@@ -84,7 +84,6 @@ abstract class CloudEventValidator {
     abstract fun validateSource(cloudEvent: CloudEvent): ValidationResult
     abstract fun validateType(cloudEvent: CloudEvent): ValidationResult
     abstract fun validateSink(cloudEvent: CloudEvent): ValidationResult
-
 
 
     /**
@@ -121,18 +120,18 @@ abstract class CloudEventValidator {
                 val checkSink: ValidationResult = validateUEntityUri(sink)
                 if (checkSink.isFailure()) {
                     return ValidationResult.failure(
-                            String.format(
-                                    "Invalid CloudEvent sink [%s]. %s",
-                                    sink,
-                                    checkSink.getMessage()
-                            )
+                        String.format(
+                            "Invalid CloudEvent sink [%s]. %s",
+                            sink,
+                            checkSink.getMessage()
+                        )
                     )
                 }
             }
             return ValidationResult.success()
         }
 
-        @Override
+
         override fun toString(): String {
             return "CloudEventValidator.Publish"
         }
@@ -164,7 +163,6 @@ abstract class CloudEventValidator {
             return ValidationResult.success()
         }
 
-        @Override
         override fun toString(): String {
             return "CloudEventValidator.Notification"
         }
@@ -190,7 +188,7 @@ abstract class CloudEventValidator {
         }
 
 
-       override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
+        override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
             val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
             if (maybeSink.isEmpty) {
                 return ValidationResult.failure("Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.")
@@ -210,7 +208,6 @@ abstract class CloudEventValidator {
             return ValidationResult.success()
         }
 
-        @Override
         override fun validateType(cloudEvent: CloudEvent): ValidationResult {
             return if ("req.v1" == cloudEvent.type) ValidationResult.success() else ValidationResult.failure(
                 String.format(
@@ -220,7 +217,6 @@ abstract class CloudEventValidator {
             )
         }
 
-        @Override
         override fun toString(): String {
             return "CloudEventValidator.Request"
         }
@@ -230,7 +226,6 @@ abstract class CloudEventValidator {
      * Implements Validations for a CloudEvent for RPC Response.
      */
     private class Response : CloudEventValidator() {
-        @Override
         override fun validateSource(cloudEvent: CloudEvent): ValidationResult {
             val source: String = cloudEvent.source.toString()
             val checkSource: ValidationResult = validateRpcMethod(source)
@@ -245,7 +240,7 @@ abstract class CloudEventValidator {
             } else ValidationResult.success()
         }
 
-       override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
+        override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
             val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
             if (maybeSink.isEmpty) {
                 return ValidationResult.failure("Invalid CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.")
@@ -265,7 +260,6 @@ abstract class CloudEventValidator {
             return ValidationResult.success()
         }
 
-        @Override
         override fun validateType(cloudEvent: CloudEvent): ValidationResult {
             return if ("res.v1" == cloudEvent.type) ValidationResult.success() else ValidationResult.failure(
                 String.format(
@@ -275,7 +269,6 @@ abstract class CloudEventValidator {
             )
         }
 
-        @Override
         override fun toString(): String {
             return "CloudEventValidator.Response"
         }

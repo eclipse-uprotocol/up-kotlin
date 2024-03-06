@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,42 +29,33 @@ import java.util.*
 
 /**
  * Specifies the properties that can configure the UCloudEvent.
+ * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
+ * @param priority uProtocol Prioritization classifications.
+ * @param ttl      How long this event should live for after it was generated (in milliseconds).
+ * Events without this attribute (or value is 0) MUST NOT timeout.
+ * @param token    Oauth2 access token to perform the access request defined in the request message.
  */
-class UCloudEventAttributes {
-    private val hash: String?
-    private val priority: UPriority?
-    private val ttl: Int?
-    private val token: String?
-
-    /**
-     * Construct the properties object.
-     *
-     * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @param priority uProtocol Prioritization classifications.
-     * @param ttl      How long this event should live for after it was generated (in milliseconds).
-     * Events without this attribute (or value is 0) MUST NOT timeout.
-     * @param token    Oauth2 access token to perform the access request defined in the request message.
-     */
-    private constructor(hash: String?, priority: UPriority?, ttl: Int?, token: String?) {
-        this.hash = hash
-        this.priority = priority
-        this.ttl = ttl
-        this.token = token
-    }
-
-    private constructor(builder: UCloudEventAttributesBuilder) {
-        hash = builder.hash
-        priority = builder.priority
-        ttl = builder.ttl
-        token = builder.token
-    }
+class UCloudEventAttributes private constructor(
+    private val hash: String? = null,
+    private val priority: UPriority? = null,
+    private val ttl: Int? = null,
+    private val token: String? = null,
+    private val traceparent: String? = null
+) {
+    private constructor(builder: UCloudEventAttributesBuilder) : this(
+        builder.hash,
+        builder.priority,
+        builder.ttl,
+        builder.token,
+        builder.traceparent
+    )
 
     val isEmpty: Boolean
         /**
          * Indicates that there are no added additional attributes to configure when building a CloudEvent.
          * @return Returns true if this attributes container is an empty container and has no valuable information in building a CloudEvent.
          */
-        get() = hash().isEmpty && priority().isEmpty && ttl().isEmpty && token().isEmpty
+        get() = hash().isEmpty && priority().isEmpty && ttl().isEmpty && token().isEmpty && traceparent().isEmpty
 
     /**
      * An HMAC generated on the data portion of the CloudEvent message using the device key.
@@ -98,6 +89,15 @@ class UCloudEventAttributes {
         return if (token.isNullOrBlank()) Optional.empty() else Optional.of(token)
     }
 
+
+    /**
+     * An identifier used to correlate observability across related events.
+     * @return Returns an Optional traceparent attribute.
+     */
+    fun traceparent(): Optional<String> {
+        return if (traceparent.isNullOrBlank()) Optional.empty() else Optional.of(traceparent)
+    }
+
     /**
      * Builder for constructing the UCloudEventAttributes.
      */
@@ -106,6 +106,7 @@ class UCloudEventAttributes {
         var priority: UPriority? = null
         var ttl: Int? = null
         var token: String? = null
+        var traceparent: String? = null
 
         /**
          * add an HMAC generated on the data portion of the CloudEvent message using the device key.
@@ -150,6 +151,16 @@ class UCloudEventAttributes {
         }
 
         /**
+         * Add an identifier used to correlate observability across related events.
+         * @param traceparent An identifier used to correlate observability across related events.
+         * @return Returns the UCloudEventAttributesBuilder with the configured traceparent.
+         */
+        fun withTraceparent(traceparent: String?): UCloudEventAttributesBuilder {
+            this.traceparent = traceparent
+            return this
+        }
+
+        /**
          * Construct the UCloudEventAttributes from the builder.
          * @return Returns a constructed UProperty.
          */
@@ -160,7 +171,6 @@ class UCloudEventAttributes {
     }
 
 
-    @Override
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass !== other.javaClass) return false
@@ -168,21 +178,24 @@ class UCloudEventAttributes {
         return Objects.equals(hash, that.hash) && priority == that.priority && Objects.equals(
             ttl,
             that.ttl
-        ) && Objects.equals(token, that.token)
+        ) && Objects.equals(token, that.token) && Objects.equals(traceparent, that.traceparent)
     }
 
-    @Override
     override fun hashCode(): Int {
-        return Objects.hash(hash, priority, ttl, token)
+        return Objects.hash(hash, priority, ttl, token, traceparent)
     }
 
-    @Override
     override fun toString(): String {
+        var traceParentString = ""
+        if (traceparent != null) {
+            traceParentString = ", traceparent='$traceparent'"
+        }
         return "UCloudEventAttributes{" +
                 "hash='" + hash + '\'' +
                 ", priority=" + priority +
                 ", ttl=" + ttl +
                 ", token='" + token + '\'' +
+                traceParentString +
                 '}'
     }
 

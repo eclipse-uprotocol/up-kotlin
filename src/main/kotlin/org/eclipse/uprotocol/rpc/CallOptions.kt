@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -96,7 +96,6 @@ class CallOptions private constructor(private val mTimeout: Int, token: String?)
         }
     }
 
-    @Override
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass !== other.javaClass) return false
@@ -104,12 +103,10 @@ class CallOptions private constructor(private val mTimeout: Int, token: String?)
         return mTimeout == that.mTimeout && Objects.equals(mToken, that.mToken)
     }
 
-    @Override
     override fun hashCode(): Int {
         return Objects.hash(mTimeout, mToken)
     }
 
-    @Override
     override fun toString(): String {
         return "CallOptions{" +
                 "mTimeout=" + mTimeout +

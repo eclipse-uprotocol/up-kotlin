@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,7 +20,7 @@
  */
 package org.eclipse.uprotocol.transport.builder
 
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder.forRpcResponse
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 class UAttributesBuilderTest {
     @Test
     fun testPublish() {
-        val builder: UAttributesBuilder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1)
+        val builder: UAttributesBuilder = UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS1)
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
@@ -40,8 +40,7 @@ class UAttributesBuilderTest {
 
     @Test
     fun testNotification() {
-        val sink: UUri = buildSink()
-        val builder: UAttributesBuilder = UAttributesBuilder.notification(UPriority.UPRIORITY_CS1, sink)
+        val builder: UAttributesBuilder = UAttributesBuilder.notification(source, sink, UPriority.UPRIORITY_CS1)
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
@@ -52,9 +51,8 @@ class UAttributesBuilderTest {
 
     @Test
     fun testRequest() {
-        val sink: UUri = buildSink()
         val ttl = 1000
-        val builder: UAttributesBuilder = UAttributesBuilder.request(UPriority.UPRIORITY_CS4, sink, ttl)
+        val builder: UAttributesBuilder = UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, ttl)
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
@@ -66,54 +64,56 @@ class UAttributesBuilderTest {
 
     @Test
     fun testResponse() {
-        val sink: UUri = buildSink()
-        val reqId: UUID = uUID
-        val builder: UAttributesBuilder = UAttributesBuilder.response(UPriority.UPRIORITY_CS6, sink, reqId)
+        val builder: UAttributesBuilder = UAttributesBuilder.response(source, sink, UPriority.UPRIORITY_CS6, uUID)
         assertNotNull(builder)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS6, attributes.priority)
         assertEquals(sink, attributes.sink)
-        assertEquals(reqId, attributes.reqid)
+        assertEquals(uUID, attributes.reqid)
     }
 
     @Test
     fun testBuild() {
         val reqId: UUID = uUID
         val builder: UAttributesBuilder =
-            UAttributesBuilder.publish(UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
-                .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId)
+            UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
+                .withSink(sink).withPermissionLevel(2).withCommStatus(1).withReqId(reqId)
         val attributes: UAttributes = builder.build()
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
         assertEquals(1000, attributes.ttl)
         assertEquals("test_token", attributes.token)
-        assertEquals(buildSink(), attributes.sink)
+        assertEquals(sink, attributes.sink)
         assertEquals(2, attributes.permissionLevel)
         assertEquals(1, attributes.commstatus)
         assertEquals(reqId, attributes.reqid)
     }
 
-    private fun buildSink(): UUri {
-        return uUri {
-            authority = uAuthority { name = "vcu.someVin.veh.ultifi.gm.com" }
-            entity = uEntity {
-                name = "petapp.ultifi.gm.com"
-                versionMajor = 1
-            }
-            resource = UResourceBuilder.forRpcResponse()
+    private val sink = uUri {
+        authority = uAuthority { name = "vcu.someVin.veh.ultifi.gm.com" }
+        entity = uEntity {
+            name = "petapp.ultifi.gm.com"
+            versionMajor = 1
         }
+        resource = forRpcResponse()
+    }
+
+
+    private val uUID: UUID = uUID {
+        val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
+        msb = uuidJava.mostSignificantBits
+        lsb = uuidJava.leastSignificantBits
 
     }
 
-    private val uUID: UUID
-        get() {
-            val uuidJava: java.util.UUID = java.util.UUID.randomUUID()
-            return uUID {
-                msb = uuidJava.mostSignificantBits
-                lsb = uuidJava.leastSignificantBits
-            }
+    private val source: UUri = uUri {
+        entity = uEntity {
+            name = "hartley_app"
+            versionMajor = 1
         }
+        resource = forRpcResponse()
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -60,23 +60,23 @@ abstract class UAttributesValidator {
 
 
     /**
-     * Indication if the Payload with these UAttributes is expired.
+     * Check the time-to-live attribute to see if it has expired. <br>
+     * The message has expired when the current time is greater than the original UUID time
+     * plus the ttl attribute.
      *
      * @param uAttributes UAttributes with time to live value.
-     * @return Returns a [ValidationResult] that is success meaning not expired or failed with a validation
-     * message or expiration.
+     * @return Returns a true if the original time plus the ttl is less than the current time
      */
-    fun isExpired(uAttributes: UAttributes): ValidationResult {
+    fun isExpired(uAttributes: UAttributes): Boolean {
         val ttl = uAttributes.ttl
         val maybeTime = UuidUtils.getTime(uAttributes.id)
-        //        if (maybeTime.isEmpty()) {
-//            return ValidationResult.failure("Invalid Time");
-//        }
-        if (ttl <= 0) {
-            return ValidationResult.success()
+
+        // if the message does not have a ttl or the original time is not present or the ttl is less than 0
+        if (!uAttributes.hasTtl() || maybeTime.isEmpty || ttl <= 0) {
+            return false
         }
-        val delta = System.currentTimeMillis() - maybeTime.get()
-        return if (delta >= ttl) ValidationResult.failure("Payload is expired") else ValidationResult.success()
+        // the original time plus the ttl is less than the current time, the message has expired
+        return (maybeTime.get() + ttl) < System.currentTimeMillis();
     }
 
     /**

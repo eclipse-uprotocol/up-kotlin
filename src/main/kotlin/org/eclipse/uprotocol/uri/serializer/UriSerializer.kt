@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -69,7 +69,6 @@ interface UriSerializer<T> {
             authority = microUUri.authority.copy {
                 name = longUUri.authority.name
             }
-
             entity=microUUri.entity.copy {
                 name = longUUri.entity.name
             }
