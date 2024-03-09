@@ -22,7 +22,6 @@ package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.core.usubscription.v3.Update
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
@@ -108,7 +107,9 @@ class UriSerializerTest {
     fun test_build_resolved_full_information() {
         val uUri = uUri {
             entity = uEntity { id = 0 }
-            resource = UResourceFactory.from(Update.Resources.subscriptions)
+            resource = uResource {
+                from(Update.Resources.subscriptions)
+            }
         }
         assertFalse(uUri.isEmpty())
         assertTrue(uUri.isMicroForm())

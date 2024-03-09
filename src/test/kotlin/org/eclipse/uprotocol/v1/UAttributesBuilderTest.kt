@@ -18,21 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.transport.builder
+package org.eclipse.uprotocol.v1
 
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
-import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 
-class UAttributesBuilderTest {
+class UAttributesKtExtTest {
     @Test
     fun testPublish() {
-        val builder: UAttributesBuilder = UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS1)
-        assertNotNull(builder)
-        val attributes: UAttributes = builder.build()
+        val attributes = uAttributes {
+            forPublication(testSource, UPriority.UPRIORITY_CS1)
+        }
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
@@ -40,65 +38,72 @@ class UAttributesBuilderTest {
 
     @Test
     fun testNotification() {
-        val builder: UAttributesBuilder = UAttributesBuilder.notification(source, sink, UPriority.UPRIORITY_CS1)
-        assertNotNull(builder)
-        val attributes: UAttributes = builder.build()
+        val attributes = uAttributes {
+            forNotification(testSource, testSink, UPriority.UPRIORITY_CS1)
+        }
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
-        assertEquals(sink, attributes.sink)
+        assertEquals(testSink, attributes.sink)
     }
 
     @Test
     fun testRequest() {
         val ttl = 1000
-        val builder: UAttributesBuilder = UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, ttl)
-        assertNotNull(builder)
-        val attributes: UAttributes = builder.build()
+        val attributes: UAttributes = uAttributes {
+            forRequest(testSource, testSink, UPriority.UPRIORITY_CS4, ttl)
+        }
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_REQUEST, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS4, attributes.priority)
-        assertEquals(sink, attributes.sink)
+        assertEquals(testSink, attributes.sink)
         assertEquals(ttl, attributes.ttl)
     }
 
     @Test
     fun testResponse() {
-        val builder: UAttributesBuilder = UAttributesBuilder.response(source, sink, UPriority.UPRIORITY_CS6, uUID)
-        assertNotNull(builder)
-        val attributes: UAttributes = builder.build()
+        val attributes: UAttributes = uAttributes {
+            forResponse(testSource, testSink, UPriority.UPRIORITY_CS6, uUID)
+        }
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS6, attributes.priority)
-        assertEquals(sink, attributes.sink)
+        assertEquals(testSink, attributes.sink)
         assertEquals(uUID, attributes.reqid)
     }
 
     @Test
     fun testBuild() {
         val reqId: UUID = uUID
-        val builder: UAttributesBuilder =
-            UAttributesBuilder.publish(source, UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
-                .withSink(sink).withPermissionLevel(2).withCommStatus(1).withReqId(reqId)
-        val attributes: UAttributes = builder.build()
+        val attributes: UAttributes = uAttributes {
+            forPublication(testSource, UPriority.UPRIORITY_CS1)
+            ttl = 1000
+            token = "test_token"
+            sink = testSink
+            permissionLevel = 2
+            commstatus = 1
+            reqid = reqId
+            traceparent = "test_traceparent"
+        }
         assertNotNull(attributes)
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
         assertEquals(1000, attributes.ttl)
         assertEquals("test_token", attributes.token)
-        assertEquals(sink, attributes.sink)
+        assertEquals(testSink, attributes.sink)
         assertEquals(2, attributes.permissionLevel)
         assertEquals(1, attributes.commstatus)
         assertEquals(reqId, attributes.reqid)
+        assertEquals("test_traceparent",attributes.traceparent)
     }
 
-    private val sink = uUri {
+    private val testSink = uUri {
         authority = uAuthority { name = "vcu.someVin.veh.ultifi.gm.com" }
         entity = uEntity {
             name = "petapp.ultifi.gm.com"
             versionMajor = 1
         }
-        resource = UResourceFactory.createForRpcResponse()
+        resource = uResource { forRpcResponse() }
     }
 
 
@@ -109,11 +114,11 @@ class UAttributesBuilderTest {
 
     }
 
-    private val source: UUri = uUri {
+    private val testSource: UUri = uUri {
         entity = uEntity {
             name = "hartley_app"
             versionMajor = 1
         }
-        resource = UResourceFactory.createForRpcResponse()
+        resource = uResource { forRpcResponse() }
     }
 }

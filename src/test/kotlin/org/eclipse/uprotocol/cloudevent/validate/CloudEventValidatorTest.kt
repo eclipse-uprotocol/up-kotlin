@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,7 +23,7 @@ package org.eclipse.uprotocol.cloudevent.validate
 import com.google.protobuf.Any
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
@@ -526,13 +526,12 @@ internal class CloudEventValidatorTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
-                "somehash"
-            ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
-                "someOAuthToken"
-            ).build()
-
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
@@ -559,10 +558,10 @@ internal class CloudEventValidatorTest {
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
-        val attributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
-            UPriority.UPRIORITY_CS0
-        ).withTtl(1000) // live for 1 second
-            .build()
+        val attributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS0
+            ttl = 1000
+        }
 
         // build the cloud event
         val cloudEvent: CloudEvent = CloudEventFactory.buildBaseCloudEvent(
@@ -585,10 +584,10 @@ internal class CloudEventValidatorTest {
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
-        val attributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
-            UPriority.UPRIORITY_CS0
-        ).withTtl(1000) // live for 1 second
-            .build()
+        val attributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS0
+            ttl = 1000
+        }
 
         // build the cloud event
         val cloudEvent: CloudEvent = CloudEventFactory.buildBaseCloudEvent(

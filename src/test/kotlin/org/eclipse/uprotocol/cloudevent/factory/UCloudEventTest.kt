@@ -26,6 +26,7 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
@@ -623,9 +624,10 @@ internal class UCloudEventTest {
     @Test
     fun test_to_message_with_valid_event() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.publish(
@@ -639,9 +641,10 @@ internal class UCloudEventTest {
     @Test
     fun test_from_message_with_valid_message() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.publish(
@@ -658,11 +661,12 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_request_cloudevent() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2)
-                .withToken("someOAuthToken").withTtl(3)
-                .withTraceparent("someTraceparent")
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+            token = "someOAuthToken"
+            traceparent = "someTraceparent"
+        }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.request(
@@ -729,9 +733,10 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_response_cloudevent() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.response(
@@ -769,9 +774,10 @@ internal class UCloudEventTest {
     @Test
     fun test_umessage_has_platform_error_when_platform_error_exists() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
 
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
@@ -795,9 +801,10 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_cloudevent_with_all_payload_formats() {
         // Additional attributes
-        val uCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(UPriority.UPRIORITY_CS2).withTtl(3)
-                .build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             LongUuidSerializer.INSTANCE.serialize(
@@ -866,7 +873,9 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_UCP_cloudevent() {
         // Additional attributes
-        val uCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().withTtl(3).build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            ttl = 3
+        }
         val protoPayload = buildProtoPayloadForTest()
         val cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             LongUuidSerializer.INSTANCE.serialize(
@@ -907,12 +916,13 @@ internal class UCloudEventTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
-                "somehash"
-            ).withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
-                "someOAuthToken"
-            ).withTraceparent("someTraceparent").build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+            traceparent = "someTraceparent"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(

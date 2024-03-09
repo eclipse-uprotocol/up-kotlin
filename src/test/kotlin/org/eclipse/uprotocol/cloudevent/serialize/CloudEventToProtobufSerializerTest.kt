@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -52,9 +52,12 @@ internal class CloudEventToProtobufSerializerTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // configure cloud event
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS0).withTtl(3).build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS0
+            ttl = 3
+            token = "someOAuthToken"
+        }
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "hello", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
@@ -123,9 +126,12 @@ internal class CloudEventToProtobufSerializerTest {
         val protoPayload = buildProtoPayloadForTest1()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
@@ -260,7 +266,7 @@ internal class CloudEventToProtobufSerializerTest {
     private fun buildProtoPayloadForTest(): Any {
         val cloudEventProto: io.cloudevents.v1.proto.CloudEvent =
             io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
-                .setSource("http://example.com").setType("example.demo").setProtoData(Any.newBuilder().build())
+                .setSource("https://example.com").setType("example.demo").setProtoData(Any.newBuilder().build())
                 .putAttributes(
                     "ttl",
                     io.cloudevents.v1.proto.CloudEvent.CloudEventAttributeValue.newBuilder().setCeString("3").build()

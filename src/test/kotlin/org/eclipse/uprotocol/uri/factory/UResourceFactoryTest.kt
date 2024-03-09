@@ -21,67 +21,82 @@
 
 package org.eclipse.uprotocol.uri.factory
 
-import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcRequest
-import org.eclipse.uprotocol.uri.factory.UResourceFactory.createForRpcResponse
-import org.eclipse.uprotocol.uri.factory.UResourceFactory.from
+import org.eclipse.uprotocol.v1.forRpcRequest
+import org.eclipse.uprotocol.v1.forRpcResponse
+import org.eclipse.uprotocol.v1.from
+import org.eclipse.uprotocol.v1.uResource
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
-class UResourceFactoryTest{
+class UResourceFactoryTest {
     @Test
-    fun test_forRpcResponse(){
-        val resource = createForRpcResponse()
+    fun test_forRpcResponse() {
+        val resource = uResource {
+            forRpcResponse()
+        }
         assertEquals("rpc", resource.name)
         assertEquals("response", resource.instance)
         assertEquals(0, resource.id)
     }
 
     @Test
-    fun test_forRpcRequest_without_argu(){
-        val resource = createForRpcRequest()
+    fun test_forRpcRequest_without_argu() {
+        val resource = uResource {
+            forRpcRequest()
+        }
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(0, resource.id)
     }
 
     @Test
-    fun test_forRpcRequest_with_method(){
-        val resource = createForRpcRequest(method = "test")
+    fun test_forRpcRequest_with_method() {
+        val resource = uResource {
+            forRpcRequest("test")
+        }
         assertEquals("rpc", resource.name)
         assertEquals("test", resource.instance)
         assertEquals(0, resource.id)
     }
 
     @Test
-    fun test_forRpcRequest_with_id(){
-        val resource = createForRpcRequest(id = 999)
+    fun test_forRpcRequest_with_id() {
+        val resource = uResource {
+            forRpcRequest(id = 999)
+        }
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(999, resource.id)
     }
 
     @Test
-    fun test_forRpcRequest(){
-        val resource = createForRpcRequest(method = "test", id = 999)
+    fun test_forRpcRequest() {
+        val resource = uResource {
+            forRpcRequest(method = "test", id = 999)
+        }
         assertEquals("rpc", resource.name)
         assertEquals("test", resource.instance)
         assertEquals(999, resource.id)
     }
 
     @Test
-    fun test_fromId_valid_id(){
-        val idTest= Random.nextInt(0,999)
-        val resource = from(idTest)
+    fun test_fromId_valid_id() {
+        val idTest = Random.nextInt(0, 999)
+        val resource = uResource {
+            from(idTest)
+        }
         assertEquals("rpc", resource.name)
         assertEquals("", resource.instance)
         assertEquals(idTest, resource.id)
     }
 
     @Test
-    fun test_fromId_invalid_id(){
-        val idTest= Random.nextInt(1000,Int.MAX_VALUE)
-        val resource = from(idTest)
+    fun test_fromId_invalid_id() {
+        val idTest = Random.nextInt(1000, Int.MAX_VALUE)
+        val resource = uResource {
+            from(idTest)
+        }
         assertEquals("", resource.name)
         assertEquals("", resource.instance)
         assertEquals(idTest, resource.id)

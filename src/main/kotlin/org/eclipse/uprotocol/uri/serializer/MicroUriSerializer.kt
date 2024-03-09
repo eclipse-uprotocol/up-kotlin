@@ -25,7 +25,6 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
@@ -194,7 +193,9 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                 id = ueId
                 versionMajor = uiVersion
             }
-            resource = UResourceFactory.from(uResourceId)
+            resource = uResource{
+                from(uResourceId)
+            }
             uAuthority?.let { authority = it }
         }
     }

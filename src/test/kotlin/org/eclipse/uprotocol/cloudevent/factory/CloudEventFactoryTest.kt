@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +24,7 @@ import com.google.protobuf.Any
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
@@ -42,10 +43,12 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
-
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
             "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
@@ -73,9 +76,12 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken("someOAuthToken").build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
@@ -111,7 +117,7 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // no additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.empty()
+        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.EMPTY
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
@@ -141,9 +147,11 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS1).withTtl(3).build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+        }
         val cloudEvent: CloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
@@ -170,10 +178,11 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
-
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
         // build the cloud event of type publish with destination - a notification
         val cloudEvent: CloudEvent = CloudEventFactory.notification(source, sink, protoPayload, uCloudEventAttributes)
         assertEquals("1.0", cloudEvent.specVersion.toString())
@@ -202,9 +211,12 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).withToken("someOAuthToken").build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+            token = "someOAuthToken"
+        }
         val cloudEvent: CloudEvent = CloudEventFactory.request(
             applicationUriForRPC, serviceMethodUri, protoPayload, uCloudEventAttributes
         )
@@ -235,9 +247,11 @@ internal class CloudEventFactoryTest {
         val protoPayload = buildProtoPayloadForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
         val cloudEvent: CloudEvent = CloudEventFactory.response(
             applicationUriForRPC,
             serviceMethodUri,
@@ -269,9 +283,11 @@ internal class CloudEventFactoryTest {
         val serviceMethodUri = buildUriForTest()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
         val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
             applicationUriForRPC,
             serviceMethodUri,
@@ -304,9 +320,11 @@ internal class CloudEventFactoryTest {
 
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes =
-            UCloudEventAttributes.UCloudEventAttributesBuilder().withHash("somehash")
-                .withPriority(UPriority.UPRIORITY_CS2).withTtl(3).build()
+        val uCloudEventAttributes = uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS2
+            ttl = 3
+        }
         val cloudEvent: CloudEvent = CloudEventFactory.failedResponse(
             applicationUriForRPC,
             serviceMethodUri,
