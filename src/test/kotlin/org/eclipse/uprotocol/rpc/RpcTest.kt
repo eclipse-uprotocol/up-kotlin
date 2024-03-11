@@ -367,7 +367,7 @@ internal class RpcTest {
     }
 
     private fun buildTopic(): UUri {
-        return LongUriSerializer.instance().deserialize("//vcu.vin/hartley/1/rpc.Raise")
+        return LongUriSerializer.INSTANCE.deserialize("//vcu.vin/hartley/1/rpc.Raise")
     }
 
     private fun buildUCallOptions(): CallOptions {

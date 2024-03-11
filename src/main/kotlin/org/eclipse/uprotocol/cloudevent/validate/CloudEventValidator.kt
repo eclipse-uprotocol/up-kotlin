@@ -31,7 +31,6 @@ import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uri.validator.isRpcMethod
 import org.eclipse.uprotocol.uri.validator.validate
 import org.eclipse.uprotocol.v1.*
-import java.util.Optional
 
 /**
  * Validates a CloudEvent using google.grpc.Status<br></br>
@@ -114,12 +113,11 @@ abstract class CloudEventValidator {
         }
 
         override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
-            val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-            if (maybeSink.isPresent) {
-                val sink: String = maybeSink.get()
+            var result: ValidationResult = ValidationResult.success()
+            UCloudEvent.getSink(cloudEvent)?.let { sink ->
                 val checkSink: ValidationResult = validateUEntityUri(sink)
                 if (checkSink.isFailure()) {
-                    return ValidationResult.failure(
+                    result = ValidationResult.failure(
                         String.format(
                             "Invalid CloudEvent sink [%s]. %s",
                             sink,
@@ -128,7 +126,7 @@ abstract class CloudEventValidator {
                     )
                 }
             }
-            return ValidationResult.success()
+            return result
         }
 
 
@@ -144,21 +142,17 @@ abstract class CloudEventValidator {
     private class Notification : Publish() {
 
         override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
-            val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-            if (maybeSink.isEmpty) {
-                return ValidationResult.failure("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.")
-            } else {
-                val sink: String = maybeSink.get()
-                val checkSink: ValidationResult = validateUEntityUri(sink)
-                if (checkSink.isFailure()) {
-                    return ValidationResult.failure(
-                        String.format(
-                            "Invalid Notification type CloudEvent sink [%s]. %s",
-                            sink,
-                            checkSink.getMessage()
-                        )
+            val sink: String = UCloudEvent.getSink(cloudEvent)
+                ?: return ValidationResult.failure("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.")
+            val checkSink: ValidationResult = validateUEntityUri(sink)
+            if (checkSink.isFailure()) {
+                return ValidationResult.failure(
+                    String.format(
+                        "Invalid Notification type CloudEvent sink [%s]. %s",
+                        sink,
+                        checkSink.getMessage()
                     )
-                }
+                )
             }
             return ValidationResult.success()
         }
@@ -189,21 +183,17 @@ abstract class CloudEventValidator {
 
 
         override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
-            val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-            if (maybeSink.isEmpty) {
-                return ValidationResult.failure("Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.")
-            } else {
-                val sink: String = maybeSink.get()
-                val checkSink: ValidationResult = validateRpcMethod(sink)
-                if (checkSink.isFailure()) {
-                    return ValidationResult.failure(
-                        String.format(
-                            "Invalid RPC Request CloudEvent sink [%s]. %s",
-                            sink,
-                            checkSink.getMessage()
-                        )
+            val sink: String = UCloudEvent.getSink(cloudEvent)
+                ?: return ValidationResult.failure("Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.")
+            val checkSink: ValidationResult = validateRpcMethod(sink)
+            if (checkSink.isFailure()) {
+                return ValidationResult.failure(
+                    String.format(
+                        "Invalid RPC Request CloudEvent sink [%s]. %s",
+                        sink,
+                        checkSink.getMessage()
                     )
-                }
+                )
             }
             return ValidationResult.success()
         }
@@ -241,21 +231,18 @@ abstract class CloudEventValidator {
         }
 
         override fun validateSink(cloudEvent: CloudEvent): ValidationResult {
-            val maybeSink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-            if (maybeSink.isEmpty) {
-                return ValidationResult.failure("Invalid CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.")
-            } else {
-                val sink: String = maybeSink.get()
-                val checkSink: ValidationResult = validateRpcTopicUri(sink)
-                if (checkSink.isFailure()) {
-                    return ValidationResult.failure(
-                        String.format(
-                            "Invalid RPC Response CloudEvent sink [%s]. %s",
-                            sink,
-                            checkSink.getMessage()
-                        )
+            val sink: String = UCloudEvent.getSink(cloudEvent)
+                ?: return ValidationResult.failure("Invalid CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.")
+            val checkSink: ValidationResult = validateRpcTopicUri(sink)
+            if (checkSink.isFailure()) {
+                return ValidationResult.failure(
+                    String.format(
+                        "Invalid RPC Response CloudEvent sink [%s]. %s",
+                        sink,
+                        checkSink.getMessage()
                     )
-                }
+                )
+
             }
             return ValidationResult.success()
         }
@@ -318,8 +305,8 @@ abstract class CloudEventValidator {
          * @param uuri uri string to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
-        fun validateUEntityUri(uuri: String?): ValidationResult {
-            val uri: UUri = LongUriSerializer.instance().deserialize(uuri)
+        fun validateUEntityUri(uuri: String): ValidationResult {
+            val uri: UUri = LongUriSerializer.INSTANCE.deserialize(uuri)
             return validateUEntityUri(uri)
         }
 
@@ -332,8 +319,8 @@ abstract class CloudEventValidator {
          * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
-        fun validateTopicUri(uuri: String?): ValidationResult {
-            val uri: UUri = LongUriSerializer.instance().deserialize(uuri)
+        fun validateTopicUri(uuri: String): ValidationResult {
+            val uri: UUri = LongUriSerializer.INSTANCE.deserialize(uuri)
             return validateTopicUri(uri)
         }
 
@@ -362,8 +349,8 @@ abstract class CloudEventValidator {
          * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
-        fun validateRpcTopicUri(uuri: String?): ValidationResult {
-            val uri: UUri = LongUriSerializer.instance().deserialize(uuri)
+        fun validateRpcTopicUri(uuri: String): ValidationResult {
+            val uri: UUri = LongUriSerializer.INSTANCE.deserialize(uuri)
             return validateRpcTopicUri(uri)
         }
 
@@ -394,8 +381,8 @@ abstract class CloudEventValidator {
          * @param uuri String UriPart to validate.
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
-        fun validateRpcMethod(uuri: String?): ValidationResult {
-            val uri: UUri = LongUriSerializer.instance().deserialize(uuri)
+        fun validateRpcMethod(uuri: String): ValidationResult {
+            val uri: UUri = LongUriSerializer.INSTANCE.deserialize(uuri)
             val validationResult: ValidationResult = validateUEntityUri(uri)
             if (validationResult.isFailure()) {
                 return ValidationResult.failure(

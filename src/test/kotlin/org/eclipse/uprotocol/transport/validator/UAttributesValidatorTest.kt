@@ -538,7 +538,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating invalid sink attribute")
     fun test_validating_invalid_sink_attribute() {
-        val uri: UUri = LongUriSerializer.instance().deserialize("//")
+        val uri: UUri = LongUriSerializer.INSTANCE.deserialize("//")
         val attributes: UAttributes =
             uAttributes {
                 forPublication(testSource, UPriority.UPRIORITY_CS0)
@@ -553,7 +553,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating valid sink attribute")
     fun test_validating_valid_sink_attribute() {
-        val uri: UUri = LongUriSerializer.instance().deserialize("/haartley/1")
+        val uri: UUri = LongUriSerializer.INSTANCE.deserialize("/haartley/1")
         val attributes: UAttributes =
             uAttributes {
                 forPublication(testSource, UPriority.UPRIORITY_CS0)
@@ -695,7 +695,7 @@ internal class UAttributesValidatorTest {
     fun test_validating_request_validator_with_wrong_bad_ttl() {
         val attributes: UAttributes = uAttributes {
             forRequest(
-                testSource, LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"),
+                testSource, LongUriSerializer.INSTANCE.deserialize("/hartley/1/rpc.response"),
                 UPriority.UPRIORITY_CS6, -1
             )
         }
@@ -713,7 +713,7 @@ internal class UAttributesValidatorTest {
         val attributes: UAttributes = uAttributes {
             forResponse(
                 testSource,
-                LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"),
+                LongUriSerializer.INSTANCE.deserialize("/hartley/1/rpc.response"),
                 UPriority.UPRIORITY_CS6,
                 UUIDV8()
             )
@@ -773,7 +773,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test_valid_request_methoduri_in_sink")
     fun test_valid_request_methoduri_in_sink() {
-        val testSink = LongUriSerializer.instance().deserialize("/test.service/1/rpc.method")
+        val testSink = LongUriSerializer.INSTANCE.deserialize("/test.service/1/rpc.method")
         val attributes = uAttributes {
             forRequest(testSource, testSink, UPriority.UPRIORITY_CS0, 3000)
         }
@@ -787,7 +787,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test_invalid_request_methoduri_in_sink")
     fun test_invalid_request_methoduri_in_sink() {
-        val testSink = LongUriSerializer.instance().deserialize("/test.client/1/test.response")
+        val testSink = LongUriSerializer.INSTANCE.deserialize("/test.client/1/test.response")
         val attributes = uAttributes {
             forRequest(testSource, testSink, UPriority.UPRIORITY_CS0, 3000)
         }
@@ -804,7 +804,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test_valid_response_uri_in_sink")
     fun test_valid_response_uri_in_sink() {
-        val testSink = LongUriSerializer.instance().deserialize("/test.client/1/rpc.response")
+        val testSink = LongUriSerializer.INSTANCE.deserialize("/test.client/1/rpc.response")
         val attributes = uAttributes {
             forResponse(
                 testSource,
@@ -822,7 +822,7 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("test_invalid_response_uri_in_sink")
     fun test_invalid_response_uri_in_sink() {
-        val testSink = LongUriSerializer.instance().deserialize("/test.client/1/rpc.method")
+        val testSink = LongUriSerializer.INSTANCE.deserialize("/test.client/1/rpc.method")
         val attributes = uAttributes {
             forResponse(
                 testSource,

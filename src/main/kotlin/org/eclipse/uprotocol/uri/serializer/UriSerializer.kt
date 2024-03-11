@@ -28,7 +28,6 @@ import org.eclipse.uprotocol.uri.validator.isResolved
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.copy
 import org.eclipse.uprotocol.v1.uUri
-import java.util.*
 
 /**
  * UUris are used in transport layers and hence need to be serialized.
@@ -42,14 +41,14 @@ interface UriSerializer<T> {
      * @param uri serialized UUri.
      * @return Returns a [UUri] object from the serialized format from the wire.
      */
-    fun deserialize(uri: T?): UUri
+    fun deserialize(uri: T): UUri
 
     /**
      * Serialize from a [UUri] to a specific serialization format.
      * @param uri UUri object to be serialized to the format T.
      * @return Returns the [UUri] in the transport serialized format.
      */
-    fun serialize(uri: UUri?): T
+    fun serialize(uri: UUri): T
 
     /**
      * Build a fully resolved [UUri] from the serialized long format and the serializes micro format.
@@ -57,26 +56,30 @@ interface UriSerializer<T> {
      * @param microUri [UUri] serialized as a byte[].
      * @return Returns a [UUri] object serialized from one of the forms.
      */
-    fun buildResolved(longUri: String?, microUri: ByteArray?): Optional<UUri> {
+    fun buildResolved(longUri: String?, microUri: ByteArray?): UUri? {
         if (longUri.isNullOrEmpty() && (microUri == null || microUri.isEmpty())) {
-            return Optional.of(UUri.getDefaultInstance())
+            return UUri.getDefaultInstance()
         }
+        val longUUri = longUri?.let {
+            LongUriSerializer.INSTANCE.deserialize(it)
+        } ?: UUri.getDefaultInstance()
 
-        val longUUri = LongUriSerializer.instance().deserialize(longUri)
-        val microUUri = MicroUriSerializer.instance().deserialize(microUri)
+        val microUUri = microUri?.let {
+            MicroUriSerializer.INSTANCE.deserialize(it)
+        } ?: UUri.getDefaultInstance()
 
         val uri = uUri {
             authority = microUUri.authority.copy {
                 name = longUUri.authority.name
             }
-            entity=microUUri.entity.copy {
+            entity = microUUri.entity.copy {
                 name = longUUri.entity.name
             }
-            resource=longUUri.resource.copy {
+            resource = longUUri.resource.copy {
                 id = microUUri.resource.id
             }
         }
 
-        return if (uri.isResolved()) Optional.of(uri) else Optional.empty()
+        return if (uri.isResolved()) uri else null
     }
 }

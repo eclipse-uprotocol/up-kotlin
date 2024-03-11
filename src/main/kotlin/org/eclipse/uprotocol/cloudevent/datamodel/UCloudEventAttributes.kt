@@ -25,78 +25,45 @@
 package org.eclipse.uprotocol.cloudevent.datamodel
 
 import org.eclipse.uprotocol.v1.UPriority
-import java.util.*
 
 /**
  * Specifies the properties that can configure the UCloudEvent.
- * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
+ * @param hash An HMAC generated on the data portion of the CloudEvent message using the device key.
  * @param priority uProtocol Prioritization classifications.
  * @param ttl      How long this event should live for after it was generated (in milliseconds).
  * Events without this attribute (or value is 0) MUST NOT timeout.
  * @param token    Oauth2 access token to perform the access request defined in the request message.
+ * @param traceparent An identifier used to correlate observability across related events.
  */
 data class UCloudEventAttributes internal constructor(
-    private val hash: String? = null,
-    private val priority: UPriority? = null,
-    private val ttl: Int? = null,
-    private val token: String? = null,
-    private val traceparent: String? = null
+    val hash: String? = null,
+    val priority: UPriority? = null,
+    val ttl: Int? = null,
+    val token: String? = null,
+    val traceparent: String? = null
 ) {
     private constructor(builder: UCloudEventAttributesBuilder) : this(
-        builder.hash,
+        if (builder.hash.isNullOrBlank()) null else builder.hash,
         builder.priority,
         builder.ttl,
-        builder.token,
+        if (builder.token.isNullOrBlank()) null else builder.token,
         builder.traceparent
     )
 
+    /**
+     * An HMAC generated on the data portion of the CloudEvent message using the device key.
+     */
     val isEmpty: Boolean
         /**
          * Indicates that there are no added additional attributes to configure when building a CloudEvent.
          * @return Returns true if this attributes container is an empty container and has no valuable information in building a CloudEvent.
          */
-        get() = hash().isEmpty && priority().isEmpty && ttl().isEmpty && token().isEmpty && traceparent().isEmpty
-
-    /**
-     * An HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @return Returns an Optional hash attribute.
-     */
-    fun hash(): Optional<String> {
-        return if (hash.isNullOrBlank()) Optional.empty() else Optional.of(hash)
-    }
-
-    /**
-     * uProtocol Prioritization classifications.
-     * @return Returns an Optional priority attribute.
-     */
-    fun priority(): Optional<UPriority> {
-        return if (priority == null) Optional.empty() else Optional.of(priority)
-    }
-
-    /**
-     * How long this event should live for after it was generated (in milliseconds).
-     * @return Returns an Optional time to live attribute.
-     */
-    fun ttl(): Optional<Int> {
-        return if (ttl == null) Optional.empty() else Optional.of(ttl)
-    }
-
-    /**
-     * Oauth2 access token to perform the access request defined in the request message.
-     * @return Returns an Optional OAuth token attribute.
-     */
-    fun token(): Optional<String> {
-        return if (token.isNullOrBlank()) Optional.empty() else Optional.of(token)
-    }
+        get() = hash == null && priority == null && ttl == null && token == null && traceparent == null
 
 
-    /**
-     * An identifier used to correlate observability across related events.
-     * @return Returns an Optional traceparent attribute.
-     */
-    fun traceparent(): Optional<String> {
-        return if (traceparent.isNullOrBlank()) Optional.empty() else Optional.of(traceparent)
-    }
+//    fun getSafeHash():String?{
+//        return  if (hash.isNullOrBlank()) null else hash
+//    }
 
     /**
      * Builder for constructing the UCloudEventAttributes.

@@ -26,7 +26,6 @@ package org.eclipse.uprotocol.uri.serializer
 
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.v1.*
-import java.util.*
 
 /**
  * UUri Serializer that serializes a UUri to a long format string per
@@ -38,8 +37,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
      * @param uri [UUri] object to be serialized to the String format.
      * @return Returns the String format of the supplied [UUri] that can be used as a sink or a source in a uProtocol publish communication.
      */
-    override fun serialize(uri: UUri?): String {
-        if (uri == null || uri.isEmpty()) {
+    override fun serialize(uri: UUri): String {
+        if (uri.isEmpty()) {
             return ""
         }
         val sb = StringBuilder()
@@ -58,8 +57,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
      * @return Returns an UUri data object.
      */
 
-    override fun deserialize(uri: String?): UUri {
-        if (uri.isNullOrBlank()) {
+    override fun deserialize(uri: String): UUri {
+        if (uri.isBlank()) {
             return UUri.getDefaultInstance()
         }
         val uuri: String = if (uri.contains(":")) uri.substring(uri.indexOf(":") + 1) else uri.replace('\\', '/')
@@ -124,10 +123,7 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
     }
 
     companion object {
-        private val INSTANCE = LongUriSerializer()
-        fun instance(): LongUriSerializer {
-            return INSTANCE
-        }
+        val INSTANCE = LongUriSerializer()
 
         private fun buildResourcePartOfUri(uri: UUri): String {
             if (!uri.hasResource()) {
@@ -164,12 +160,10 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
          * @return Returns the String representation of the  Authority in the uProtocol URI.
          */
         private fun buildAuthorityPartOfUri(uAuthority: UAuthority): String {
-            val partialURI = StringBuilder("//")
-            val maybeName: Optional<String> = Optional.ofNullable(uAuthority.name)
-            if (maybeName.isPresent) {
-                partialURI.append(maybeName.get())
-            }
-            return partialURI.toString()
+            val partialURI = "//"
+            return uAuthority.name?.let {
+                "$partialURI$it"
+            } ?: partialURI
         }
 
         /**
@@ -179,7 +173,6 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
          * @return Returns a UResource object.
          */
         private fun parseFromString(resourceString: String): UResource {
-            Objects.requireNonNull(resourceString, " Resource must have a command name.")
             val parts: List<String> = removeEmpty(resourceString.split("#"))
             val nameAndInstance = parts[0]
             val nameAndInstanceParts: List<String> = removeEmpty(nameAndInstance.split("."))

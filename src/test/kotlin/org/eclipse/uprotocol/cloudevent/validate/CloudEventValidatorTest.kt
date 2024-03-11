@@ -600,7 +600,7 @@ internal class CloudEventValidatorTest {
     }
 
     private fun buildLongUriForTest(): String {
-        return LongUriSerializer.instance().serialize(buildUUriForTest())
+        return LongUriSerializer.INSTANCE.serialize(buildUUriForTest())
     }
 
     private fun buildUUriForTest(): UUri {

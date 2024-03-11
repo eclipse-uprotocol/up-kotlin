@@ -58,16 +58,16 @@ internal class UCloudEventAttributesTest {
             token = "someOAuthToken"
             traceparent = "someTraceparent"
         }
-        assertTrue(uCloudEventAttributes.hash().isPresent)
-        assertEquals("somehash", uCloudEventAttributes.hash().get())
-        assertTrue(uCloudEventAttributes.priority().isPresent)
-        assertEquals(UPriority.UPRIORITY_CS6, uCloudEventAttributes.priority().get())
-        assertTrue(uCloudEventAttributes.ttl().isPresent)
-        assertEquals(3, uCloudEventAttributes.ttl().get())
-        assertTrue(uCloudEventAttributes.token().isPresent)
-        assertEquals("someOAuthToken", uCloudEventAttributes.token().get())
-        assertTrue(uCloudEventAttributes.traceparent().isPresent)
-        assertEquals("someTraceparent", uCloudEventAttributes.traceparent().get())
+        checkNotNull(uCloudEventAttributes.hash)
+        assertEquals("somehash", uCloudEventAttributes.hash)
+        checkNotNull(uCloudEventAttributes.priority)
+        assertEquals(UPriority.UPRIORITY_CS6, uCloudEventAttributes.priority)
+        checkNotNull(uCloudEventAttributes.ttl)
+        assertEquals(3, uCloudEventAttributes.ttl)
+        checkNotNull(uCloudEventAttributes.token)
+        assertEquals("someOAuthToken", uCloudEventAttributes.token)
+        checkNotNull(uCloudEventAttributes.traceparent)
+        assertEquals("someTraceparent", uCloudEventAttributes.traceparent)
     }
 
     @Test
@@ -75,11 +75,11 @@ internal class UCloudEventAttributesTest {
     fun test_Isempty_function() {
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.EMPTY
         assertTrue(uCloudEventAttributes.isEmpty)
-        assertTrue(uCloudEventAttributes.hash().isEmpty)
-        assertTrue(uCloudEventAttributes.priority().isEmpty)
-        assertTrue(uCloudEventAttributes.token().isEmpty)
-        assertTrue(uCloudEventAttributes.ttl().isEmpty)
-        assertTrue(uCloudEventAttributes.traceparent().isEmpty)
+        assertTrue(uCloudEventAttributes.hash.isNullOrBlank())
+        assertNull(uCloudEventAttributes.priority)
+        assertNull(uCloudEventAttributes.token)
+        assertNull(uCloudEventAttributes.ttl)
+        assertNull(uCloudEventAttributes.traceparent)
     }
 
     @Test
@@ -90,10 +90,10 @@ internal class UCloudEventAttributesTest {
             token = "  "
         }
         assertTrue(uCloudEventAttributes.isEmpty)
-        assertTrue(uCloudEventAttributes.hash().isEmpty)
-        assertTrue(uCloudEventAttributes.priority().isEmpty)
-        assertTrue(uCloudEventAttributes.token().isEmpty)
-        assertTrue(uCloudEventAttributes.ttl().isEmpty)
+        assertNull(uCloudEventAttributes.hash)
+        assertNull(uCloudEventAttributes.priority)
+        assertNull(uCloudEventAttributes.token)
+        assertNull(uCloudEventAttributes.ttl)
     }
 
     @Test

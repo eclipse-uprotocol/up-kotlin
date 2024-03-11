@@ -355,7 +355,7 @@ internal class CloudEventFactoryTest {
             }
         }
 
-        return LongUriSerializer.instance().serialize(uri)
+        return LongUriSerializer.INSTANCE.serialize(uri)
     }
 
     private fun buildProtoPayloadForTest(): Any {

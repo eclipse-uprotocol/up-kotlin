@@ -260,7 +260,7 @@ internal class CloudEventToProtobufSerializerTest {
         }
 
 
-        return LongUriSerializer.instance().serialize(uri)
+        return LongUriSerializer.INSTANCE.serialize(uri)
     }
 
     private fun buildProtoPayloadForTest(): Any {
