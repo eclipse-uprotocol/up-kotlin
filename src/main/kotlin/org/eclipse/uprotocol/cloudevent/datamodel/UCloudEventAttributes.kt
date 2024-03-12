@@ -60,11 +60,6 @@ data class UCloudEventAttributes internal constructor(
          */
         get() = hash == null && priority == null && ttl == null && token == null && traceparent == null
 
-
-//    fun getSafeHash():String?{
-//        return  if (hash.isNullOrBlank()) null else hash
-//    }
-
     /**
      * Builder for constructing the UCloudEventAttributes.
      */
