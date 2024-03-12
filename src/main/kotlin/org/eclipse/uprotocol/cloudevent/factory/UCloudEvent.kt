@@ -37,10 +37,10 @@ import org.eclipse.uprotocol.uuid.factory.getTime
 import org.eclipse.uprotocol.uuid.factory.isUuid
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.*
-import org.eclipse.uprotocol.v1.UUID
 import java.net.URI
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
+
 
 /**
  * Class to extract  information from a CloudEvent.
@@ -136,7 +136,7 @@ object UCloudEvent {
      */
     fun getCommunicationStatus(cloudEvent: CloudEvent): Int {
         return try {
-            extractIntegerValueFromExtension("commstatus", cloudEvent)?:UCode.OK_VALUE
+            extractIntegerValueFromExtension("commstatus", cloudEvent) ?: UCode.OK_VALUE
         } catch (e: Exception) {
             UCode.OK_VALUE
         }
@@ -304,13 +304,32 @@ object UCloudEvent {
      * @param type The UMessageType
      * @return returns the string representation of the UMessageType
      */
-    fun getEventType(type: UMessageType?): String {
-        return when (type) {
-            UMessageType.UMESSAGE_TYPE_PUBLISH -> "pub.v1"
-            UMessageType.UMESSAGE_TYPE_REQUEST -> "req.v1"
-            UMessageType.UMESSAGE_TYPE_RESPONSE -> "res.v1"
-            else -> ""
-        }
+    fun getEventType(type: UMessageType): String {
+        return getCeName(type.valueDescriptor)
+    }
+
+    /**
+     * Get the string representation of the UPriority
+     * @param priority
+     * @return returns the string representation of the UPriority
+     */
+    fun getCePriority(priority: UPriority): String {
+        return getCeName(priority.valueDescriptor)
+    }
+
+    /**
+     * Get the UPriority from the string name
+     * @param priority
+     * @return returns the UPriority
+     */
+    fun getUPriority(priority: String, default : UPriority = UPriority.UNRECOGNIZED): UPriority {
+        return UPriority.getDescriptor().values
+            .filter { value ->
+                value.options.hasExtension(UprotocolOptions.ceName) && value.options
+                    .getExtension(UprotocolOptions.ceName) == priority
+            }.map { value ->
+            UPriority.forNumber(value.number)
+        }.firstOrNull() ?: default
     }
 
     /**
@@ -318,13 +337,14 @@ object UCloudEvent {
      * @param type The string representation of the UMessageType
      * @return returns the UMessageType
      */
-    fun getMessageType(type: String?): UMessageType {
-        return when (type) {
-            "pub.v1" -> UMessageType.UMESSAGE_TYPE_PUBLISH
-            "req.v1" -> UMessageType.UMESSAGE_TYPE_REQUEST
-            "res.v1" -> UMessageType.UMESSAGE_TYPE_RESPONSE
-            else -> UMessageType.UMESSAGE_TYPE_UNSPECIFIED
-        }
+    fun getMessageType(type: String): UMessageType {
+        return UMessageType.getDescriptor().values
+            .filter { value ->
+                value.options.hasExtension(UprotocolOptions.ceName) && value.options
+                    .getExtension(UprotocolOptions.ceName) == type
+            }.map { value ->
+                UMessageType.forNumber(value.number)
+            }.firstOrNull() ?: UMessageType.UNRECOGNIZED
     }
 
     /**
@@ -346,11 +366,8 @@ object UCloudEvent {
             if (hasCommunicationStatusProblem(event)) {
                 commstatus = getCommunicationStatus(event)
             }
-
-
-            getPriority(event)?.let {
-                val adjustedPriority = if (it.startsWith("UPRIORITY_")) it else "UPRIORITY_$it"
-                priority = UPriority.valueOf(adjustedPriority)
+            getPriority(event)?.let { p ->
+                priority = getUPriority(p, UPriority.UPRIORITY_UNSPECIFIED)
             }
 
             getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it) }
@@ -403,7 +420,7 @@ object UCloudEvent {
         }
 
         if (attributes.priorityValue > 0) {
-            builder.withExtension("priority", attributes.priority.name)
+            builder.withExtension("priority", getCePriority(attributes.priority))
         }
 
         if (attributes.hasSink()) {
@@ -462,6 +479,16 @@ object UCloudEvent {
             return ""
         }
         return format.valueDescriptor.options.getExtension(UprotocolOptions.mimeType)
+    }
+
+    /**
+     * Retrieves the string representation of the data content type based on the provided Enum value descriptor. <BR></BR>
+     *
+     * @param descriptor The EnumDescriptor enumeration representing the payload format.
+     * @return The corresponding string name for the value.
+     */
+    fun getCeName(descriptor: EnumValueDescriptor): String {
+        return descriptor.options.getExtension(UprotocolOptions.ceName)
     }
 }
 

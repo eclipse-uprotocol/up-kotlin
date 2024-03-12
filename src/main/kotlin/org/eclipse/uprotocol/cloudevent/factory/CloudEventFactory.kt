@@ -209,7 +209,12 @@ object CloudEventFactory {
                 */
             .withData(protoPayloadBytes)
         attributes.ttl?.let { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
-        attributes.priority?.let { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
+        attributes.priority?.let { priority ->
+            cloudEventBuilder.withExtension(
+                "priority",
+                UCloudEvent.getCeName(priority.valueDescriptor)
+            )
+        }
         attributes.hash?.let { hash -> cloudEventBuilder.withExtension("hash", hash) }
         attributes.token?.let { token -> cloudEventBuilder.withExtension("token", token) }
         attributes.traceparent?.let { traceparent: String ->

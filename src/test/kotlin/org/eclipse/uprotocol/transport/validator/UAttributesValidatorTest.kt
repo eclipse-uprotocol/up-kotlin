@@ -28,8 +28,6 @@ import org.eclipse.uprotocol.validation.ValidationResult
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.eclipse.uprotocol.v1.UPriority
-import org.eclipse.uprotocol.v1.UAttributes
 
 
 internal class UAttributesValidatorTest {
@@ -775,7 +773,7 @@ internal class UAttributesValidatorTest {
     fun test_valid_request_methoduri_in_sink() {
         val testSink = LongUriSerializer.INSTANCE.deserialize("/test.service/1/rpc.method")
         val attributes = uAttributes {
-            forRequest(testSource, testSink, UPriority.UPRIORITY_CS0, 3000)
+            forRequest(testSource, testSink, UPriority.UPRIORITY_CS4, 3000)
         }
 
         val validator = UAttributesValidator.getValidator(attributes)
@@ -789,7 +787,7 @@ internal class UAttributesValidatorTest {
     fun test_invalid_request_methoduri_in_sink() {
         val testSink = LongUriSerializer.INSTANCE.deserialize("/test.client/1/test.response")
         val attributes = uAttributes {
-            forRequest(testSource, testSink, UPriority.UPRIORITY_CS0, 3000)
+            forRequest(testSource, testSink, UPriority.UPRIORITY_CS4, 3000)
         }
 
         val validator = UAttributesValidator.getValidator(attributes)
@@ -809,7 +807,7 @@ internal class UAttributesValidatorTest {
             forResponse(
                 testSource,
                 testSink,
-                UPriority.UPRIORITY_CS0,
+                UPriority.UPRIORITY_CS4,
                 UUIDV8()
             )
         }
@@ -827,7 +825,7 @@ internal class UAttributesValidatorTest {
             forResponse(
                 testSource,
                 testSink,
-                UPriority.UPRIORITY_CS0,
+                UPriority.UPRIORITY_CS4,
                 UUIDV8()
             )
         }
@@ -835,6 +833,49 @@ internal class UAttributesValidatorTest {
         assertEquals("UAttributesValidator.Response", validator.toString())
         val status = validator.validate(attributes)
         assertEquals("Invalid RPC response type.", status.getMessage())
+    }
+
+    @Test
+    @DisplayName("test_setting_priority_for_response_too_low")
+    fun test_setting_priority_for_response_too_low() {
+        val testSink: UUri = LongUriSerializer.INSTANCE.deserialize("/test.client/1/rpc.method")
+        val attributes = uAttributes {
+            forResponse(
+                testSource,
+                testSink,
+                UPriority.UPRIORITY_CS0,
+                UUIDV8()
+            )
+        }
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Response", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals("Invalid RPC response type.,Invalid UPriority [UPRIORITY_CS0]", status.getMessage())
+    }
+
+    @Test
+    @DisplayName("test_setting_priority_for_request_too_low")
+    fun test_setting_priority_for_request_too_low() {
+        val testSink: UUri = LongUriSerializer.INSTANCE.deserialize("/test.client/1/rpc.method")
+        val attributes: UAttributes = uAttributes {
+            forRequest(testSource, testSink, UPriority.UPRIORITY_CS0, 1000)
+        }
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Request", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals("Invalid UPriority [UPRIORITY_CS0]", status.getMessage())
+    }
+
+    @Test
+    @DisplayName("test_setting_invalid_priority_for_publish")
+    fun test_setting_invalid_priority_for_publish() {
+        val attributes: UAttributes = uAttributes {
+            forPublication(testSource, UPriority.UPRIORITY_UNSPECIFIED)
+        }
+        val validator = UAttributesValidator.getValidator(attributes)
+        assertEquals("UAttributesValidator.Publish", validator.toString())
+        val status = validator.validate(attributes)
+        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage())
     }
 
     private val testSink = uUri {

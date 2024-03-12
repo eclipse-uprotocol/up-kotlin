@@ -24,7 +24,6 @@
 package org.eclipse.uprotocol.uri.validator
 
 import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UResource
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.validation.ValidationResult
 import kotlin.contracts.ExperimentalContracts
@@ -83,7 +82,8 @@ fun UUri.validateRpcResponse(): ValidationResult {
  * @return Returns true if URI is of type RPC.
  */
 fun UUri.isRpcMethod(): Boolean {
-    return resource.name.contains("rpc") && (resource
+
+    return resource.name == "rpc" && (resource
         .hasInstance() && resource.instance.trim().isNotEmpty() || resource
         .hasId() && resource.id != 0)
 }
@@ -105,9 +105,7 @@ fun UUri.isResolved(): Boolean {
  * @return Returns true if URI is of type RPC response.
  */
 fun UUri.isRpcResponse(): Boolean {
-    val resource: UResource = resource
-    return resource.getName().contains("rpc") &&
-            resource.hasInstance() && resource.getInstance().contains("response") &&
+    return resource.name == "rpc" && resource.hasInstance() && resource.instance == "response" &&
             resource.hasId() && resource.id == 0
 }
 
