@@ -57,7 +57,6 @@ internal class CloudEventToJsonSerializerTest {
             .withExtension("ttl", 3)
             .withExtension("priority", "CS1")
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
-        //cloudEvent.getAttribute("traceparent")
         val bytes: ByteArray = serializer.serialize(cloudEvent)
         val jsonString = String(bytes, StandardCharsets.UTF_8)
         val expected =

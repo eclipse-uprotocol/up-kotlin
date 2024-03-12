@@ -30,7 +30,7 @@ import org.eclipse.uprotocol.uuid.factory.UUIDV8
  * Construct a UAttributesBuilder for a publish message.
  * @param source   Source address of the message.
  * @param priority The priority of the message.
- * @return Returns the UAttributesBuilder with the configured priority.
+ * @return Returns the UAttributesBuilder with the configured source and priority.
  */
 @JvmSynthetic
 fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
@@ -45,7 +45,7 @@ fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
  * @param source   Source address of the message.
  * @param sink The destination URI.
  * @param priority The priority of the message.
- * @return Returns the UAttributesBuilder with the configured priority and sink.
+ * @return Returns the UAttributesBuilder with the configured source, sink and priority.
  */
 @JvmSynthetic
 fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPriority) {
@@ -62,7 +62,7 @@ fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPrior
  * @param sink The destination URI.
  * @param priority The priority of the message.
  * @param ttl The time to live in milliseconds.
- * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
+ * @return Returns the UAttributesBuilder with the configured source, sink, priority and ttl.
  */
 @JvmSynthetic
 fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UPriority, ttl: Int) {
@@ -80,7 +80,7 @@ fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UPriority, 
  * @param sink The destination URI.
  * @param priority The priority of the message.
  * @param reqId The original request UUID used to correlate the response to the request.
- * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
+ * @return Returns the UAttributesBuilder with the configured source, sink, priority and reqid.
  */
 @JvmSynthetic
 fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: UPriority, reqId: UUID) {

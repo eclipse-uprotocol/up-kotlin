@@ -25,7 +25,6 @@ import com.google.protobuf.InvalidProtocolBufferException
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
@@ -680,7 +679,7 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_request_cloudevent_without_attributes() {
         // Additional attributes
-        val uCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder().build()
+        val uCloudEventAttributes = uCloudEventAttributes {  }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.request(
