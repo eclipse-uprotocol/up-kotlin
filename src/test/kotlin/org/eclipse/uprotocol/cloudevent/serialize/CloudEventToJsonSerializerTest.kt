@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -43,7 +43,6 @@ internal class CloudEventToJsonSerializerTest {
     @Test
     @DisplayName("Test serialize a CloudEvent to JSON")
     fun test_serialize_cloud_event_to_json() {
-
         // fake payload
         val protoPayload = buildProtoPayloadForTest()
 
@@ -64,7 +63,7 @@ internal class CloudEventToJsonSerializerTest {
             "{\"specversion\":\"1.0\",\"id\":\"hello\",\"source\":\"/body.access/1/door.front_left\",\"type\":\"pub.v1\"," +
                     "\"datacontenttype\":\"application/x-protobuf\",\"dataschema\":\"type.googleapis.com/io.cloudevents.v1.CloudEvent\"," +
                     "\"priority\":\"CS1\",\"ttl\":3," +
-                    "\"data_base64\":\"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPAoFaGVsbG8SEmh0dHA6Ly9leGFtcGxlLmNvbRoDMS4wIgxleGFtcGxlLmRlbW8qCgoDdHRsEgMaATNCAA==\"}"
+                    "\"data_base64\":\"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPQoFaGVsbG8SE2h0dHBzOi8vZXhhbXBsZS5jb20aAzEuMCIMZXhhbXBsZS5kZW1vKgoKA3R0bBIDGgEzQgA=\"}"
         assertEquals(expected, jsonString)
     }
 
@@ -158,12 +157,12 @@ internal class CloudEventToJsonSerializerTest {
         val protoPayload = buildProtoPayloadForTest1()
 
         // additional attributes
-        val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.UCloudEventAttributesBuilder()
-            .withHash("somehash")
-            .withPriority(UPriority.UPRIORITY_CS1)
-            .withTtl(3)
-            .withToken("someOAuthToken")
-            .build()
+        val uCloudEventAttributes = UCloudEventAttributes.uCloudEventAttributes {
+            hash = "somehash"
+            priority = UPriority.UPRIORITY_CS1
+            ttl = 3
+            token = "someOAuthToken"
+        }
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
@@ -232,7 +231,7 @@ internal class CloudEventToJsonSerializerTest {
         val cloudEventProto: io.cloudevents.v1.proto.CloudEvent = io.cloudevents.v1.proto.CloudEvent.newBuilder()
             .setSpecVersion("1.0")
             .setId("hello")
-            .setSource("http://example.com")
+            .setSource("https://example.com")
             .setType("example.demo")
             .setProtoData(Any.newBuilder().build())
             .putAttributes(

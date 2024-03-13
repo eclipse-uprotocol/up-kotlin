@@ -27,6 +27,7 @@ import com.google.protobuf.kotlin.toByteString
 import io.cloudevents.v1.proto.CloudEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
+import org.eclipse.uprotocol.rpc.CallOptions.Companion.callOptions
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
@@ -370,6 +371,6 @@ internal class RpcTest {
     }
 
     private fun buildUCallOptions(): CallOptions {
-        return CallOptions.newBuilder().build()
+        return callOptions {  }
     }
 }

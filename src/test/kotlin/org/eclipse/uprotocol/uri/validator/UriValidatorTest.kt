@@ -20,7 +20,6 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
@@ -515,7 +514,9 @@ internal class UriValidatorTest {
     fun test_valid_rpc_response_uri() {
         val uuri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = UResourceFactory.createForRpcResponse()
+            resource = uResource {
+                forRpcResponse()
+            }
         }
 
         val status: ValidationResult = uuri.validateRpcResponse()
@@ -526,7 +527,7 @@ internal class UriValidatorTest {
     @Test
     @DisplayName("Test invalid rpc response uri")
     @Throws(IOException::class)
-    fun test_invalid_rpc_response_uri(){
+    fun test_invalid_rpc_response_uri() {
         val uuri: UUri = uUri {
             entity = uEntity { name = "hartley" }
             resource = uResource {
@@ -573,9 +574,11 @@ internal class UriValidatorTest {
     @DisplayName("Test is Remote is false for URI without UAuthority")
     fun test_is_remote_is_false_for_uri_without_uauthority() {
         val uri = uUri {
-            authority = uAuthority {  }
+            authority = uAuthority { }
             entity = uEntity { name = "hartley" }
-            resource = UResourceFactory.createForRpcResponse()
+            resource = uResource {
+                forRpcResponse()
+            }
         }
         assertFalse(UAuthority.getDefaultInstance().isRemote())
         assertFalse(uri.authority.isRemote())

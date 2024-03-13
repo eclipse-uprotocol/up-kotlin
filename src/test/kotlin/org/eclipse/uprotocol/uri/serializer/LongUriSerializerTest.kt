@@ -20,7 +20,6 @@
  */
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.uri.validator.isLongForm
 import org.eclipse.uprotocol.uri.validator.isRemote
@@ -38,7 +37,7 @@ class LongUriSerializerTest {
     fun test_using_the_serializers() {
         val uri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = UResourceFactory.createForRpcRequest("raise")
+            resource = uResource { forRpcRequest("raise") }
         }
 
         val strUri: String = LongUriSerializer.instance().serialize(uri)

@@ -21,7 +21,6 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.uri.factory.UResourceFactory
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
@@ -90,7 +89,7 @@ class MicroUriSerializerTest {
     fun test_serialize_uri_missing_ids() {
         val uri: UUri = uUri {
             entity = uEntity { name = "hartley" }
-            resource = UResourceFactory.createForRpcResponse()
+            resource = uResource { forRpcResponse() }
         }
 
 
@@ -158,7 +157,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = UResourceFactory.createForRpcRequest(id = 99)
+            resource = uResource { forRpcRequest( id = 99) }
         }
 
 
