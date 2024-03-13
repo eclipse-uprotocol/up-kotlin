@@ -94,7 +94,7 @@ abstract class UAttributesValidator {
     open fun validateTtl(attributes: UAttributes): ValidationResult {
         val ttl = attributes.ttl
         return if (attributes.hasTtl() && ttl <= 0) {
-            ValidationResult.failure(String.format("Invalid TTL [%s]", ttl))
+            ValidationResult.failure("Invalid TTL [$ttl]")
         } else {
             ValidationResult.success()
         }
@@ -175,9 +175,9 @@ abstract class UAttributesValidator {
     open fun validatePriority(attributes: UAttributes): ValidationResult {
         return if (attributes.priority.number >= UPriority.UPRIORITY_CS0_VALUE) {
             ValidationResult.success()
-        } else ValidationResult.failure(
-            "Invalid UPriority [${attributes.priority.name}]"
-        )
+        } else {
+            ValidationResult.failure("Invalid UPriority [${attributes.priority.name}]")
+        }
     }
 
 
@@ -214,9 +214,11 @@ abstract class UAttributesValidator {
          * @return Returns a [ValidationResult] that is success or failed with a failure message.
          */
         override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.type) ValidationResult.success() else ValidationResult.failure(
-                String.format("Wrong Attribute Type [%s]", attributes.type)
-            )
+            return if (UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.type) {
+                ValidationResult.success()
+            } else {
+                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
+            }
         }
 
         override fun toString(): String {
@@ -235,9 +237,11 @@ abstract class UAttributesValidator {
          * @return Returns a [ValidationResult] that is success or failed with a failure message.
          */
         override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_REQUEST == attributes.type) ValidationResult.success() else ValidationResult.failure(
-                String.format("Wrong Attribute Type [%s]", attributes.type)
-            )
+            return if (UMessageType.UMESSAGE_TYPE_REQUEST == attributes.type) {
+                ValidationResult.success()
+            } else {
+                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
+            }
         }
 
         /**
@@ -250,7 +254,9 @@ abstract class UAttributesValidator {
         override fun validateSink(attributes: UAttributes): ValidationResult {
             return if (!attributes.hasSink()) {
                 ValidationResult.failure("Missing Sink")
-            } else attributes.sink.validateRpcMethod()
+            } else {
+                attributes.sink.validateRpcMethod()
+            }
         }
 
         /**
@@ -266,7 +272,7 @@ abstract class UAttributesValidator {
             }
             val ttl = attributes.ttl
             return if (ttl <= 0) {
-                ValidationResult.failure(String.format("Invalid TTL [%s]", ttl))
+                ValidationResult.failure("Invalid TTL [$ttl]")
             } else {
                 ValidationResult.success()
             }
@@ -281,9 +287,9 @@ abstract class UAttributesValidator {
         override fun validatePriority(attributes: UAttributes): ValidationResult {
             return if (attributes.priority.number >= UPriority.UPRIORITY_CS4_VALUE) {
                 ValidationResult.success()
-            } else ValidationResult.failure(
-                "Invalid UPriority [${attributes.priority.name}]"
-            )
+            } else {
+                ValidationResult.failure("Invalid UPriority [${attributes.priority.name}]")
+            }
         }
 
         override fun toString(): String {
@@ -302,9 +308,11 @@ abstract class UAttributesValidator {
          * @return Returns a [ValidationResult] that is success or failed with a failure message.
          */
         override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.type) ValidationResult.success() else ValidationResult.failure(
-                String.format("Wrong Attribute Type [%s]", attributes.type)
-            )
+            return if (UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.type) {
+                ValidationResult.success()
+            } else {
+                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
+            }
         }
 
         /**
@@ -332,7 +340,7 @@ abstract class UAttributesValidator {
                 return ValidationResult.failure("Missing correlationId")
             }
             return if (!attributes.reqid.isUuid()) {
-                ValidationResult.failure(String.format("Invalid correlationId [%s]", attributes.reqid))
+                ValidationResult.failure("Invalid correlationId [${attributes.reqid}]")
             } else {
                 ValidationResult.success()
             }
