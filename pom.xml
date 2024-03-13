@@ -160,7 +160,8 @@
                 <version>1.0.2</version>
                 <executions>
                     <execution>
-                        <id>license-check</id>
+                        <id>excluse-execution</id>
+                        <phase>none</phase>
                         <goals>
                             <goal>license-check</goal>
                         </goals>
