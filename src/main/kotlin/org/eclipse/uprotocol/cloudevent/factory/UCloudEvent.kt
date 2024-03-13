@@ -41,8 +41,6 @@ import org.eclipse.uprotocol.v1.UUID
 import java.net.URI
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
-
 
 /**
  * Class to extract  information from a CloudEvent.
@@ -61,60 +59,60 @@ object UCloudEvent {
     /**
      * Extract the sink from a cloud event. The sink attribute is optional.
      * @param cloudEvent CloudEvent with sink to be extracted.
-     * @return Returns an Optional String value of a CloudEvent sink attribute if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a CloudEvent sink attribute if it exists,
+     * otherwise Null is returned.
      */
-    fun getSink(cloudEvent: CloudEvent): Optional<String> {
+    fun getSink(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("sink", cloudEvent)
     }
 
     /**
      * Extract the request id from a cloud event that is a response RPC CloudEvent. The attribute is optional.
      * @param cloudEvent the response RPC CloudEvent with request id to be extracted.
-     * @return Returns an Optional String value of a response RPC CloudEvent request id attribute if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a response RPC CloudEvent request id attribute if it exists,
+     * otherwise Null is returned.
      */
-    fun getRequestId(cloudEvent: CloudEvent): Optional<String> {
+    fun getRequestId(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("reqid", cloudEvent)
     }
 
     /**
      * Extract the hash attribute from a cloud event. The hash attribute is optional.
      * @param cloudEvent CloudEvent with hash to be extracted.
-     * @return Returns an Optional String value of a CloudEvent hash attribute if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a CloudEvent hash attribute if it exists,
+     * otherwise Null is returned.
      */
-    fun getHash(cloudEvent: CloudEvent): Optional<String> {
+    fun getHash(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("hash", cloudEvent)
     }
 
     /**
      * Extract the string value of the priority attribute from a cloud event. The priority attribute is optional.
      * @param cloudEvent CloudEvent with priority to be extracted.
-     * @return Returns an Optional String value of a CloudEvent priority attribute if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a CloudEvent priority attribute if it exists,
+     * otherwise Null is returned.
      */
-    fun getPriority(cloudEvent: CloudEvent): Optional<String> {
+    fun getPriority(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("priority", cloudEvent)
     }
 
     /**
      * Extract the integer value of the ttl attribute from a cloud event. The ttl attribute is optional.
      * @param cloudEvent CloudEvent with ttl to be extracted.
-     * @return Returns an Optional String value of a CloudEvent ttl attribute if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns an Int value of a CloudEvent ttl attribute if it exists,
+     * otherwise Null is returned.
      */
-    fun getTtl(cloudEvent: CloudEvent): Optional<Int> {
-        return extractStringValueFromExtension("ttl", cloudEvent).map(Integer::valueOf)
+    fun getTtl(cloudEvent: CloudEvent): Int? {
+        return extractStringValueFromExtension("ttl", cloudEvent)?.toInt()
     }
 
     /**
      * Extract the string value of the token attribute from a cloud event. The token attribute is optional.
      * @param cloudEvent CloudEvent with token to be extracted.
-     * @return Returns an Optional String value of a CloudEvent priority token if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a CloudEvent priority token if it exists,
+     * otherwise Null is returned.
      */
-    fun getToken(cloudEvent: CloudEvent): Optional<String> {
+    fun getToken(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("token", cloudEvent)
     }
 
@@ -122,10 +120,10 @@ object UCloudEvent {
     /**
      * Extract the string value of the trafceparent attribute from a cloud event. The traceparent attribute is optional.
      * @param cloudEvent CloudEvent with traceparent to be extracted.
-     * @return Returns an Optional String value of a CloudEvent traceparent if it exists,
-     * otherwise an Optional.empty() is returned.
+     * @return Returns a String value of a CloudEvent traceparent if it exists,
+     * otherwise Null is returned.
      */
-    fun getTraceparent(cloudEvent: CloudEvent): Optional<String> {
+    fun getTraceparent(cloudEvent: CloudEvent): String? {
         return extractStringValueFromExtension("traceparent", cloudEvent)
     }
 
@@ -138,7 +136,7 @@ object UCloudEvent {
      */
     fun getCommunicationStatus(cloudEvent: CloudEvent): Int {
         return try {
-            extractIntegerValueFromExtension("commstatus", cloudEvent).orElse(UCode.OK_VALUE)
+            extractIntegerValueFromExtension("commstatus", cloudEvent)?:UCode.OK_VALUE
         } catch (e: Exception) {
             UCode.OK_VALUE
         }
@@ -171,12 +169,12 @@ object UCloudEvent {
     /**
      * Extract the timestamp from the UUIDV8 CloudEvent ID, with Unix epoch as the
      * @param cloudEvent The CloudEvent with the timestamp to extract.
-     * @return Return the timestamp from the UUIDV8 CloudEvent ID or an empty Optional if timestamp can't be extracted.
+     * @return Return the timestamp from the UUIDV8 CloudEvent ID or a Null if timestamp can't be extracted.
      */
-    fun getCreationTimestamp(cloudEvent: CloudEvent): Optional<Long> {
+    fun getCreationTimestamp(cloudEvent: CloudEvent): Long? {
         val cloudEventId = cloudEvent.id
         val uuid = LongUuidSerializer.INSTANCE.deserialize(cloudEventId)
-        return Optional.ofNullable(uuid.getTime())
+        return uuid.getTime()
     }
 
     /**
@@ -186,11 +184,7 @@ object UCloudEvent {
      * @return Returns true if the CloudEvent was configured with a ttl &gt; 0 and a creation time to compare for expiration.
      */
     fun isExpiredByCloudEventCreationDate(cloudEvent: CloudEvent): Boolean {
-        val maybeTtl: Optional<Int> = getTtl(cloudEvent)
-        if (maybeTtl.isEmpty) {
-            return false
-        }
-        val ttl: Int = maybeTtl.get()
+        val ttl = getTtl(cloudEvent) ?: return false
         if (ttl <= 0) {
             return false
         }
@@ -207,11 +201,7 @@ object UCloudEvent {
      * @return Returns true if the CloudEvent was configured with a ttl &gt; 0 and UUIDv8 id to compare for expiration.
      */
     fun isExpired(cloudEvent: CloudEvent): Boolean {
-        val maybeTtl: Optional<Int> = getTtl(cloudEvent)
-        if (maybeTtl.isEmpty) {
-            return false
-        }
-        val ttl: Int = maybeTtl.get()
+        val ttl = getTtl(cloudEvent) ?: return false
         if (ttl <= 0) {
             return false
         }
@@ -220,7 +210,7 @@ object UCloudEvent {
         if (uuid == UUID.getDefaultInstance()) {
             return false
         }
-        val delta: Long = System.currentTimeMillis() - (uuid.getTime()?:0L)
+        val delta: Long = System.currentTimeMillis() - (uuid.getTime() ?: 0L)
         return delta >= ttl
     }
 
@@ -253,20 +243,20 @@ object UCloudEvent {
     /**
      * Extract the payload from the CloudEvent as a protobuf Message of the provided class. The protobuf of this message
      * class must be loaded on the client for this to work. <br></br>
-     * An all or nothing error handling strategy is implemented. If anything goes wrong, an empty optional will be returned. <br></br>
+     * An all or nothing error handling strategy is implemented. If anything goes wrong, a Null will be returned. <br></br>
      * Example: <br></br>
-     * <pre>Optional&lt;SomeMessage&gt; unpacked = UCloudEvent.unpack(cloudEvent, SomeMessage.class);</pre>
+     * <pre>SomeMessage; unpacked = UCloudEvent.unpack(cloudEvent, SomeMessage::class.java);</pre>
      * @param cloudEvent CloudEvent containing the payload to extract.
      * @param clazz The class that extends [Message] that the payload is extracted into.
      * @return Returns a [Message] payload of the class type that is provided.
      * @param <T> The class type of the Message to be unpacked.
     </T> */
-    fun <T : Message> unpack(cloudEvent: CloudEvent, clazz: Class<T>): Optional<T> {
+    fun <T : Message> unpack(cloudEvent: CloudEvent, clazz: Class<T>): T? {
         return try {
-            Optional.of(getPayload(cloudEvent).unpack(clazz))
+            getPayload(cloudEvent).unpack(clazz)
         } catch (e: InvalidProtocolBufferException) {
             // All or nothing error handling strategy. If something goes wrong, you just get an empty.
-            Optional.empty()
+            null
         }
     }
 
@@ -275,41 +265,38 @@ object UCloudEvent {
      * @param cloudEvent The CloudEvent we want to pretty print.
      * @return returns the String representation of the CloudEvent containing only the id, source, type and maybe a sink.
      */
-    fun toString(cloudEvent: CloudEvent?): String {
-        return if (cloudEvent != null) {
-            "CloudEvent{id='" + cloudEvent.id + "', source='" + cloudEvent.source + "'" + getSink(
-                cloudEvent
-            ).map { sink -> String.format(", sink='%s'", sink) }.orElse("") + ", type='" + cloudEvent.type + "'}"
-        } else "null"
+    fun toString(cloudEvent: CloudEvent): String {
+        val sink = getSink(cloudEvent)?.let { ", sink='$it'" } ?: ""
+        return "CloudEvent{id='${cloudEvent.id}', source='${cloudEvent.source}'${sink}, type='${cloudEvent.type}'}"
+
     }
 
     /**
      * Utility for extracting the String value of an extension.
      * @param extensionName The name of the CloudEvent extension.
      * @param cloudEvent The CloudEvent containing the data.
-     * @return returns the Optional String value of the extension matching the extension name,
-     * or an Optional.empty() is the value does not exist.
+     * @return returns the String value of the extension matching the extension name,
+     * or a Null is the value does not exist.
      */
-    private fun extractStringValueFromExtension(extensionName: String, cloudEvent: CloudEvent): Optional<String> {
-        val extensionNames: MutableSet<String>? = cloudEvent.extensionNames
-        if (extensionNames != null) {
-            if (extensionNames.contains(extensionName)) {
-                val extension: kotlin.Any? = cloudEvent.getExtension(extensionName)
-                return if (extension == null) Optional.empty() else Optional.of(extension.toString())
+    private fun extractStringValueFromExtension(extensionName: String, cloudEvent: CloudEvent): String? {
+        return cloudEvent.extensionNames?.let {
+            if (it.contains(extensionName)) {
+                cloudEvent.getExtension(extensionName)?.toString()
+            } else {
+                null
             }
         }
-        return Optional.empty()
     }
 
     /**
      * Utility for extracting the Integer value of an extension.
      * @param extensionName The name of the CloudEvent extension.
      * @param cloudEvent The CloudEvent containing the data.
-     * @return returns the Optional Integer value of the extension matching the extension name,
-     * or an Optional.empty() is the value does not exist.
+     * @return returns the Integer value of the extension matching the extension name,
+     * or a Null is the value does not exist.
      */
-    private fun extractIntegerValueFromExtension(extensionName: String, cloudEvent: CloudEvent): Optional<Int> {
-        return extractStringValueFromExtension(extensionName, cloudEvent).map(Integer::valueOf)
+    private fun extractIntegerValueFromExtension(extensionName: String, cloudEvent: CloudEvent): Int? {
+        return extractStringValueFromExtension(extensionName, cloudEvent)?.toInt()
     }
 
     /**
@@ -355,28 +342,28 @@ object UCloudEvent {
         val msgAttributes = uAttributes {
             id = LongUuidSerializer.INSTANCE.deserialize(event.id)
             type = getMessageType(event.type)
-            source = LongUriSerializer.instance().deserialize(event.source.toString())
+            source = LongUriSerializer.INSTANCE.deserialize(event.source.toString())
             if (hasCommunicationStatusProblem(event)) {
                 commstatus = getCommunicationStatus(event)
             }
 
 
-            getPriority(event).ifPresent {
+            getPriority(event)?.let {
                 val adjustedPriority = if (it.startsWith("UPRIORITY_")) it else "UPRIORITY_$it"
                 priority = UPriority.valueOf(adjustedPriority)
             }
 
-            getSink(event).ifPresent { sink = LongUriSerializer.instance().deserialize(it) }
+            getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it) }
 
-            getRequestId(event).ifPresent { reqid = LongUuidSerializer.INSTANCE.deserialize(it) }
+            getRequestId(event)?.let { reqid = LongUuidSerializer.INSTANCE.deserialize(it) }
 
-            getTtl(event).ifPresent { ttl = it }
+            getTtl(event)?.let { ttl = it }
 
-            getToken(event).ifPresent { token = it }
+            getToken(event)?.let { token = it }
 
-            getTraceparent(event).ifPresent { traceparent = it }
+            getTraceparent(event)?.let { traceparent = it }
 
-            extractIntegerValueFromExtension("plevel", event).ifPresent { permissionLevel = it }
+            extractIntegerValueFromExtension("plevel", event)?.let { permissionLevel = it }
 
         }
         return uMessage {
@@ -398,7 +385,7 @@ object UCloudEvent {
         val builder: CloudEventBuilder =
             CloudEventBuilder.v1().withId(LongUuidSerializer.INSTANCE.serialize(attributes.id))
         builder.withType(getEventType(attributes.type))
-        builder.withSource(URI.create(LongUriSerializer.instance().serialize(attributes.source)))
+        builder.withSource(URI.create(LongUriSerializer.INSTANCE.serialize(attributes.source)))
         val contentType = getContentTypeFromUPayloadFormat(payload.format)
         if (contentType.isNotEmpty()) {
             builder.withDataContentType(contentType)
@@ -420,7 +407,7 @@ object UCloudEvent {
         }
 
         if (attributes.hasSink()) {
-            builder.withExtension("sink", URI.create(LongUriSerializer.instance().serialize(attributes.sink)))
+            builder.withExtension("sink", URI.create(LongUriSerializer.INSTANCE.serialize(attributes.sink)))
         }
 
         if (attributes.hasCommstatus()) {
@@ -459,7 +446,7 @@ object UCloudEvent {
                 .getExtension(UprotocolOptions.mimeType) == contentType
         }.map { v: EnumValueDescriptor ->
             UPayloadFormat.forNumber(v.number)
-        }.firstOrNull()?:UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
+        }.firstOrNull() ?: UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
     }
 
     /**

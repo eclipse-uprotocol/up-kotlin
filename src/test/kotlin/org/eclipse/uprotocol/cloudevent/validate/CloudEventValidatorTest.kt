@@ -345,7 +345,7 @@ internal class CloudEventValidatorTest {
         val cloudEvent: CloudEvent = builder.build()
         val validator: CloudEventValidator = CloudEventValidator.Validators.NOTIFICATION.validator()
         val result: ValidationResult = validator.validate(cloudEvent)
-        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", result.getMessage())
+        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an uri.", result.getMessage())
     }
 
     @Test
@@ -600,7 +600,7 @@ internal class CloudEventValidatorTest {
     }
 
     private fun buildLongUriForTest(): String {
-        return LongUriSerializer.instance().serialize(buildUUriForTest())
+        return LongUriSerializer.INSTANCE.serialize(buildUUriForTest())
     }
 
     private fun buildUUriForTest(): UUri {

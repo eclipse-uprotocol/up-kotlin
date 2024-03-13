@@ -33,7 +33,7 @@ import org.eclipse.uprotocol.v1.UUID
 /**
  * Fetch the UUID version.
  *
- * @return the UUID version from the UUID object or Optional.empty() if the uuid is null.
+ * @return the UUID version from the UUID object.
  */
 fun UUID.getVersion(): UUIDVersion {
     // Version is bits masked by 0x000000000000F000 in MS long

@@ -58,9 +58,8 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder =
             buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest))
         val cloudEvent: CloudEvent = builder.build()
-        val sink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-        assertTrue(sink.isPresent)
-        assertEquals(sinkForTest, sink.get())
+        val sink = UCloudEvent.getSink(cloudEvent)
+        assertEquals(sinkForTest, sink)
     }
 
     @Test
@@ -68,8 +67,8 @@ internal class UCloudEventTest {
     fun test_extract_sink_from_cloudevent_when_sink_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val sink: Optional<String> = UCloudEvent.getSink(cloudEvent)
-        assertTrue(sink.isEmpty)
+        val sink = UCloudEvent.getSink(cloudEvent)
+        assertNull(sink)
     }
 
     @Test
@@ -77,9 +76,8 @@ internal class UCloudEventTest {
     fun test_extract_requestId_from_cloudevent_when_requestId_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("reqid", "someRequestId")
         val cloudEvent: CloudEvent = builder.build()
-        val requestId: Optional<String> = UCloudEvent.getRequestId(cloudEvent)
-        assertTrue(requestId.isPresent)
-        assertEquals("someRequestId", requestId.get())
+        val requestId = UCloudEvent.getRequestId(cloudEvent)
+        assertEquals("someRequestId", requestId)
     }
 
     @Test
@@ -87,8 +85,8 @@ internal class UCloudEventTest {
     fun test_extract_requestId_from_cloudevent_when_requestId_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val requestId: Optional<String> = UCloudEvent.getRequestId(cloudEvent)
-        assertTrue(requestId.isEmpty)
+        val requestId= UCloudEvent.getRequestId(cloudEvent)
+        assertNull(requestId)
     }
 
 
@@ -97,9 +95,8 @@ internal class UCloudEventTest {
     fun test_extract_hash_from_cloudevent_when_hash_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val hash: Optional<String> = UCloudEvent.getHash(cloudEvent)
-        assertTrue(hash.isPresent)
-        assertEquals("somehash", hash.get())
+        val hash= UCloudEvent.getHash(cloudEvent)
+        assertEquals("somehash", hash)
     }
 
     @Test
@@ -107,8 +104,8 @@ internal class UCloudEventTest {
     fun test_extract_hash_from_cloudevent_when_hash_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("hash")
         val cloudEvent: CloudEvent = builder.build()
-        val hash: Optional<String> = UCloudEvent.getHash(cloudEvent)
-        assertTrue(hash.isEmpty)
+        val hash: String? = UCloudEvent.getHash(cloudEvent)
+        assertNull(hash)
     }
 
     @Test
@@ -116,9 +113,8 @@ internal class UCloudEventTest {
     fun test_extract_priority_from_cloudevent_when_priority_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val priority: Optional<String> = UCloudEvent.getPriority(cloudEvent)
-        assertTrue(priority.isPresent)
-        assertEquals(UPriority.UPRIORITY_CS1.name, priority.get())
+        val priority= UCloudEvent.getPriority(cloudEvent)
+        assertEquals(UPriority.UPRIORITY_CS1.name, priority)
     }
 
     @Test
@@ -126,8 +122,8 @@ internal class UCloudEventTest {
     fun test_extract_priority_from_cloudevent_when_priority_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("priority")
         val cloudEvent: CloudEvent = builder.build()
-        val priority: Optional<String> = UCloudEvent.getPriority(cloudEvent)
-        assertTrue(priority.isEmpty)
+        val priority: String? = UCloudEvent.getPriority(cloudEvent)
+        assertNull(priority)
     }
 
     @Test
@@ -135,9 +131,8 @@ internal class UCloudEventTest {
     fun test_extract_ttl_from_cloudevent_when_ttl_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val ttl: Optional<Int> = UCloudEvent.getTtl(cloudEvent)
-        assertTrue(ttl.isPresent)
-        assertEquals(3, ttl.get())
+        val ttl = UCloudEvent.getTtl(cloudEvent)
+        assertEquals(3, ttl)
     }
 
     @Test
@@ -145,8 +140,8 @@ internal class UCloudEventTest {
     fun test_extract_ttl_from_cloudevent_when_ttl_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl")
         val cloudEvent: CloudEvent = builder.build()
-        val ttl: Optional<Int> = UCloudEvent.getTtl(cloudEvent)
-        assertTrue(ttl.isEmpty)
+        val ttl: Int? = UCloudEvent.getTtl(cloudEvent)
+        assertNull(ttl)
     }
 
     @Test
@@ -154,9 +149,8 @@ internal class UCloudEventTest {
     fun test_extract_token_from_cloudevent_when_token_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val token: Optional<String> = UCloudEvent.getToken(cloudEvent)
-        assertTrue(token.isPresent)
-        assertEquals("someOAuthToken", token.get())
+        val token: String? = UCloudEvent.getToken(cloudEvent)
+        assertEquals("someOAuthToken", token)
     }
 
     @Test
@@ -164,8 +158,8 @@ internal class UCloudEventTest {
     fun test_extract_token_from_cloudevent_when_token_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("token")
         val cloudEvent: CloudEvent = builder.build()
-        val token: Optional<String> = UCloudEvent.getToken(cloudEvent)
-        assertTrue(token.isEmpty)
+        val token: String? = UCloudEvent.getToken(cloudEvent)
+        assertNull(token)
     }
 
     @Test
@@ -173,9 +167,8 @@ internal class UCloudEventTest {
     fun test_extract_traceparent_from_cloudevent_when_traceparent_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val traceparent: Optional<String> = UCloudEvent.getTraceparent(cloudEvent)
-        assertTrue(traceparent.isPresent)
-        assertEquals("someTraceparent", traceparent.get())
+        val traceparent: String? = UCloudEvent.getTraceparent(cloudEvent)
+        assertEquals("someTraceparent", traceparent)
     }
 
     @Test
@@ -183,8 +176,8 @@ internal class UCloudEventTest {
     fun test_extract_traceparent_from_cloudevent_when_traceparent_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withoutExtension("traceparent")
         val cloudEvent: CloudEvent = builder.build()
-        val traceparent: Optional<String> = UCloudEvent.getTraceparent(cloudEvent)
-        assertTrue(traceparent.isEmpty)
+        val traceparent: String? = UCloudEvent.getTraceparent(cloudEvent)
+        assertNull(traceparent)
     }
 
 
@@ -271,8 +264,8 @@ internal class UCloudEventTest {
     fun test_extract_creation_timestamp_from_cloudevent_UUID_Id_when_not_a_UUIDV8_id() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val creationTimestamp: Optional<Long> = UCloudEvent.getCreationTimestamp(cloudEvent)
-        assertTrue(creationTimestamp.isEmpty)
+        val creationTimestamp = UCloudEvent.getCreationTimestamp(cloudEvent)
+        assertNull(creationTimestamp)
     }
 
     @Test
@@ -283,9 +276,7 @@ internal class UCloudEventTest {
 
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
-        val maybeCreationTimestamp: Optional<Long> = UCloudEvent.getCreationTimestamp(cloudEvent)
-        assertTrue(maybeCreationTimestamp.isPresent)
-        val creationTimestamp: Long = maybeCreationTimestamp.get()
+        val creationTimestamp = UCloudEvent.getCreationTimestamp(cloudEvent)?: fail()
         val now: OffsetDateTime = OffsetDateTime.now()
         val creationTimestampInstant: Instant = Instant.ofEpochMilli(creationTimestamp)
         val creationTimestampInstantEpochSecond: Long = creationTimestampInstant.epochSecond
@@ -536,11 +527,9 @@ internal class UCloudEventTest {
             .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
             .withDataSchema(URI.create(payloadForCloudEvent.typeUrl)).withData(cloudEventData)
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
-        val extracted: Optional<io.cloudevents.v1.proto.CloudEvent> = UCloudEvent.unpack(
+        val unpackedCE: io.cloudevents.v1.proto.CloudEvent = UCloudEvent.unpack(
             cloudEvent, io.cloudevents.v1.proto.CloudEvent::class.java
-        )
-        assertTrue(extracted.isPresent)
-        val unpackedCE: io.cloudevents.v1.proto.CloudEvent = extracted.get()
+        ) ?: fail()
         assertEquals("1.0", unpackedCE.specVersion)
         assertEquals("hello", unpackedCE.id)
         assertEquals("example.demo", unpackedCE.type)
@@ -555,10 +544,10 @@ internal class UCloudEventTest {
             .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
             .withData("<html><head></head><body><p>Hello</p></body></html>".toByteArray())
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
-        val extracted: Optional<io.cloudevents.v1.proto.CloudEvent> = UCloudEvent.unpack(
+        val extracted: io.cloudevents.v1.proto.CloudEvent? = UCloudEvent.unpack(
             cloudEvent, io.cloudevents.v1.proto.CloudEvent::class.java
         )
-        assertTrue(extracted.isEmpty)
+        assertNull(extracted)
     }
 
     @Test
@@ -571,14 +560,6 @@ internal class UCloudEventTest {
         val prettyPrint: String = UCloudEvent.toString(cloudEvent)
         val expected =
             ("CloudEvent{id='testme', source='/body.access//door.front_left#Door', " + "sink='//bo" + ".cloud/petapp/1/rpc.response', type='pub.v1'}")
-        assertEquals(expected, prettyPrint)
-    }
-
-    @Test
-    @DisplayName("Test pretty printing a cloud event that is null")
-    fun test_pretty_printing_a_cloudevent_that_is_null() {
-        val prettyPrint: String = UCloudEvent.toString(null)
-        val expected = "null"
         assertEquals(expected, prettyPrint)
     }
 
@@ -676,25 +657,19 @@ internal class UCloudEventTest {
         )
         val result = UCloudEvent.toMessage(cloudEvent)
         assertNotNull(result)
-        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.attributes.ttl)
-        assertTrue(UCloudEvent.getToken(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getToken(cloudEvent).get(), result.attributes.getToken())
-        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
+        assertEquals(UCloudEvent.getToken(cloudEvent), result.attributes.getToken())
         assertEquals(
-            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
-        assertTrue(UCloudEvent.getTraceparent(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getTraceparent(cloudEvent).get(), result.attributes.traceparent)
+        assertEquals(UCloudEvent.getTraceparent(cloudEvent), result.attributes.traceparent)
 
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
             UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.instance().serialize(result.attributes.source)
+            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
-        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.attributes.getPriority().name)
-
+        assertEquals(UCloudEvent.getPriority(cloudEvent), result.attributes.getPriority().name)
         val cloudEvent1 = UCloudEvent.fromMessage(result)
         assertNotNull(cloudEvent1)
         assertEquals(cloudEvent, cloudEvent1)
@@ -713,19 +688,16 @@ internal class UCloudEventTest {
         val result = UCloudEvent.toMessage(cloudEvent)
         assertNotNull(result)
         assertFalse(result.attributes.hasTtl())
-        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
         assertEquals(
-            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
             UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.instance().serialize(result.attributes.source)
+            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
         assertEquals(result.attributes.getPriority().getNumber(), 0)
-
-        val cloudEvent1 = UCloudEvent.fromMessage(result)
-        assertEquals(cloudEvent, cloudEvent1)
+        assertEquals(cloudEvent, UCloudEvent.fromMessage(result))
 
     }
 
@@ -747,26 +719,20 @@ internal class UCloudEventTest {
         )
         val result = UCloudEvent.toMessage(cloudEvent)
         assertNotNull(result)
-        assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent)
         assertEquals(
-            UCloudEvent.getRequestId(cloudEvent).get(), LongUuidSerializer.INSTANCE.serialize(result.attributes.reqid)
+            UCloudEvent.getRequestId(cloudEvent), LongUuidSerializer.INSTANCE.serialize(result.attributes.reqid)
         )
-        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.attributes.ttl)
-        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent)
+        assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(
-            UCloudEvent.getSink(cloudEvent).get(), LongUriSerializer.instance().serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
             UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.instance().serialize(result.attributes.source)
+            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
-        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent)
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.attributes.getPriority().name)
-
-        val cloudEvent1 = UCloudEvent.fromMessage(result)
-        assertEquals(cloudEvent, cloudEvent1)
+        assertEquals(UCloudEvent.getPriority(cloudEvent), result.attributes.getPriority().name)
+        assertEquals(cloudEvent, UCloudEvent.fromMessage(result))
 
     }
 
@@ -889,8 +855,7 @@ internal class UCloudEventTest {
         assertNotNull(result)
         assertEquals(UPriority.UPRIORITY_CS4.name, result.attributes.getPriority().name)
         val cloudEvent1 = UCloudEvent.fromMessage(result)
-        assertTrue(UCloudEvent.getPriority(cloudEvent1).isPresent)
-        assertEquals(UPriority.UPRIORITY_CS4.name, UCloudEvent.getPriority(cloudEvent1).get())
+        assertEquals(UPriority.UPRIORITY_CS4.name, UCloudEvent.getPriority(cloudEvent1))
     }
 
     private fun buildSourceForTest(): String {
@@ -904,7 +869,7 @@ internal class UCloudEventTest {
             }
         }
 
-        return LongUriSerializer.instance().serialize(uUri)
+        return LongUriSerializer.INSTANCE.serialize(uUri)
     }
 
     private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {

@@ -208,12 +208,11 @@ object CloudEventFactory {
                 .withDataSchema(URI.create(protoPayloadSchema))
                 */
             .withData(protoPayloadBytes)
-        attributes.ttl().ifPresent { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
-        attributes.priority()
-            .ifPresent { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
-        attributes.hash().ifPresent { hash -> cloudEventBuilder.withExtension("hash", hash) }
-        attributes.token().ifPresent { token -> cloudEventBuilder.withExtension("token", token) }
-        attributes.traceparent().ifPresent { traceparent: String ->
+        attributes.ttl?.let { ttl -> cloudEventBuilder.withExtension("ttl", ttl) }
+        attributes.priority?.let { priority -> cloudEventBuilder.withExtension("priority", priority.toString()) }
+        attributes.hash?.let { hash -> cloudEventBuilder.withExtension("hash", hash) }
+        attributes.token?.let { token -> cloudEventBuilder.withExtension("token", token) }
+        attributes.traceparent?.let { traceparent: String ->
             cloudEventBuilder.withExtension("traceparent", traceparent)
         }
 

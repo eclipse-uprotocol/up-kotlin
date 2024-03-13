@@ -21,14 +21,11 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import org.eclipse.uprotocol.uri.validator.isEmpty
-import org.eclipse.uprotocol.uri.validator.isLongForm
 import org.eclipse.uprotocol.uri.validator.isRemote
-import org.eclipse.uprotocol.uri.validator.isResolved
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.util.*
 
 
 class LongUriSerializerTest {
@@ -40,41 +37,30 @@ class LongUriSerializerTest {
             resource = uResource { forRpcRequest("raise") }
         }
 
-        val strUri: String = LongUriSerializer.instance().serialize(uri)
+        val strUri: String = LongUriSerializer.INSTANCE.serialize(uri)
         assertEquals("/hartley//rpc.raise", strUri)
-        val uri2: UUri = LongUriSerializer.instance().deserialize(strUri)
+        val uri2: UUri = LongUriSerializer.INSTANCE.deserialize(strUri)
         assertEquals(uri, uri2)
-    }
-
-    @Test
-    @DisplayName("Test parse uProtocol uri that is null")
-    fun test_parse_protocol_uri_when_is_null() {
-        val uri: UUri = LongUriSerializer.instance().deserialize(null)
-        assertTrue(uri.isEmpty())
-        assertFalse(uri.isResolved())
-        assertFalse(uri.isLongForm())
     }
 
     @Test
     @DisplayName("Test parse uProtocol uri that is empty string")
     fun test_parse_protocol_uri_when_is_empty_string() {
         val uri = ""
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.isEmpty())
-        val uri2: String = LongUriSerializer.instance().serialize(null)
-        assertTrue(uri2.isEmpty())
     }
 
     @Test
     @DisplayName("Test parse uProtocol uri with schema and slash")
     fun test_parse_protocol_uri_with_schema_and_slash() {
         val uri = "/"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.hasAuthority())
         assertTrue(uuri.isEmpty())
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
-        val uri2: String = LongUriSerializer.instance().serialize(uUri { })
+        val uri2: String = LongUriSerializer.INSTANCE.serialize(uUri { })
         assertTrue(uri2.isEmpty())
     }
 
@@ -82,7 +68,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and double slash")
     fun test_parse_protocol_uri_with_schema_and_double_slash() {
         val uri = "//"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.hasAuthority())
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
@@ -93,7 +79,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and 3 slash and something")
     fun test_parse_protocol_uri_with_schema_and_3_slash_and_something() {
         val uri = "///body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.hasAuthority())
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
@@ -106,7 +92,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and 4 slash and something")
     fun test_parse_protocol_uri_with_schema_and_4_slash_and_something() {
         val uri = "////body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
@@ -118,7 +104,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and 5 slash and something")
     fun test_parse_protocol_uri_with_schema_and_5_slash_and_something() {
         val uri = "/////body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertFalse(uuri.hasResource())
         assertFalse(uuri.hasEntity())
@@ -129,7 +115,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and 6 slash and something")
     fun test_parse_protocol_uri_with_schema_and_6_slash_and_something() {
         val uri = "//////body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertTrue(uuri.isEmpty())
     }
@@ -138,7 +124,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service no version")
     fun test_parse_protocol_uri_with_local_service_no_version() {
         val uri = "/body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -150,7 +136,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service with version")
     fun test_parse_protocol_uri_with_local_service_with_version() {
         val uri = "/body.access/1"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(1, uuri.entity.versionMajor)
@@ -161,7 +147,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource name only")
     fun test_parse_protocol_uri_with_local_service_no_version_with_resource_name_only() {
         val uri = "/body.access//door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -175,7 +161,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource name only")
     fun test_parse_protocol_uri_with_local_service_with_version_with_resource_name_only() {
         val uri = "/body.access/1/door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(1, uuri.entity.versionMajor)
@@ -188,7 +174,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource and instance only")
     fun test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance() {
         val uri = "/body.access//door.front_left"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -202,7 +188,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource and instance only")
     fun test_parse_protocol_uri_with_local_service_with_version_with_resource_with_getMessage() {
         val uri = "/body.access/1/door.front_left"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertNotEquals(0, uuri.entity.versionMajor)
@@ -217,7 +203,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource with instance and message")
     fun test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance_and_getMessage() {
         val uri = "/body.access//door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -232,7 +218,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource with instance and message")
     fun test_parse_protocol_uri_with_local_service_with_version_with_resource_with_instance_and_getMessage() {
         val uri = "/body.access/1/door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertNotEquals(0, uuri.entity.versionMajor)
@@ -248,7 +234,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol RPC uri with local service no version")
     fun test_parse_protocol_rpc_uri_with_local_service_no_version() {
         val uri = "/petapp//rpc.response"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("petapp", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -262,7 +248,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol RPC uri with local service with version")
     fun test_parse_protocol_rpc_uri_with_local_service_with_version() {
         val uri = "/petapp/1/rpc.response"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("petapp", uuri.entity.name)
         assertNotEquals(0, uuri.entity.versionMajor)
@@ -277,7 +263,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service , name with device and domain")
     fun test_parse_protocol_uri_with_remote_service_only_device_and_domain() {
         val uri = "//VCU.MY_CAR_VIN"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -287,7 +273,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service only device and cloud domain")
     fun test_parse_protocol_uri_with_remote_service_only_device_and_cloud_domain() {
         val uri = "//cloud.uprotocol.example.com"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -299,7 +285,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service no version")
     fun test_parse_protocol_uri_with_remote_service_no_version() {
         val uri = "//VCU.MY_CAR_VIN/body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -313,7 +299,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service no version")
     fun test_parse_protocol_uri_with_remote_cloud_service_no_version() {
         val uri = "//cloud.uprotocol.example.com/body.access"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -327,7 +313,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service with version")
     fun test_parse_protocol_uri_with_remote_service_with_version() {
         val uri = "//VCU.MY_CAR_VIN/body.access/1"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -342,7 +328,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service with version")
     fun test_parse_protocol_uri_with_remote_cloud_service_with_version() {
         val uri = "//cloud.uprotocol.example.com/body.access/1"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -357,7 +343,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service no version with resource name only")
     fun test_parse_protocol_uri_with_remote_service_no_version_with_resource_name_only() {
         val uri = "//VCU.MY_CAR_VIN/body.access//door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -373,7 +359,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service no version with resource name only")
     fun test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_name_only() {
         val uri = "//cloud.uprotocol.example.com/body.access//door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -389,7 +375,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service with version with resource name only")
     fun test_parse_protocol_uri_with_remote_service_with_version_with_resource_name_only() {
         val uri = "//VCU.MY_CAR_VIN/body.access/1/door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -406,7 +392,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service with version with resource name only")
     fun test_parse_protocol_uri_with_remote_service_cloud_with_version_with_resource_name_only() {
         val uri = "//cloud.uprotocol.example.com/body.access/1/door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -423,7 +409,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service no version with resource and instance no message")
     fun test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_no_getMessage() {
         val uri = "//VCU.MY_CAR_VIN/body.access//door.front_left"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -440,7 +426,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service with version with resource and instance no message")
     fun test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_no_getMessage() {
         val uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -458,7 +444,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service no version with resource and instance and message")
     fun test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_and_getMessage() {
         val uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -476,7 +462,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service no version with resource and instance and message")
     fun test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_and_instance_and_getMessage() {
         val uri = "//cloud.uprotocol.example.com/body.access//door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -494,7 +480,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service with version with resource and instance and message")
     fun test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_and_getMessage() {
         val uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU.MY_CAR_VIN", uuri.authority.name)
@@ -513,7 +499,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote cloud service with version with resource and instance and message")
     fun test_parse_protocol_uri_with_remote_cloud_service_with_version_with_resource_and_instance_and_getMessage() {
         val uri = "//cloud.uprotocol.example.com/body.access/1/door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("cloud.uprotocol.example.com", uuri.authority.name)
@@ -532,7 +518,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with microRemote service with version with resource with message when there is only device, no domain")
     fun test_parse_protocol_uri_with_remote_service_with_version_with_resource_with_message_device_no_domain() {
         val uri = "//VCU/body.access/1/door.front_left"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("VCU", uuri.authority.name)
@@ -550,7 +536,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol RPC uri with microRemote service no version")
     fun test_parse_protocol_rpc_uri_with_remote_service_no_version() {
         val uri = "//bo.cloud/petapp//rpc.response"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("bo.cloud", uuri.authority.name)
@@ -567,7 +553,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol RPC uri with microRemote service with version")
     fun test_parse_protocol_rpc_uri_with_remote_service_with_version() {
         val uri = "//bo.cloud/petapp/1/rpc.response"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertFalse(uuri.authority.name.isBlank())
         assertEquals("bo.cloud", uuri.authority.name)
@@ -582,17 +568,10 @@ class LongUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from null")
-    fun test_build_protocol_uri_from__uri_when__uri_isnull() {
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(null)
-        assertEquals("", uProtocolUri)
-    }
-
-    @Test
     @DisplayName("Test Create a uProtocol URI from an empty  URI Object")
     fun test_build_protocol_uri_from__uri_when__uri_isEmpty() {
         val uuri: UUri = uUri { }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("", uProtocolUri)
     }
 
@@ -605,7 +584,7 @@ class LongUriSerializerTest {
             entity = use
             resource = uResource { name = "door" }
         }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/////door", uProtocolUri)
     }
 
@@ -614,7 +593,7 @@ class LongUriSerializerTest {
     fun test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version() {
         val uuri: UUri = uUri { entity = uEntity { name = "body.access" } }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access", uProtocolUri)
     }
 
@@ -629,7 +608,7 @@ class LongUriSerializerTest {
             entity = use
             resource = uResource { }
         }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access/1", uProtocolUri)
     }
 
@@ -644,7 +623,7 @@ class LongUriSerializerTest {
             resource = uResource { name = "door" }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access//door", uProtocolUri)
     }
 
@@ -660,7 +639,7 @@ class LongUriSerializerTest {
             resource = uResource { name = "door" }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access/1/door", uProtocolUri)
     }
 
@@ -678,7 +657,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access//door.front_left", uProtocolUri)
     }
 
@@ -698,7 +677,7 @@ class LongUriSerializerTest {
         }
 
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access/1/door.front_left", uProtocolUri)
     }
 
@@ -718,7 +697,7 @@ class LongUriSerializerTest {
         }
 
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access//door.front_left#Door", uProtocolUri)
     }
 
@@ -737,7 +716,7 @@ class LongUriSerializerTest {
                 message = "Door"
             }
         }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("/body.access/1/door.front_left#Door", uProtocolUri)
     }
 
@@ -750,7 +729,7 @@ class LongUriSerializerTest {
             entity = use
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access", uProtocolUri)
     }
 
@@ -769,7 +748,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1", uProtocolUri)
     }
 
@@ -785,7 +764,7 @@ class LongUriSerializerTest {
             entity = use
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//cloud.uprotocol.example.com/body.access/1", uProtocolUri)
     }
 
@@ -802,7 +781,7 @@ class LongUriSerializerTest {
             resource = uResource { name = "door" }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri)
     }
 
@@ -819,7 +798,7 @@ class LongUriSerializerTest {
             resource = uResource { name = "door" }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door", uProtocolUri)
     }
 
@@ -839,7 +818,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri)
     }
 
@@ -859,7 +838,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//cloud.uprotocol.example.com/body.access/1/door.front_left", uProtocolUri)
     }
 
@@ -878,7 +857,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door.front_left", uProtocolUri)
     }
 
@@ -900,7 +879,7 @@ class LongUriSerializerTest {
         }
 
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left#Door", uProtocolUri)
     }
 
@@ -920,7 +899,7 @@ class LongUriSerializerTest {
             }
         }
 
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uuri)
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uuri)
         assertEquals("//vcu.my_car_vin/body.access//door.front_left#Door", uProtocolUri)
     }
 
@@ -935,7 +914,7 @@ class LongUriSerializerTest {
             name = "rpc"
             instance = "response"
         }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uUri {
             entity = use
             resource = uResource
         })
@@ -953,7 +932,7 @@ class LongUriSerializerTest {
             name = "rpc"
             instance = "response"
         }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uUri {
             authority = uAuthority
             entity = use
             resource = uResource
@@ -970,7 +949,7 @@ class LongUriSerializerTest {
             versionMajor = 1
         }
         val uResource: UResource = uResource { name = "door" }
-        val uProtocolUri: String = LongUriSerializer.instance().serialize(uUri {
+        val uProtocolUri: String = LongUriSerializer.INSTANCE.serialize(uUri {
             authority = uAuthority
             entity = use
             resource = uResource
@@ -987,7 +966,7 @@ class LongUriSerializerTest {
             versionMajor = 1
         }
         val uResource: UResource = uResource { name = "door" }
-        val ucustomUri: String = LongUriSerializer.instance().serialize(uUri {
+        val ucustomUri: String = LongUriSerializer.INSTANCE.serialize(uUri {
             authority = uAuthority
             entity = use
             resource = uResource
@@ -1001,7 +980,7 @@ class LongUriSerializerTest {
     @DisplayName("Test parse local uProtocol uri with custom scheme")
     fun test_parse_local_protocol_uri_with_custom_scheme() {
         val uri = "custom:/body.access//door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertFalse(uuri.authority.isRemote())
         assertEquals("body.access", uuri.entity.name)
         assertEquals(0, uuri.entity.versionMajor)
@@ -1017,7 +996,7 @@ class LongUriSerializerTest {
     fun test_parse_remote_protocol_uri_with_custom_scheme() {
         val uri = "custom://vcu.vin/body.access//door.front_left#Door"
         val uri2 = "//vcu.vin/body.access//door.front_left#Door"
-        val uuri: UUri = LongUriSerializer.instance().deserialize(uri)
+        val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(uri)
         assertTrue(uuri.authority.isRemote())
         assertEquals("vcu.vin", uuri.authority.name)
         assertEquals("body.access", uuri.entity.name)
@@ -1025,39 +1004,39 @@ class LongUriSerializerTest {
         assertEquals("door", uuri.resource.name)
         assertEquals("front_left", uuri.resource.instance)
         assertEquals("Door", uuri.resource.message)
-        assertEquals(uri2, LongUriSerializer.instance().serialize(uuri))
+        assertEquals(uri2, LongUriSerializer.INSTANCE.serialize(uuri))
     }
 
     @Test
     @DisplayName("Test build resolved uri passing null")
     fun test_deserialize_long_and_micro_passing_null() {
-        val uri: Optional<UUri> = LongUriSerializer.instance().buildResolved(null, null)
-        assertTrue(uri.isPresent)
-        assertEquals("", LongUriSerializer.instance().serialize(uri.get()))
+        val uri: UUri? = LongUriSerializer.INSTANCE.buildResolved(null, null)
+        checkNotNull(uri)
+        assertEquals("", LongUriSerializer.INSTANCE.serialize(uri))
     }
 
     @Test
     @DisplayName("Test build resolved uri passing null long uri empty byte array")
     fun test_deserialize_long_and_micro_passing_null_long_uri_empty_byte_array() {
-        val uri: Optional<UUri> = LongUriSerializer.instance().buildResolved(null, ByteArray(0))
-        assertTrue(uri.isPresent)
-        assertEquals("", LongUriSerializer.instance().serialize(uri.get()))
+        val uri: UUri? = LongUriSerializer.INSTANCE.buildResolved(null, ByteArray(0))
+        checkNotNull(uri)
+        assertEquals("", LongUriSerializer.INSTANCE.serialize(uri))
     }
 
     @Test
     @DisplayName("Test build resolved uri passing empty long uri null byte array")
     fun test_deserialize_long_and_micro_passing_nullempty_long_uri_null_byte_array() {
-        val uri: Optional<UUri> = LongUriSerializer.instance().buildResolved("", null)
-        assertTrue(uri.isPresent)
-        assertEquals("", LongUriSerializer.instance().serialize(uri.get()))
+        val uri: UUri? = LongUriSerializer.INSTANCE.buildResolved("", null)
+        checkNotNull(uri)
+        assertEquals("", LongUriSerializer.INSTANCE.serialize(uri))
     }
 
     @Test
     @DisplayName("Test build resolved uri passing empty long uri, empty byte[]")
     fun test_deserialize_long_and_micro_passing_empty_long_uri_empty_byte_array() {
-        val uri: Optional<UUri> = LongUriSerializer.instance().buildResolved("", ByteArray(0))
-        assertTrue(uri.isPresent)
-        assertEquals("", LongUriSerializer.instance().serialize(uri.get()))
+        val uri: UUri? = LongUriSerializer.INSTANCE.buildResolved("", ByteArray(0))
+        checkNotNull(uri)
+        assertEquals("", LongUriSerializer.INSTANCE.serialize(uri))
     }
 
     //    @Test
@@ -1065,12 +1044,12 @@ class LongUriSerializerTest {
     //    void test_deserialize_long_and_micro_passing_UAuthority_that_doesnt_match() {
     //        String longUUri = "//vcu.vin/body.access//door.front_left#Door";
     //        byte[] microUUri = new byte[] {0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-    //        Optional<UUri> uri = LongUriSerializer.instance().buildResolved(longUUri, microUUri);
+    //        Optional<UUri> uri = LongUriSerializer.INSTANCE.buildResolved(longUUri, microUUri);
     //        assertTrue(uri.isEmpty());
     //
     //        String longUUri1 = "/body.access//door.front_left#Door";
     //        byte[] microUUri1 = new byte[] {0x1, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-    //        Optional<UUri> uri1 = LongUriSerializer.instance().buildResolved(longUUri1, microUUri1);
+    //        Optional<UUri> uri1 = LongUriSerializer.INSTANCE.buildResolved(longUUri1, microUUri1);
     //        assertTrue(uri1.isEmpty());
     //    }
     //    @Test
@@ -1080,27 +1059,27 @@ class LongUriSerializerTest {
     //        byte[] goodMicroUUri = new byte[] {0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
     //        String badLongUUri = "///";
     //        byte[] badMicroUUri = new byte[] {0x0, 0x0, 0x0, 0x0, 0x0};
-    //        Optional<UUri> uri = LongUriSerializer.instance().buildResolved(goodLongUUri, goodMicroUUri);
+    //        Optional<UUri> uri = LongUriSerializer.INSTANCE.buildResolved(goodLongUUri, goodMicroUUri);
     //        assertFalse(uri.isEmpty());
-    //        Optional<UUri> uri2 = LongUriSerializer.instance().buildResolved(goodLongUUri, badMicroUUri);
+    //        Optional<UUri> uri2 = LongUriSerializer.INSTANCE.buildResolved(goodLongUUri, badMicroUUri);
     //        assertTrue(uri2.isEmpty());
-    //        Optional<UUri> uri3 = LongUriSerializer.instance().buildResolved(badLongUUri, goodMicroUUri);
+    //        Optional<UUri> uri3 = LongUriSerializer.INSTANCE.buildResolved(badLongUUri, goodMicroUUri);
     //        assertTrue(uri3.isEmpty());
-    //        Optional<UUri> uri4 = LongUriSerializer.instance().buildResolved(badLongUUri, badMicroUUri);
+    //        Optional<UUri> uri4 = LongUriSerializer.INSTANCE.buildResolved(badLongUUri, badMicroUUri);
     //        assertTrue(uri4.isEmpty());
-    //        Optional<UUri> uri5 = LongUriSerializer.instance().buildResolved("", goodMicroUUri);
+    //        Optional<UUri> uri5 = LongUriSerializer.INSTANCE.buildResolved("", goodMicroUUri);
     //        assertTrue(uri5.isEmpty());
-    //        Optional<UUri> uri6 = LongUriSerializer.instance().buildResolved("", badMicroUUri);
+    //        Optional<UUri> uri6 = LongUriSerializer.INSTANCE.buildResolved("", badMicroUUri);
     //        assertTrue(uri6.isEmpty());
-    //        Optional<UUri> uri7 = LongUriSerializer.instance().buildResolved(null, goodMicroUUri);
+    //        Optional<UUri> uri7 = LongUriSerializer.INSTANCE.buildResolved(null, goodMicroUUri);
     //        assertTrue(uri7.isEmpty());
-    //        Optional<UUri> uri8 = LongUriSerializer.instance().buildResolved(null, badMicroUUri);
+    //        Optional<UUri> uri8 = LongUriSerializer.INSTANCE.buildResolved(null, badMicroUUri);
     //        assertTrue(uri8.isEmpty());
     //
     //
-    //        Optional<UUri> uri9 = LongUriSerializer.instance().buildResolved(goodLongUUri, null);
+    //        Optional<UUri> uri9 = LongUriSerializer.INSTANCE.buildResolved(goodLongUUri, null);
     //        assertTrue(uri9.isEmpty());
-    //        Optional<UUri> uri10 = LongUriSerializer.instance().buildResolved(goodLongUUri, new byte[0]);
+    //        Optional<UUri> uri10 = LongUriSerializer.INSTANCE.buildResolved(goodLongUUri, new byte[0]);
     //        assertTrue(uri10.isEmpty());
     //
     //    }

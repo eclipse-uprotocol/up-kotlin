@@ -30,7 +30,6 @@ import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.util.*
 
 /**
  * UUri Serializer that serializes a UUri to a byte[] (micro format) per
@@ -48,8 +47,10 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         }
 
         companion object {
-            fun from(value: Int): Optional<AddressType> {
-                return Arrays.stream(entries.toTypedArray()).filter { p -> p.getValue().toInt() == value }.findAny()
+            fun from(value: Int): AddressType? {
+                return entries.toTypedArray().firstOrNull {
+                    it.value == value
+                }
             }
         }
     }
@@ -59,12 +60,12 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
      * @param uri The [UUri] data object.
      * @return Returns a byte[] representing the serialized [UUri].
      */
-    override fun serialize(uri: UUri?): ByteArray {
-        if (uri == null || uri.isEmpty() || !uri.isMicroForm()) {
+    override fun serialize(uri: UUri): ByteArray {
+        if (uri.isEmpty() || !uri.isMicroForm()) {
             return ByteArray(0)
         }
-        val maybeUeId: Optional<Int> = Optional.ofNullable(uri.entity.id)
-        val maybeUResourceId: Optional<Int> = Optional.ofNullable(uri.resource.id)
+        val uEId = uri.entity.id
+        val uResourceId = uri.resource.id
         val os = ByteArrayOutputStream()
         // UP_VERSION
         os.write(UP_VERSION.toInt())
@@ -74,9 +75,11 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                 4 -> {
                     AddressType.IPv4
                 }
+
                 16 -> {
                     AddressType.IPv6
                 }
+
                 else -> {
                     return ByteArray(0)
                 }
@@ -90,19 +93,18 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         os.write(type.getValue().toInt())
 
         // URESOURCE_ID
-        os.write(maybeUResourceId.get() shr 8)
-        os.write(maybeUResourceId.get())
+        os.write(uResourceId shr 8)
+        os.write(uResourceId)
 
         // UENTITY_ID
-        os.write(maybeUeId.get() shr 8)
-        os.write(maybeUeId.get())
+        os.write(uEId shr 8)
+        os.write(uEId)
 
         // UE_VERSION
         os.write((if (uri.entity.versionMajor == 0) 0.toByte() else uri.entity.versionMajor).toInt())
 
         // UNUSED
         os.write(0.toByte().toInt())
-
 
         // Populating the UAuthority
         if (type != AddressType.LOCAL) {
@@ -130,8 +132,8 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
      * @param uri A byte[] uProtocol micro URI.
      * @return Returns an [UUri] data object from the serialized format of a microUri.
      */
-    override fun deserialize(uri: ByteArray?): UUri {
-        if (uri == null || uri.size < LOCAL_MICRO_URI_LENGTH) {
+    override fun deserialize(uri: ByteArray): UUri {
+        if (uri.size < LOCAL_MICRO_URI_LENGTH) {
             return UUri.getDefaultInstance()
         }
 
@@ -140,17 +142,12 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
             return UUri.getDefaultInstance()
         }
         val uResourceId = uri[2].toInt() and 0xFF shl 8 or (uri[3].toInt() and 0xFF)
-        val type: Optional<AddressType> = AddressType.from(
-            uri[1].toInt()
-        )
+        val type: AddressType = AddressType.from(uri[1].toInt()) ?: return UUri.getDefaultInstance()
 
         // Validate Type is found
-        if (type.isEmpty) {
-            return UUri.getDefaultInstance()
-        }
 
         // Validate that the microUri is the correct length for the type
-        val addressType: AddressType = type.get()
+        val addressType: AddressType = type
         if (addressType == AddressType.LOCAL && uri.size != LOCAL_MICRO_URI_LENGTH) {
             return UUri.getDefaultInstance()
         } else if (addressType == AddressType.IPv4 && uri.size != IPV4_MICRO_URI_LENGTH) {
@@ -193,7 +190,7 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
                 id = ueId
                 versionMajor = uiVersion
             }
-            resource = uResource{
+            resource = uResource {
                 from(uResourceId)
             }
             uAuthority?.let { authority = it }
@@ -205,9 +202,6 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
         const val IPV4_MICRO_URI_LENGTH = 12 // IPv4 micro URI length
         const val IPV6_MICRO_URI_LENGTH = 24 // IPv6 micro UriPart length
         const val UP_VERSION: Byte = 0x1 // UP version
-        private val INSTANCE = MicroUriSerializer()
-        fun instance(): MicroUriSerializer {
-            return INSTANCE
-        }
+        val INSTANCE = MicroUriSerializer()
     }
 }

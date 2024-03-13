@@ -35,18 +35,9 @@ class MicroUriSerializerTest {
     @Test
     @DisplayName("Test serialize and deserialize empty content")
     fun test_empty() {
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(UUri.getDefaultInstance())
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(UUri.getDefaultInstance())
         assertEquals(bytes.size, 0)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
-        assertTrue(uri2.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test serialize and deserialize null content")
-    fun test_null() {
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(null)
-        assertEquals(bytes.size, 0)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(null)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(uri2.isEmpty())
     }
 
@@ -61,8 +52,8 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(uri.isMicroForm())
         assertTrue(bytes.isNotEmpty())
         assertEquals(uri, uri2)
@@ -80,7 +71,7 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
         assertTrue(bytes.isEmpty())
     }
 
@@ -93,7 +84,7 @@ class MicroUriSerializerTest {
         }
 
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
         assertTrue(bytes.isEmpty())
     }
 
@@ -102,7 +93,7 @@ class MicroUriSerializerTest {
     fun test_serialize_uri_missing_resource_id() {
         val uri: UUri = uUri { entity = uEntity { name = "hartley" } }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
         assertTrue(bytes.isEmpty())
     }
 
@@ -110,10 +101,10 @@ class MicroUriSerializerTest {
     @DisplayName("Test deserialize bad micro uri - length")
     fun test_deserialize_bad_microuri_length() {
         var badMicroUUri = byteArrayOf(0x1, 0x0, 0x0, 0x0, 0x0)
-        var uuri: UUri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        var uuri: UUri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
         badMicroUUri = byteArrayOf(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        uuri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        uuri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
     }
 
@@ -121,7 +112,7 @@ class MicroUriSerializerTest {
     @DisplayName("Test deserialize bad micro uri - not version 1")
     fun test_deserialize_bad_microuri_not_version_1() {
         val badMicroUUri = byteArrayOf(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        val uuri: UUri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        val uuri: UUri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
     }
 
@@ -129,7 +120,7 @@ class MicroUriSerializerTest {
     @DisplayName("Test deserialize bad micro uri - not valid address type")
     fun test_deserialize_bad_microuri_not_valid_address_type() {
         val badMicroUUri = byteArrayOf(0x1, 0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        val uuri: UUri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        val uuri: UUri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
     }
 
@@ -137,13 +128,13 @@ class MicroUriSerializerTest {
     @DisplayName("Test deserialize bad micro uri - valid address type and invalid length")
     fun test_deserialize_bad_microuri_valid_address_type_invalid_length() {
         var badMicroUUri = byteArrayOf(0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        var uuri: UUri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        var uuri: UUri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
         badMicroUUri = byteArrayOf(0x1, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        uuri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        uuri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
         badMicroUUri = byteArrayOf(0x1, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        uuri = MicroUriSerializer.instance().deserialize(badMicroUUri)
+        uuri = MicroUriSerializer.INSTANCE.deserialize(badMicroUUri)
         assertTrue(uuri.isEmpty())
     }
 
@@ -161,8 +152,8 @@ class MicroUriSerializerTest {
         }
 
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(bytes.isNotEmpty())
         assertTrue(uri.isMicroForm())
         assertTrue(uri2.isMicroForm())
@@ -188,8 +179,8 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(uri.isMicroForm())
         assertTrue(bytes.isNotEmpty())
         assertTrue(uri == uri2)
@@ -213,8 +204,8 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(uri.isMicroForm())
         assertTrue(bytes.isNotEmpty())
         assertTrue(uri == uri2)
@@ -236,7 +227,7 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
         assertTrue(bytes.isEmpty())
     }
 
@@ -258,9 +249,9 @@ class MicroUriSerializerTest {
             resource = uResource { id = 19999 }
         }
 
-        val bytes: ByteArray = MicroUriSerializer.instance().serialize(uri)
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
         assertEquals(bytes.size, 9 + size)
-        val uri2: UUri = MicroUriSerializer.instance().deserialize(bytes)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
         assertTrue(uri.isMicroForm())
         assertTrue(uri == uri2)
     }
