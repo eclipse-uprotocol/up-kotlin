@@ -21,14 +21,13 @@
 
 package org.eclipse.uprotocol.transport
 
-import com.google.protobuf.Message
 import org.junit.jupiter.api.Test
 
 import org.eclipse.uprotocol.v1.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class UPayloadUtilsTest {
+class UPayloadExtTest {
 
     @Test
     fun test_unpack_with_UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY(){
