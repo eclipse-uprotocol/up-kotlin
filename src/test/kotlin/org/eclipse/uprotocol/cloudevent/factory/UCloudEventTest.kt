@@ -26,6 +26,8 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
+import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.getCePriority
+import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.toMessage
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
@@ -85,7 +87,7 @@ internal class UCloudEventTest {
     fun test_extract_requestId_from_cloudevent_when_requestId_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val requestId= UCloudEvent.getRequestId(cloudEvent)
+        val requestId = UCloudEvent.getRequestId(cloudEvent)
         assertNull(requestId)
     }
 
@@ -95,7 +97,7 @@ internal class UCloudEventTest {
     fun test_extract_hash_from_cloudevent_when_hash_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val hash= UCloudEvent.getHash(cloudEvent)
+        val hash = UCloudEvent.getHash(cloudEvent)
         assertEquals("somehash", hash)
     }
 
@@ -113,8 +115,8 @@ internal class UCloudEventTest {
     fun test_extract_priority_from_cloudevent_when_priority_exists() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val priority= UCloudEvent.getPriority(cloudEvent)
-        assertEquals(UPriority.UPRIORITY_CS1.name, priority)
+        val priority = UCloudEvent.getPriority(cloudEvent)
+        assertEquals(getCePriority(UPriority.UPRIORITY_CS1), priority)
     }
 
     @Test
@@ -124,6 +126,9 @@ internal class UCloudEventTest {
         val cloudEvent: CloudEvent = builder.build()
         val priority: String? = UCloudEvent.getPriority(cloudEvent)
         assertNull(priority)
+
+        val message = toMessage(cloudEvent)
+        assertEquals(message.attributes.priority, UPriority.UPRIORITY_UNSPECIFIED)
     }
 
     @Test
@@ -276,7 +281,7 @@ internal class UCloudEventTest {
 
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withId(strUuid)
         val cloudEvent: CloudEvent = builder.build()
-        val creationTimestamp = UCloudEvent.getCreationTimestamp(cloudEvent)?: fail()
+        val creationTimestamp = UCloudEvent.getCreationTimestamp(cloudEvent) ?: fail()
         val now: OffsetDateTime = OffsetDateTime.now()
         val creationTimestampInstant: Instant = Instant.ofEpochMilli(creationTimestamp)
         val creationTimestampInstantEpochSecond: Long = creationTimestampInstant.epochSecond
@@ -614,7 +619,7 @@ internal class UCloudEventTest {
             buildSourceForTest(), buildProtoPayloadForTest(), uCloudEventAttributes
         )
 
-        val uMessage = UCloudEvent.toMessage(cloudEvent)
+        val uMessage = toMessage(cloudEvent)
         assertNotNull(uMessage)
     }
 
@@ -630,9 +635,8 @@ internal class UCloudEventTest {
         val cloudEvent = CloudEventFactory.publish(
             buildSourceForTest(), buildProtoPayloadForTest(), uCloudEventAttributes
         )
-        val uMessage = UCloudEvent.toMessage(cloudEvent)
+        val uMessage = toMessage(cloudEvent)
         assertNotNull(uMessage)
-
         val cloudEvent1 = UCloudEvent.fromMessage(uMessage)
         assertNotNull(cloudEvent1)
         assertEquals(cloudEvent, cloudEvent1)
@@ -655,7 +659,7 @@ internal class UCloudEventTest {
             buildProtoPayloadForTest(),
             uCloudEventAttributes
         )
-        val result = UCloudEvent.toMessage(cloudEvent)
+        val result = toMessage(cloudEvent)
         assertNotNull(result)
         assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(UCloudEvent.getToken(cloudEvent), result.attributes.getToken())
@@ -666,10 +670,9 @@ internal class UCloudEventTest {
 
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
-            UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
+            UCloudEvent.getSource(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
-        assertEquals(UCloudEvent.getPriority(cloudEvent), result.attributes.getPriority().name)
+        assertEquals(UCloudEvent.getPriority(cloudEvent), getCePriority(result.attributes.priority))
         val cloudEvent1 = UCloudEvent.fromMessage(result)
         assertNotNull(cloudEvent1)
         assertEquals(cloudEvent, cloudEvent1)
@@ -679,13 +682,13 @@ internal class UCloudEventTest {
     @Test
     fun test_to_from_message_from_request_cloudevent_without_attributes() {
         // Additional attributes
-        val uCloudEventAttributes = uCloudEventAttributes {  }
+        val uCloudEventAttributes = uCloudEventAttributes { }
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.request(
             buildSourceForTest(), "//bo.cloud/petapp/1/rpc.response", buildProtoPayloadForTest(), uCloudEventAttributes
         )
-        val result = UCloudEvent.toMessage(cloudEvent)
+        val result = toMessage(cloudEvent)
         assertNotNull(result)
         assertFalse(result.attributes.hasTtl())
         assertEquals(
@@ -693,8 +696,7 @@ internal class UCloudEventTest {
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
-            UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
+            UCloudEvent.getSource(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
         assertEquals(result.attributes.getPriority().getNumber(), 0)
         assertEquals(cloudEvent, UCloudEvent.fromMessage(result))
@@ -717,7 +719,7 @@ internal class UCloudEventTest {
             buildProtoPayloadForTest(),
             uCloudEventAttributes
         )
-        val result = UCloudEvent.toMessage(cloudEvent)
+        val result = toMessage(cloudEvent)
         assertNotNull(result)
         assertEquals(
             UCloudEvent.getRequestId(cloudEvent), LongUuidSerializer.INSTANCE.serialize(result.attributes.reqid)
@@ -728,10 +730,9 @@ internal class UCloudEventTest {
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
-            UCloudEvent.getSource(cloudEvent),
-            LongUriSerializer.INSTANCE.serialize(result.attributes.source)
+            UCloudEvent.getSource(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.source)
         )
-        assertEquals(UCloudEvent.getPriority(cloudEvent), result.attributes.getPriority().name)
+        assertEquals(UCloudEvent.getPriority(cloudEvent), getCePriority(result.attributes.priority))
         assertEquals(cloudEvent, UCloudEvent.fromMessage(result))
 
     }
@@ -753,7 +754,7 @@ internal class UCloudEventTest {
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withExtension("commstatus", UCode.ABORTED_VALUE).withExtension("plevel", 2)
         val cloudEvent = cloudEventBuilder.build()
-        val result = UCloudEvent.toMessage(cloudEvent)
+        val result = toMessage(cloudEvent)
         assertNotNull(result)
         assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent))
         assertEquals(2, result.attributes.permissionLevel)
@@ -779,7 +780,7 @@ internal class UCloudEventTest {
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
 
         val cloudEvent = cloudEventBuilder.build()
-        var result = UCloudEvent.toMessage(cloudEvent)
+        var result = toMessage(cloudEvent)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, result.payload.getFormat())
 
@@ -788,14 +789,14 @@ internal class UCloudEventTest {
         assertNull(cloudEvent1.dataContentType)
 
         val cloudEvent2 = cloudEventBuilder.withDataContentType("").build()
-        result = UCloudEvent.toMessage(cloudEvent2)
+        result = toMessage(cloudEvent2)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, result.payload.getFormat())
         val cloudEvent3 = UCloudEvent.fromMessage(result)
         assertNull(cloudEvent3.dataContentType)
 
         val cloudEvent4 = cloudEventBuilder.withDataContentType("application/json").build()
-        result = UCloudEvent.toMessage(cloudEvent4)
+        result = toMessage(cloudEvent4)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_JSON, result.payload.getFormat())
         val cloudEvent5 = UCloudEvent.fromMessage(result)
@@ -803,7 +804,7 @@ internal class UCloudEventTest {
         assertEquals("application/json", cloudEvent5.dataContentType)
 
         val cloudEvent6 = cloudEventBuilder.withDataContentType("application/octet-stream").build()
-        result = UCloudEvent.toMessage(cloudEvent6)
+        result = toMessage(cloudEvent6)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_RAW, result.payload.getFormat())
         val cloudEvent7 = UCloudEvent.fromMessage(result)
@@ -811,7 +812,7 @@ internal class UCloudEventTest {
         assertEquals("application/octet-stream", cloudEvent7.dataContentType)
 
         val cloudEvent8 = cloudEventBuilder.withDataContentType("text/plain").build()
-        result = UCloudEvent.toMessage(cloudEvent8)
+        result = toMessage(cloudEvent8)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT, result.payload.getFormat())
         val cloudEvent9 = UCloudEvent.fromMessage(result)
@@ -819,7 +820,7 @@ internal class UCloudEventTest {
         assertEquals("text/plain", cloudEvent9.dataContentType)
 
         val cloudEvent10 = cloudEventBuilder.withDataContentType("application/x-someip").build()
-        result = UCloudEvent.toMessage(cloudEvent10)
+        result = toMessage(cloudEvent10)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP, result.payload.getFormat())
         val cloudEvent11 = UCloudEvent.fromMessage(result)
@@ -827,7 +828,7 @@ internal class UCloudEventTest {
         assertEquals("application/x-someip", cloudEvent11.dataContentType)
 
         val cloudEvent12 = cloudEventBuilder.withDataContentType("application/x-someip_tlv").build()
-        result = UCloudEvent.toMessage(cloudEvent12)
+        result = toMessage(cloudEvent12)
         assertNotNull(result)
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV, result.payload.getFormat())
         val cloudEvent13 = UCloudEvent.fromMessage(result)
@@ -851,11 +852,11 @@ internal class UCloudEventTest {
         cloudEventBuilder.withExtension("priority", "CS4")
         val cloudEvent = cloudEventBuilder.build()
 
-        val result = UCloudEvent.toMessage(cloudEvent)
+        val result = toMessage(cloudEvent)
         assertNotNull(result)
-        assertEquals(UPriority.UPRIORITY_CS4.name, result.attributes.getPriority().name)
+        assertEquals(getCePriority(UPriority.UPRIORITY_CS4), getCePriority(result.attributes.priority))
         val cloudEvent1 = UCloudEvent.fromMessage(result)
-        assertEquals(UPriority.UPRIORITY_CS4.name, UCloudEvent.getPriority(cloudEvent1))
+        assertEquals(getCePriority(UPriority.UPRIORITY_CS4), UCloudEvent.getPriority(cloudEvent1))
     }
 
     private fun buildSourceForTest(): String {

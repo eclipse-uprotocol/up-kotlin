@@ -33,6 +33,7 @@ import java.io.File
 import java.io.FileReader
 import java.io.IOException
 
+
 internal class UriValidatorTest {
     @Test
     @DisplayName("Test validate uri with no device name")
@@ -516,19 +517,58 @@ internal class UriValidatorTest {
     }
 
     @Test
+    @DisplayName("Test invalid rpc method uri")
+    fun test_invalid_rpc_method_uri() {
+        val uuri = uUri {
+            entity = uEntity {
+                name = "hello.world"
+            }
+            resource = uResource {
+                name = "testrpc"
+                instance = "SayHello"
+            }
+        }
+        val status: ValidationResult = uuri.validateRpcMethod()
+        assertFalse(uuri.isRpcMethod())
+        assertFalse(status.isSuccess())
+    }
+
+    @Test
     @DisplayName("Test invalid rpc response uri")
     @Throws(IOException::class)
     fun test_invalid_rpc_response_uri() {
-        val uuri: UUri = uUri {
+        val uuri1: UUri = uUri {
             entity = uEntity { name = "hartley" }
             resource = uResource {
                 name = "rpc"
                 id = 19999
             }
         }
-        val status = uuri.validateRpcResponse()
-        assertFalse(uuri.isRpcResponse())
-        assertFalse(status.isSuccess())
+        val status1 = uuri1.validateRpcResponse()
+        assertFalse(uuri1.isRpcResponse())
+        assertFalse(status1.isSuccess())
+
+        val uuri2: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource {
+                name = "testrpc"
+                instance = "response"
+            }
+        }
+        val status2 = uuri2.validateRpcResponse()
+        assertFalse(uuri2.isRpcResponse())
+        assertFalse(status2.isSuccess())
+
+        val uuri3: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource {
+                name = "rpc"
+                instance = "testresponse"
+            }
+        }
+        val status3 = uuri3.validateRpcResponse()
+        assertFalse(uuri3.isRpcResponse())
+        assertFalse(status3.isSuccess())
     }
 
     @Test

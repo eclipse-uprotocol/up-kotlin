@@ -27,6 +27,7 @@ package org.eclipse.uprotocol.uuid.factory
 import com.github.f4b6a3.uuid.enums.UuidVariant
 import com.github.f4b6a3.uuid.util.UuidTime
 import com.github.f4b6a3.uuid.util.UuidUtil
+import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UUID
 
 
@@ -73,13 +74,14 @@ fun UUID.isUuid(): Boolean = isUProtocol() || isUuidv6()
 /**
  * Return the number of milliseconds since unix epoch from a passed UUID.
  *
- * @return number of milliseconds since unix epoch or empty if uuid is null.
+ * @return number of milliseconds since unix epoch or NULL if uuid is null.
  */
 fun UUID.getTime(): Long? {
     return when (getVersion()) {
         UUIDVersion.VERSION_UPROTOCOL -> {
             msb ushr 16
         }
+
         UUIDVersion.VERSION_TIME_ORDERED -> {
             try {
                 val uuidJava = java.util.UUID(msb, lsb)
@@ -88,10 +90,73 @@ fun UUID.getTime(): Long? {
                 null
             }
         }
+
         else -> {
             null
         }
     }
+}
+
+/**
+ * Calculates the elapsed time since the creation of the specified UUID.
+ *
+ * @return The elapsed time in milliseconds or null if the creation time cannot be determined.
+ */
+fun UUID.getElapsedTime(): Long? {
+    val creationTime: Long = getTime() ?: -1L
+    if (creationTime < 0) {
+        return null
+    }
+    return (System.currentTimeMillis() - creationTime).takeIf { it >= 0 }
+}
+
+/**
+ * Calculates the remaining time until the expiration of the event identified by the given UUID.
+ *
+ * @param ttl The time-to-live (TTL) in milliseconds.
+ * @return The remaining time in milliseconds until the event expires,
+ * or null if TTL is non-positive, or the creation time cannot be determined.
+ */
+fun UUID.getRemainingTime(ttl: Int): Long? {
+    if (ttl <= 0) {
+        return null
+    }
+    return getElapsedTime()?.takeIf {
+        ttl > it
+    }?.let {
+        ttl - it
+    }
+}
+
+/**
+ * Calculates the remaining time until the expiration of the event identified by the given UAttributes.
+ *
+ * @return The remaining time in milliseconds until the event expires,
+ * or null if the attributes do not contain TTL information or the creation time cannot be determined.
+ */
+fun UAttributes.getRemainingTime():Long? {
+    return if (hasTtl()) id.getRemainingTime(ttl) else null
+}
+
+/**
+ * Checks if the event identified by the given UUID has expired based on the specified time-to-live (TTL).
+ *
+ * @param ttl The time-to-live (TTL) in milliseconds for the event.
+ * @return true if the event has expired, false otherwise. Returns false if TTL is non-positive or creation time
+ * cannot be determined.
+ */
+fun UUID.isExpired(ttl: Int): Boolean {
+    return ttl > 0 && getRemainingTime(ttl) == null
+}
+
+/**
+ * Checks if the event identified by the given UAttributes has expired.
+ *
+ * @return true if the event has expired, false otherwise.Returns false if the attributes do not contain TTL
+ * information or creation time cannot be determined.
+ */
+fun UAttributes.isExpired(): Boolean {
+    return hasTtl() && id.isExpired(ttl)
 }
 
 /**
