@@ -23,11 +23,11 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
-import org.eclipse.uprotocol.v1.UAuthority
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+
 
 /**
  * Validate a [UUri] to ensure that it has at least a name for the uEntity.
@@ -77,15 +77,24 @@ fun UUri.validateRpcResponse(): ValidationResult {
 }
 
 /**
- * Returns true if URI is of type RPC.
+ * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name
+ * and has an instance name and/or the id is less than MIN_TOPIC_ID.
  *
  * @return Returns true if URI is of type RPC.
  */
 fun UUri.isRpcMethod(): Boolean {
 
-    return resource.name == "rpc" && (resource
-        .hasInstance() && resource.instance.trim().isNotEmpty() || resource
-        .hasId() && resource.id != 0)
+    return resource.isRpcMethod()
+}
+
+/**
+ * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name
+ * and has an instance name and/or the id is less than MIN_TOPIC_ID.
+ *
+ * @return Returns true if URI is of type RPC.
+ */
+fun UResource.isRpcMethod(): Boolean {
+    return name == "rpc" && (hasInstance() && instance.trim().isNotEmpty() || (hasId() && id < MIN_TOPIC_ID))
 }
 
 /**
@@ -96,7 +105,7 @@ fun UUri.isRpcMethod(): Boolean {
  * Meaning that this UUri can buree serialized to long or micro formats.
  */
 fun UUri.isResolved(): Boolean {
-    return !isEmpty() && isLongForm() && isMicroForm()
+    return isLongForm() && isMicroForm()
 }
 
 /**
@@ -105,8 +114,7 @@ fun UUri.isResolved(): Boolean {
  * @return Returns true if URI is of type RPC response.
  */
 fun UUri.isRpcResponse(): Boolean {
-    return resource.name == "rpc" && resource.hasInstance() && resource.instance == "response" &&
-            resource.hasId() && resource.id == 0
+    return resource == uResource { forRpcResponse() }
 }
 
 /**
@@ -115,7 +123,7 @@ fun UUri.isRpcResponse(): Boolean {
  * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
  */
 fun UUri.isEmpty(): Boolean {
-    return !this.hasAuthority() && !this.hasEntity() && !this.hasResource()
+    return equals(UUri.getDefaultInstance())
 }
 
 /**
@@ -159,7 +167,7 @@ fun UUri.isLongForm(): Boolean {
 }
 
 /**
- * Returns true if UAuthority contains names so that it can be serialized into long format.
+ * Returns true if UAuthority is local or contains names so that it can be serialized into long format.
  *
  * @return Returns true if URI contains names so that it can be serialized into long format.
  */
@@ -168,7 +176,7 @@ fun UAuthority?.isLongForm(): Boolean {
     contract {
         returns(true) implies (this@isLongForm is UAuthority)
     }
-    return (this != null) && this.hasName() && this.name.isNotBlank()
+    return (this != null) && ( this.isLocal() || (this.hasName() && this.name.isNotBlank()))
 }
 
 /**
@@ -176,8 +184,12 @@ fun UAuthority?.isLongForm(): Boolean {
  *
  * @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
  */
+@OptIn(ExperimentalContracts::class)
 fun UAuthority?.isLocal(): Boolean {
-    return (this == null) || this == UAuthority.getDefaultInstance()
+    contract {
+        returns(true) implies (this@isLocal is UAuthority)
+    }
+    return (this != null) && this == UAuthority.getDefaultInstance()
 }
 
 /**
@@ -190,6 +202,15 @@ fun UAuthority?.isRemote(): Boolean {
     contract {
         returns(true) implies (this@isRemote is UAuthority)
     }
-    return (this != null) && this != UAuthority.getDefaultInstance() &&
-            (this.isLongForm() || this.isMicroForm())
+    return (this != null) && this != UAuthority.getDefaultInstance()
+
+}
+
+/**
+ * Return True of the UUri is Short form. A UUri that is micro form (contains numbers) can
+ * also be a Short form Uri.
+ * @return Returns true if contains ids can can be serialized to short format.
+ */
+fun UUri.isShortForm(): Boolean {
+    return isMicroForm()
 }

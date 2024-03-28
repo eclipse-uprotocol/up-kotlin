@@ -40,9 +40,12 @@ import org.eclipse.uprotocol.v1.UPayloadFormat
  */
 @Suppress("UNCHECKED_CAST")
 fun <T : Message> unpack(payload: UPayload, clazz: Class<T>): T? {
+    if (!payload.hasValue()) {
+        return null
+    }
     return try {
         when (payload.format) {
-            UPayloadFormat.UNRECOGNIZED, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY -> {
+            UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY -> {
                 Any.parseFrom(payload.value).unpack(clazz)
             }
 

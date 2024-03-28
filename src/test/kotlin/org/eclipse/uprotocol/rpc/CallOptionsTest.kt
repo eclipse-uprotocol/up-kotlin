@@ -21,38 +21,22 @@
 
 package org.eclipse.uprotocol.rpc
 
-import nl.jqno.equalsverifier.EqualsVerifier
-import org.eclipse.uprotocol.rpc.CallOptions.Companion.callOptions
+import org.eclipse.uprotocol.v1.callOptions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 
 class CallOptionsTest {
-
-    @Test
-    @DisplayName("Make sure the equals and hash code works")
-    fun testHashCodeEquals() {
-        EqualsVerifier.forClass(CallOptions::class.java).usingGetClass().verify()
-    }
-
     @Test
     @DisplayName("Make sure the toString works")
     fun testToString() {
         val callOptions = callOptions {
-            timeout = 30
+            ttl = 30
             token = "someToken"
         }
-        val expected = "CallOptions(timeout=30, token=someToken)"
+        val expected = "ttl: 30\ntoken: \"someToken\"\n"
         assertEquals(expected, callOptions.toString())
-    }
-
-    @Test
-    @DisplayName("Test using the DEFAULT CallOptions")
-    fun testCreatingCallOptionsDEFAULT() {
-        val callOptions = CallOptions.DEFAULT
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout)
-        assertTrue(callOptions.token.isEmpty())
     }
 
     @Test
@@ -61,7 +45,6 @@ class CallOptionsTest {
         val callOptions = callOptions {
             token = "someToken"
         }
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout)
         assertTrue(callOptions.token.isNotEmpty())
         assertEquals("someToken", callOptions.token)
     }
@@ -73,7 +56,6 @@ class CallOptionsTest {
         val callOptions = callOptions {
             token = ""
         }
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout)
         assertTrue(callOptions.token.isEmpty())
     }
 
@@ -83,37 +65,16 @@ class CallOptionsTest {
         val callOptions = callOptions {
             token = "   "
         }
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout)
-        assertTrue(callOptions.token.isEmpty())
+        assertTrue(callOptions.token.isBlank())
     }
 
     @Test
     @DisplayName("Test creating CallOptions with only a timeout")
     fun testCreatingCallOptionsWithATimeout() {
         val callOptions = callOptions {
-            timeout = 30
+            ttl = 30
         }
-        assertEquals(30, callOptions.timeout)
-        assertTrue(callOptions.token.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test creating CallOptions with a negative value timeout, expect the default timeout")
-    fun testCreatingCallOptionsWithANegativeTimeout() {
-        val callOptions = callOptions {
-            timeout = -3
-        }
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout)
-        assertTrue(callOptions.token.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test creating CallOptions with a timeout of 0 is valid")
-    fun testCreatingCallOptionsWithATimeoutOfZero() {
-        val callOptions = callOptions {
-            timeout = 0
-        }
-        assertEquals(0, callOptions.timeout)
+        assertEquals(30, callOptions.ttl)
         assertTrue(callOptions.token.isEmpty())
     }
 }

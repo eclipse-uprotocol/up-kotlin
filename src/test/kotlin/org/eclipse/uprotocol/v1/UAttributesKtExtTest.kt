@@ -42,7 +42,7 @@ class UAttributesKtExtTest {
             forNotification(testSource, testSink, UPriority.UPRIORITY_CS1)
         }
         assertNotNull(attributes)
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.type)
+        assertEquals(UMessageType.UMESSAGE_TYPE_NOTIFICATION, attributes.type)
         assertEquals(UPriority.UPRIORITY_CS1, attributes.priority)
         assertEquals(testSink, attributes.sink)
     }
@@ -73,6 +73,21 @@ class UAttributesKtExtTest {
     }
 
     @Test
+    fun testResponseWithExistingRequest() {
+        val request: UAttributes = uAttributes{
+            forRequest(testSource, testSink, UPriority.UPRIORITY_CS6, 1000)
+        }
+        val response: UAttributes = uAttributes {
+            forResponse(request)
+        }
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, response.type)
+        assertEquals(UPriority.UPRIORITY_CS6, response.priority)
+        assertEquals(request.source, response.sink)
+        assertEquals(request.sink, response.source)
+        assertEquals(request.id, response.reqid)
+    }
+
+    @Test
     fun testBuild() {
         val reqId: UUID = uUID
         val attributes: UAttributes = uAttributes {
@@ -81,7 +96,7 @@ class UAttributesKtExtTest {
             token = "test_token"
             sink = testSink
             permissionLevel = 2
-            commstatus = 1
+            commstatus = UCode.CANCELLED
             reqid = reqId
             traceparent = "test_traceparent"
         }
@@ -92,7 +107,7 @@ class UAttributesKtExtTest {
         assertEquals("test_token", attributes.token)
         assertEquals(testSink, attributes.sink)
         assertEquals(2, attributes.permissionLevel)
-        assertEquals(1, attributes.commstatus)
+        assertEquals(UCode.CANCELLED, attributes.commstatus)
         assertEquals(reqId, attributes.reqid)
         assertEquals("test_traceparent",attributes.traceparent)
     }

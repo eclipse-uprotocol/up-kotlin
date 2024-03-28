@@ -23,10 +23,14 @@
  */
 package org.eclipse.uprotocol.v1
 
-import com.google.protobuf.ProtocolMessageEnum
+import org.eclipse.uprotocol.UServiceTopic
 
-private val MAX_RPC_ID: Int
-    @JvmSynthetic get() = 1000
+
+/**
+ * The minimum topic ID, below this value are methods.
+ */
+val MIN_TOPIC_ID: Int
+    @JvmSynthetic get() = 0x8000
 
 /**
  * Initializes a UResource for an RPC response.
@@ -61,17 +65,26 @@ fun UResourceKt.Dsl.forRpcRequest(method: String = instance, id: Int = this@forR
  */
 @JvmSynthetic
 fun UResourceKt.Dsl.from(id: Int) {
-    if (id < MAX_RPC_ID) forRpcRequest(id = id) else this@from.id = id
+    when {
+        id >= MIN_TOPIC_ID -> this@from.id = id
+        id > 0 -> forRpcRequest(id = id)
+        id == 0 -> forRpcResponse()
+        else -> {}
+    }
 }
 
 /**
- * Initializes a UResource from a protobuf message. This method will determine if
- * the message is a RPC or topic message based on the message type
- * @param message The protobuf message.
+ * Build a UResource from a UServiceTopic that is defined in protos and
+ * available from generated stubs.
+ * @param topic The UServiceTopic to build the UResource from.
+ * @return Returns a UResource for an RPC request.
  */
 @JvmSynthetic
-fun UResourceKt.Dsl.from(message: ProtocolMessageEnum) {
-        message.descriptorForType.containingType.name?.let { name = it }
-        message.valueDescriptor.name?.let { instance = it }
-        id = message.number
+fun UResourceKt.Dsl.from(topic: UServiceTopic) {
+    val nameAndInstanceParts = topic.name.split(".").dropLastWhile { it.isEmpty() }
+    val resourceInstance = if (nameAndInstanceParts.size > 1) nameAndInstanceParts[1] else null
+    name = nameAndInstanceParts[0]
+    id = topic.id
+    message = topic.message
+    resourceInstance?.let { instance = it }
 }

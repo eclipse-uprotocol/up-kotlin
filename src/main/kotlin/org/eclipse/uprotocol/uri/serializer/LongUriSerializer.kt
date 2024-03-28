@@ -43,7 +43,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         }
         val sb = StringBuilder()
         if (uri.hasAuthority()) {
-            sb.append(buildAuthorityPartOfUri(uri.authority))
+            sb.append("//")
+            sb.append(uri.authority.name)
         }
         sb.append("/")
         sb.append(buildSoftwareEntityPartOfUri(uri.entity))
@@ -61,7 +62,8 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
         if (uri.isBlank()) {
             return UUri.getDefaultInstance()
         }
-        val uuri: String = if (uri.contains(":")) uri.substring(uri.indexOf(":") + 1) else uri.replace('\\', '/')
+        val uuri: String = if (uri.contains(":")) uri.substring(uri.indexOf(":") + 1) else uri
+            .replace('\\', '/')
         val isLocal: Boolean = !uuri.startsWith("//")
         val uriParts: List<String> = removeEmpty(uuri.split("/".toRegex()))
         val numberOfPartsInUri = uriParts.size
@@ -152,18 +154,6 @@ class LongUriSerializer private constructor() : UriSerializer<String> {
                 sb.append(use.versionMajor)
             }
             return sb.toString()
-        }
-
-        /**
-         * Create the authority part of the uProtocol URI from an  authority object.
-         * @param uAuthority represents the deployment location of a specific  Software Entity.
-         * @return Returns the String representation of the  Authority in the uProtocol URI.
-         */
-        private fun buildAuthorityPartOfUri(uAuthority: UAuthority): String {
-            val partialURI = "//"
-            return uAuthority.name?.let {
-                "$partialURI$it"
-            } ?: partialURI
         }
 
         /**

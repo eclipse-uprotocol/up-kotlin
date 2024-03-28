@@ -65,7 +65,7 @@ class UEntityFactoryTest{
 
         assertEquals(entity.name, "core.utwin")
         assertEquals(entity.id, 26)
-        assertEquals(entity.versionMajor, 1)
+        assertEquals(entity.versionMajor, 2)
         assertEquals(entity.versionMinor, 0)
     }
 }

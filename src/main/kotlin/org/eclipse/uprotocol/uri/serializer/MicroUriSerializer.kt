@@ -116,12 +116,11 @@ class MicroUriSerializer private constructor() : UriSerializer<ByteArray> {
             try {
                 if (uri.authority.hasIp()) {
                     os.write(uri.authority.getIp().toByteArray())
-                } else if (uri.authority.hasId()) {
+                } else {
                     os.write(uri.authority.getId().toByteArray())
                 }
             } catch (e: IOException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
+                return ByteArray(0)
             }
         }
         return os.toByteArray()
