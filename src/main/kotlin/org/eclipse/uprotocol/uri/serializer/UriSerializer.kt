@@ -24,10 +24,7 @@
 
 package org.eclipse.uprotocol.uri.serializer
 
-import org.eclipse.uprotocol.uri.validator.isResolved
 import org.eclipse.uprotocol.v1.UUri
-import org.eclipse.uprotocol.v1.copy
-import org.eclipse.uprotocol.v1.uUri
 
 /**
  * UUris are used in transport layers and hence need to be serialized.
@@ -49,37 +46,4 @@ interface UriSerializer<T> {
      * @return Returns the [UUri] in the transport serialized format.
      */
     fun serialize(uri: UUri): T
-
-    /**
-     * Build a fully resolved [UUri] from the serialized long format and the serializes micro format.
-     * @param longUri [UUri] serialized as a Sting.
-     * @param microUri [UUri] serialized as a byte[].
-     * @return Returns a [UUri] object serialized from one of the forms.
-     */
-    fun buildResolved(longUri: String?, microUri: ByteArray?): UUri? {
-        if (longUri.isNullOrEmpty() && (microUri == null || microUri.isEmpty())) {
-            return UUri.getDefaultInstance()
-        }
-        val longUUri = longUri?.let {
-            LongUriSerializer.INSTANCE.deserialize(it)
-        } ?: UUri.getDefaultInstance()
-
-        val microUUri = microUri?.let {
-            MicroUriSerializer.INSTANCE.deserialize(it)
-        } ?: UUri.getDefaultInstance()
-
-        val uri = uUri {
-            authority = microUUri.authority.copy {
-                name = longUUri.authority.name
-            }
-            entity = microUUri.entity.copy {
-                name = longUUri.entity.name
-            }
-            resource = longUUri.resource.copy {
-                id = microUUri.resource.id
-            }
-        }
-
-        return if (uri.isResolved()) uri else null
-    }
 }

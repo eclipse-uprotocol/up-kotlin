@@ -21,95 +21,169 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.core.usubscription.v3.Update
+import org.eclipse.uprotocol.UprotocolOptions
+import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto
+import org.eclipse.uprotocol.uri.factory.UEntityFactory.fromProto
 import org.eclipse.uprotocol.uri.validator.isEmpty
+import org.eclipse.uprotocol.uri.validator.isLongForm
 import org.eclipse.uprotocol.uri.validator.isMicroForm
+import org.eclipse.uprotocol.uri.validator.isShortForm
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.net.InetAddress
+
 
 class UriSerializerTest {
     @Test
-    @DisplayName("Test build resolve with valid long and micro uri")
-    fun test_build_resolved_valid_long_micro_uri() {
-        val longUUri: UUri = uUri {
-            authority = uAuthority { name = "testauth" }
-            entity = uEntity { name = "neelam" }
-            resource = uResource {
-                name = "rpc"
-                instance = "response"
+    @DisplayName("Test building uSubscription Update Notification topic and comparing long, short, and micro URIs")
+    fun test_build_resolved_full_information_compare() {
+        val descriptor = USubscriptionProto.getDescriptor().services[0]
+
+        val entity = fromProto(descriptor)
+
+        val options = descriptor.options
+
+        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
+            topic.name.contains("SubscriptionChange")
+        }.map { topic ->
+            uResource {
+                from(topic)
             }
-        }
+        }.first()
 
-        val microUUri: UUri = uUri {
-            authority = uAuthority { id = ByteString.copyFromUtf8("abcdefg") }
-            entity = uEntity {
-                id = 29999
-                versionMajor = 254
-            }
-            resource = uResource { id = 39999 }
-        }
-
-
-        val microuri: ByteArray = MicroUriSerializer.INSTANCE.serialize(microUUri)
-        val longuri: String = LongUriSerializer.INSTANCE.serialize(longUUri)
-
-        val resolvedUUri: UUri? = LongUriSerializer.INSTANCE.buildResolved(longuri, microuri)
-        checkNotNull(resolvedUUri)
-        assertFalse(resolvedUUri.isEmpty())
-        assertEquals("testauth", resolvedUUri.authority.name)
-        assertEquals("neelam", resolvedUUri.entity?.name)
-        assertEquals(29999, resolvedUUri.entity?.id)
-        assertEquals(254, resolvedUUri.entity?.versionMajor)
-        assertEquals("rpc", resolvedUUri.resource?.name)
-        assertEquals("response", resolvedUUri.resource?.instance)
-        assertEquals(39999, resolvedUUri.resource?.id)
-    }
-
-    @Test
-    @DisplayName("Test build resolve with null long and null micro uri")
-    fun test_build_resolved_null_long_null_micro_uri() {
-
-        // Test the buildResolved method with invalid input
-        val result: UUri? = MicroUriSerializer.INSTANCE.buildResolved(null, null)
-        checkNotNull(result)
-        // Assert that the result is empty
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test build resolve with null long and empty micro uri")
-    fun test_build_resolved_null_long_micro_uri() {
-
-        // Test the buildResolved method with invalid input
-        val result: UUri? = MicroUriSerializer.INSTANCE.buildResolved(null, ByteArray(0))
-        checkNotNull(result)
-        // Assert that the result is empty
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test build resolve with empty long and micro uri")
-    fun test_build_resolved_valid_long_null_micro_uri() {
-
-        // Test the buildResolved method with invalid input
-        val result: UUri? = MicroUriSerializer.INSTANCE.buildResolved("", ByteArray(0))
-        checkNotNull(result)
-        // Assert that the result is not empty
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    @DisplayName("Test building uSubscription Update message  Notification topic without using generated stubs")
-    fun test_build_resolved_full_information() {
         val uUri = uUri {
-            entity = uEntity { id = 0 }
-            resource = uResource {
-                from(Update.Resources.subscriptions)
-            }
+            this.entity = entity
+            this.resource = resource
         }
+
         assertFalse(uUri.isEmpty())
         assertTrue(uUri.isMicroForm())
+        assertTrue(uUri.isLongForm())
+        assertTrue(uUri.isShortForm())
+        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
+        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
+        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
+
+        assertEquals(longUri, "/core.usubscription/3/SubscriptionChange#Update")
+        assertEquals(shortUri, "/0/3/32768")
+        assertEquals(microUri.contentToString(), "[1, 0, -128, 0, 0, 0, 3, 0]")
+    }
+
+
+    @Test
+    @DisplayName("Test building uSubscription Update Notification topic with IPv4 address UAuthority and comparing long, short, and micro URIs")
+    fun test_build_resolved_full_information_compare_with_ipv4() {
+        val descriptor = USubscriptionProto.getDescriptor().services[0]
+        val entity = fromProto(descriptor)
+        val options = descriptor.options
+        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
+            topic.name.contains("SubscriptionChange")
+        }.map { topic ->
+            uResource {
+                from(topic)
+            }
+        }.first()
+
+        val uUri = uUri {
+            this.entity = entity
+            this.resource = resource
+            authority = uAuthority {
+                name = "vcu.veh.gm.com"
+                ip = ByteString.copyFrom(InetAddress.getByName("192.168.1.100").address)
+            }
+        }
+
+        assertFalse(uUri.isEmpty())
+        assertTrue(uUri.isMicroForm())
+        assertTrue(uUri.isLongForm())
+        assertTrue(uUri.isShortForm())
+        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
+        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
+        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
+
+        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
+        assertEquals(shortUri, "//192.168.1.100/0/3/32768")
+        assertEquals(microUri.contentToString(), "[1, 1, -128, 0, 0, 0, 3, 0, -64, -88, 1, 100]")
+    }
+
+    @Test
+    @DisplayName("Test building uSubscription Update Notification topic with IPv6 address UAuthority and comparing long, short, and micro URIs")
+    fun test_build_resolved_full_information_compare_with_ipv6() {
+        val descriptor = USubscriptionProto.getDescriptor().services[0]
+        val entity = fromProto(descriptor)
+        val options = descriptor.options
+        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
+            topic.name.contains("SubscriptionChange")
+        }.map { topic ->
+            uResource {
+                from(topic)
+            }
+        }.first()
+
+        val uUri = uUri {
+            this.entity = entity
+            this.resource = resource
+            authority = uAuthority {
+                name = "vcu.veh.gm.com"
+                ip = ByteString.copyFrom(InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334").address)
+            }
+        }
+
+        assertFalse(uUri.isEmpty())
+        assertTrue(uUri.isMicroForm())
+        assertTrue(uUri.isLongForm())
+        assertTrue(uUri.isShortForm())
+        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
+        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
+        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
+
+        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
+        assertEquals(shortUri, "//2001:db8:85a3:0:0:8a2e:370:7334/0/3/32768")
+        assertEquals(
+            microUri.contentToString(),
+            "[1, 2, -128, 0, 0, 0, 3, 0, 32, 1, 13, -72, -123, -93, 0, 0, 0, 0, -118, 46, 3, 112, 115, 52]"
+        )
+    }
+
+    @Test
+    @DisplayName("Test building uSubscription Update Notification topic with id address UAuthority and comparing long, short, and micro URIs")
+    fun test_build_resolved_full_information_compare_with_id() {
+        val descriptor = USubscriptionProto.getDescriptor().services[0]
+        val entity = fromProto(descriptor)
+        val options = descriptor.options
+
+        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
+            topic.name.contains("SubscriptionChange")
+        }.map { topic ->
+            uResource {
+                from(topic)
+            }
+        }.first()
+
+        val uUri = uUri {
+            this.entity = entity
+            this.resource = resource
+            authority = uAuthority {
+                name = "1G1YZ23J9P5800001.veh.gm.com"
+                id = ByteString.copyFromUtf8("1G1YZ23J9P5800001")
+            }
+        }
+
+        assertFalse(uUri.isEmpty())
+        assertTrue(uUri.isMicroForm())
+        assertTrue(uUri.isLongForm())
+        assertTrue(uUri.isShortForm())
+        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
+        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
+        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
+
+        assertEquals(longUri, "//1G1YZ23J9P5800001.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
+        assertEquals(shortUri, "//1G1YZ23J9P5800001/0/3/32768")
+        assertEquals(
+            microUri.contentToString(),
+            "[1, 3, -128, 0, 0, 0, 3, 0, 17, 49, 71, 49, 89, 90, 50, 51, 74, 57, 80, 53, 56, 48, 48, 48, 48, 49]"
+        )
     }
 }

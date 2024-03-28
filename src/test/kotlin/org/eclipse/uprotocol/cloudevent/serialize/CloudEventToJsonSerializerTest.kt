@@ -28,6 +28,7 @@ import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
+import org.eclipse.uprotocol.uri.Uri
 import org.eclipse.uprotocol.v1.UMessageType
 import org.eclipse.uprotocol.v1.UPriority
 import org.junit.jupiter.api.DisplayName
@@ -151,7 +152,7 @@ internal class CloudEventToJsonSerializerTest {
     )
     fun test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods() {
         val serializer: CloudEventSerializer = CloudEventSerializers.JSON.serializer()
-        val source = "/body.access//door.front_left#Door"
+        val source = Uri("/body.access//door.front_left#Door")
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest1()

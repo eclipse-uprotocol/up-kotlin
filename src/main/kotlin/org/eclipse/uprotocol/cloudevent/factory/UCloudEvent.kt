@@ -32,6 +32,7 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
 import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.UprotocolOptions
+import org.eclipse.uprotocol.uri.Uri
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.uuid.factory.getTime
 import org.eclipse.uprotocol.uuid.factory.isUuid
@@ -59,11 +60,11 @@ object UCloudEvent {
     /**
      * Extract the sink from a cloud event. The sink attribute is optional.
      * @param cloudEvent CloudEvent with sink to be extracted.
-     * @return Returns a String value of a CloudEvent sink attribute if it exists,
+     * @return Returns a Uri String value of a CloudEvent sink attribute if it exists,
      * otherwise Null is returned.
      */
-    fun getSink(cloudEvent: CloudEvent): String? {
-        return extractStringValueFromExtension("sink", cloudEvent)
+    fun getSink(cloudEvent: CloudEvent): Uri? {
+        return extractStringValueFromExtension("sink", cloudEvent)?.let { Uri(it) }
     }
 
     /**
@@ -118,7 +119,7 @@ object UCloudEvent {
 
 
     /**
-     * Extract the string value of the trafceparent attribute from a cloud event. The traceparent attribute is optional.
+     * Extract the string value of the traceparent attribute from a cloud event. The traceparent attribute is optional.
      * @param cloudEvent CloudEvent with traceparent to be extracted.
      * @return Returns a String value of a CloudEvent traceparent if it exists,
      * otherwise Null is returned.
@@ -128,17 +129,17 @@ object UCloudEvent {
     }
 
     /**
-     * Extract the integer value of the communication status attribute from a cloud event. The communication status attribute is optional.
+     * Fetch the UCode from the CloudEvent commstatus integer value. The communication status attribute is optional.
      * If there was a platform communication error that occurred while delivering this cloudEvent, it will be indicated in this attribute.
      * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE.
      * @param cloudEvent CloudEvent with the platformError to be extracted.
-     * @return Returns a UCode value that indicates of a platform communication error while delivering this CloudEvent or UCode.OK_VALUE.
+     * @return Returns a UCode that indicates of a platform communication error while delivering this CloudEvent or UCode.OK.
      */
-    fun getCommunicationStatus(cloudEvent: CloudEvent): Int {
+    fun getCommunicationStatus(cloudEvent: CloudEvent): UCode {
         return try {
-            extractIntegerValueFromExtension("commstatus", cloudEvent) ?: UCode.OK_VALUE
+            UCode.forNumber(extractIntegerValueFromExtension("commstatus", cloudEvent) ?: UCode.OK_VALUE)
         } catch (e: Exception) {
-            UCode.OK_VALUE
+            UCode.OK
         }
     }
 
@@ -148,7 +149,7 @@ object UCloudEvent {
      * @return returns true if the provided CloudEvent is marked with having a platform delivery problem.
      */
     fun hasCommunicationStatusProblem(cloudEvent: CloudEvent): Boolean {
-        return getCommunicationStatus(cloudEvent) != UCode.OK_VALUE
+        return getCommunicationStatus(cloudEvent) != UCode.OK
     }
 
     /**
@@ -300,9 +301,14 @@ object UCloudEvent {
     }
 
     /**
-     * Get the string representation of the UMessageType
+     * Get the string representation of the UMessageType.
+     *
+     * Note: The UMessageType is determined by the type of the CloudEvent. If
+     * the UMessageType is UMESSAGE_TYPE_NOTIFICATION, we assume the CloudEvent type
+     * is "pub.v1" and the sink is present.
      * @param type The UMessageType
      * @return returns the string representation of the UMessageType
+     *
      */
     fun getEventType(type: UMessageType): String {
         return getCeName(type.valueDescriptor)
@@ -333,8 +339,13 @@ object UCloudEvent {
     }
 
     /**
-     * Get the UMessageType from the string representation
-     * @param type The string representation of the UMessageType
+     * Get the UMessageType from the string representation.
+     *
+     * Note: The UMessageType is determined by the type of the CloudEvent.
+     * If the CloudEvent type is "pub.v1" and the sink is present, the UMessageType is assumed to be
+     * UMESSAGE_TYPE_NOTIFICATION, this is because uProtocol CloudEvent definition did not have an explicit
+     * notification type.
+     *
      * @return returns the UMessageType
      */
     fun getMessageType(type: String): UMessageType {
@@ -370,7 +381,7 @@ object UCloudEvent {
                 priority = getUPriority(p, UPriority.UPRIORITY_UNSPECIFIED)
             }
 
-            getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it) }
+            getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it.get()) }
 
             getRequestId(event)?.let { reqid = LongUuidSerializer.INSTANCE.deserialize(it) }
 
@@ -428,7 +439,7 @@ object UCloudEvent {
         }
 
         if (attributes.hasCommstatus()) {
-            builder.withExtension("commstatus", attributes.commstatus)
+            builder.withExtension("commstatus", attributes.commstatus.number)
         }
 
         if (attributes.hasReqid()) {

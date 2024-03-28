@@ -20,6 +20,7 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
+import com.google.protobuf.ByteString
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
@@ -34,6 +35,7 @@ import java.io.FileReader
 import java.io.IOException
 
 
+@Suppress("KotlinConstantConditions")
 internal class UriValidatorTest {
     @Test
     @DisplayName("Test validate uri with no device name")
@@ -613,6 +615,245 @@ internal class UriValidatorTest {
         }
         assertFalse(UAuthority.getDefaultInstance().isRemote())
         assertFalse(uri.authority.isRemote())
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod with UResource and no UAuthority")
+    fun test_is_rpc_method_with_uresource_and_no_uauthority() {
+        assertFalse(uUri { }.isRpcMethod())
+
+        val uri: UUri = uUri {
+            entity = uEntity { name = "hartley" }
+            resource = uResource { from(0x8000) }
+        }
+        assertFalse(uri.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource without an instance")
+    fun test_is_rpc_method_for_uresource_without_an_instance() {
+        val resource = uResource { name = "rpc" }
+        assertFalse(resource.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource an empty instance")
+    fun test_is_rpc_method_for_uresource_with_an_empty_instance() {
+        val resource = uResource {
+            name = "rpc"
+            instance = ""
+        }
+        assertFalse(resource.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource with id that is less than min_topic")
+    fun test_is_rpc_method_for_uresource_with_id_that_is_less_than_min_topic() {
+        val resource = uResource {
+            name = "rpc"
+            id = 0
+        }
+        assertTrue(resource.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource with id that is greater than min_topic")
+    fun test_is_rpc_method_for_uresource_with_id_that_is_greater_than_min_topic() {
+        val resource = uResource {
+            name = "rpc"
+            id = 0x8000
+        }
+        assertFalse(resource.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is long form only")
+    fun test_is_resolved_when_uri_is_long_form_only() {
+        val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                versionMajor = 23
+            }
+            resource = uResource {
+                name = "rpc"
+                instance = "echo"
+            }
+        }
+        assertFalse(uri.isResolved())
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is micro form only")
+    fun test_is_resolved_when_uri_is_micro_form_only() {
+        val uri: UUri = uUri {
+            entity = uEntity {
+                id = 0
+                versionMajor = 23
+            }
+            resource = uResource { from(0x8000) }
+        }
+        assertFalse(uri.isResolved())
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is both long and micro form")
+    fun test_is_resolved_when_uri_is_both_long_and_micro_form() {
+        val uri: UUri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            resource = uResource { forRpcResponse() }
+        }
+        assertTrue(uri.isResolved())
+    }
+
+    @Test
+    @DisplayName("Test isRpcResponse when uri is a valid RPC response")
+    fun test_is_rpc_response_when_uri_is_a_valid_rpc_response() {
+        val uri: UUri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            resource = uResource { forRpcResponse() }
+        }
+        assertTrue(uri.isRpcResponse())
+    }
+
+    @Test
+    @DisplayName("Test isMicroForm when URI is empty")
+    fun test_is_micro_form_when_uri_is_empty() {
+        assertFalse(UUri.getDefaultInstance().isMicroForm())
+    }
+
+    @Test
+    @DisplayName("Test isMicroForm when URI does not have UResource but does have UEntity")
+    fun test_is_micro_form_when_uri_does_not_have_uresource_but_does_have_uentity() {
+        val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+        }
+
+        assertFalse(uri.isMicroForm())
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when URI is null")
+    fun test_is_long_form_when_uri_is_null() {
+        assertFalse((null as UAuthority?).isLongForm())
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority is not long form")
+    fun test_is_long_form_when_uauthority_is_not_long_form() {
+        val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            authority = UAuthority.getDefaultInstance()
+        }
+        assertFalse(uri.isLongForm())
+        assertTrue(uri.authority.isLongForm())
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority is long form but not the rest")
+    fun test_is_long_form_when_uauthority_is_long_form_but_not_the_rest() {
+        val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            authority = uAuthority { name = "vcu.veh.gm.com" }
+        }
+        assertFalse(uri.isLongForm())
+        assertTrue(uri.authority.isLongForm())
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority blank name")
+    fun test_is_long_form_when_uauthority_is_blank_name() {
+        val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            authority = uAuthority { name = "" }
+        }
+        assertFalse(uri.isLongForm())
+        assertFalse(uri.authority.isLongForm())
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority is not long form but the rest is")
+    fun test_is_long_form_when_uauthority_is_not_long_form_but_the_rest_is() {
+           val uri = uUri {
+            entity = uEntity {
+                name = "hartley"
+                id = 0
+                versionMajor = 23
+            }
+            resource = uResource { forRpcResponse() }
+            authority = uAuthority { id = ByteString.copyFromUtf8("hello Jello") }
+        }
+        assertFalse(uri.isLongForm())
+        assertFalse(uri.authority.isLongForm())
+    }
+
+    @Test
+    @DisplayName("Test isLocal when authority is null")
+    fun test_is_local_when_authority_is_null() {
+        assertFalse((null as UAuthority?).isLocal())
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority is null")
+    fun test_is_remote_when_authority_is_null() {
+        assertFalse((null as UAuthority?).isRemote())
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority doesn't have a name but does have a number set")
+    fun test_is_remote_when_authority_does_not_have_a_name_but_does_have_a_number_set() {
+        val authority = uAuthority {
+            id = ByteString.copyFromUtf8("hello Jello")
+        }
+        assertTrue(authority.isRemote())
+        assertFalse(authority.hasName())
+        assertEquals(authority.numberCase, UAuthority.NumberCase.ID)
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority has name and number set")
+    fun test_is_remote_when_authority_has_name_and_number_set() {
+        val authority = uAuthority {
+            name = "vcu.veh.gm.com"
+            id = ByteString.copyFromUtf8("hello Jello")
+        }
+        assertTrue(authority.isRemote())
+        assertTrue(authority.hasName())
+        assertEquals(authority.numberCase, UAuthority.NumberCase.ID)
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority has name and number is NOT set")
+    fun test_is_remote_when_authority_has_name_and_number_is_not_set() {
+        val authority = uAuthority {
+            name = "vcu.veh.gm.com"
+        }
+        assertTrue(authority.isRemote())
+        assertTrue(authority.hasName())
+        assertEquals(authority.numberCase, UAuthority.NumberCase.NUMBER_NOT_SET)
     }
 
     @get:Throws(IOException::class)

@@ -28,7 +28,9 @@ import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent
+import org.eclipse.uprotocol.uri.Uri
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
+import org.eclipse.uprotocol.uri.toUri
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -249,7 +251,7 @@ internal class CloudEventToProtobufSerializerTest {
         return Any.pack(cloudEventProto)
     }
 
-    private fun buildUriForTest(): String {
+    private fun buildUriForTest(): Uri {
         val uri: UUri = uUri {
             entity = uEntity { name = "body.access" }
             resource = uResource {
@@ -260,7 +262,7 @@ internal class CloudEventToProtobufSerializerTest {
         }
 
 
-        return LongUriSerializer.INSTANCE.serialize(uri)
+        return LongUriSerializer.INSTANCE.serialize(uri).toUri()
     }
 
     private fun buildProtoPayloadForTest(): Any {

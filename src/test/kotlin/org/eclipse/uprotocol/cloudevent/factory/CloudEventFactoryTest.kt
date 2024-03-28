@@ -26,7 +26,9 @@ import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.getCePriority
+import org.eclipse.uprotocol.uri.Uri
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
+import org.eclipse.uprotocol.uri.toUri
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -45,23 +47,23 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS1
             ttl = 3
             token = "someOAuthToken"
         }
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
+            "test me", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         assertEquals("1.0", cloudEvent.specVersion.toString())
-        assertEquals("testme", cloudEvent.id)
-        assertEquals(source, cloudEvent.source.toString())
+        assertEquals("test me", cloudEvent.id)
+        assertEquals(source.get(), cloudEvent.source.toString())
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
         assertFalse(cloudEvent.extensionNames.contains("sink"))
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS1), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"))
@@ -78,7 +80,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS1
             ttl = 3
             token = "someOAuthToken"
@@ -86,7 +88,7 @@ internal class CloudEventFactoryTest {
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
+            "test me", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
             .withDataContentType(DATA_CONTENT_TYPE).withDataSchema(URI.create(protoPayload.typeUrl))
@@ -94,15 +96,15 @@ internal class CloudEventFactoryTest {
 
         // test all attributes
         assertEquals("1.0", cloudEvent.specVersion.toString())
-        assertEquals("testme", cloudEvent.id)
-        assertEquals(source, cloudEvent.source.toString())
+        assertEquals("test me", cloudEvent.id)
+        assertEquals(source.get(), cloudEvent.source.toString())
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
         assertEquals(DATA_CONTENT_TYPE, cloudEvent.dataContentType)
         assertEquals(
             "type.googleapis.com/io.cloudevents.v1.CloudEvent", Objects.requireNonNull(cloudEvent.dataSchema).toString()
         )
         assertFalse(cloudEvent.extensionNames.contains("sink"))
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS1), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"))
@@ -122,13 +124,13 @@ internal class CloudEventFactoryTest {
 
         // build the cloud event
         val cloudEventBuilder: CloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
-            "testme", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
+            "test me", source, protoPayload.toByteArray(), protoPayload.typeUrl, uCloudEventAttributes
         )
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
         val cloudEvent: CloudEvent = cloudEventBuilder.build()
         assertEquals("1.0", cloudEvent.specVersion.toString())
-        assertEquals("testme", cloudEvent.id)
-        assertEquals(source, cloudEvent.source.toString())
+        assertEquals("test me", cloudEvent.id)
+        assertEquals(source.get(), cloudEvent.source.toString())
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
         assertFalse(cloudEvent.extensionNames.contains("sink"))
         assertFalse(cloudEvent.extensionNames.contains("hash"))
@@ -149,17 +151,17 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS1
             ttl = 3
         }
         val cloudEvent: CloudEvent = CloudEventFactory.publish(source, protoPayload, uCloudEventAttributes)
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(source, cloudEvent.source.toString())
+        assertEquals(source.get(), cloudEvent.source.toString())
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
         assertFalse(cloudEvent.extensionNames.contains("sink"))
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS1), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.data).toBytes())
@@ -180,7 +182,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS2
             ttl = 3
         }
@@ -188,11 +190,11 @@ internal class CloudEventFactoryTest {
         val cloudEvent: CloudEvent = CloudEventFactory.notification(source, sink, protoPayload, uCloudEventAttributes)
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(source, cloudEvent.source.toString())
+        assertEquals(source.get(), cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
-        assertEquals(sink, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
+        assertEquals(sink.get(), Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
         assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.type)
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS2), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.data).toBytes())
@@ -213,7 +215,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS2
             ttl = 3
             token = "someOAuthToken"
@@ -223,11 +225,11 @@ internal class CloudEventFactoryTest {
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(applicationUriForRPC, cloudEvent.source.toString())
+        assertEquals(applicationUriForRPC.get(), cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
-        assertEquals(serviceMethodUri, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
+        assertEquals(serviceMethodUri.get(), Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
         assertEquals("req.v1", cloudEvent.type)
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS2), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"))
@@ -249,7 +251,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS2
             ttl = 3
         }
@@ -262,11 +264,11 @@ internal class CloudEventFactoryTest {
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(serviceMethodUri, cloudEvent.source.toString())
+        assertEquals(serviceMethodUri.get(), cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
-        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
+        assertEquals(applicationUriForRPC.get(), Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
         assertEquals("res.v1", cloudEvent.type)
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS2), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"))
@@ -285,7 +287,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS2
             ttl = 3
         }
@@ -298,11 +300,11 @@ internal class CloudEventFactoryTest {
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(serviceMethodUri, cloudEvent.source.toString())
+        assertEquals(serviceMethodUri.get(), cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
-        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
+        assertEquals(applicationUriForRPC.get(), Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
         assertEquals("res.v1", cloudEvent.type)
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS2), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals(UCode.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"))
@@ -322,7 +324,7 @@ internal class CloudEventFactoryTest {
 
         // additional attributes
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS2
             ttl = 3
         }
@@ -335,18 +337,18 @@ internal class CloudEventFactoryTest {
         )
         assertEquals("1.0", cloudEvent.specVersion.toString())
         assertNotNull(cloudEvent.id)
-        assertEquals(serviceMethodUri, cloudEvent.source.toString())
+        assertEquals(serviceMethodUri.get(), cloudEvent.source.toString())
         assertTrue(cloudEvent.extensionNames.contains("sink"))
-        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
+        assertEquals(applicationUriForRPC.get(), Objects.requireNonNull(cloudEvent.getExtension("sink")).toString())
         assertEquals("res.v1", cloudEvent.type)
-        assertEquals("somehash", cloudEvent.getExtension("hash"))
+        assertEquals("some hash", cloudEvent.getExtension("hash"))
         assertEquals(getCePriority(UPriority.UPRIORITY_CS2), cloudEvent.getExtension("priority"))
         assertEquals(3, cloudEvent.getExtension("ttl"))
         assertEquals(UCode.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"))
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"))
     }
 
-    private fun buildUriForTest(): String {
+    private fun buildUriForTest(): Uri {
         val uri: UUri = uUri {
             entity = uEntity { name = "body.access" }
             resource = uResource {
@@ -356,7 +358,7 @@ internal class CloudEventFactoryTest {
             }
         }
 
-        return LongUriSerializer.INSTANCE.serialize(uri)
+        return LongUriSerializer.INSTANCE.serialize(uri).toUri()
     }
 
     private fun buildProtoPayloadForTest(): Any {

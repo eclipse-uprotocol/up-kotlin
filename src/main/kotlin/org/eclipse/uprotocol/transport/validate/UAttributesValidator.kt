@@ -43,7 +43,10 @@ import org.eclipse.uprotocol.validation.ValidationResult
  * [UAttributes] object is correctly defined
  * to define the Payload correctly.
  */
-abstract class UAttributesValidator {
+sealed class UAttributesValidator {
+    //hardcode to prevent obfuscation
+    protected abstract val className: String
+    protected abstract val type: UMessageType
     /**
      * Take a [UAttributes] object and run validations.
      *
@@ -56,7 +59,7 @@ abstract class UAttributesValidator {
         val errorMessage = listOf(
             validateType(attributes),
             validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
-            validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes)
+            validatePermissionLevel(attributes), validateReqId(attributes)
         ).filter {
             it.isFailure()
         }.joinToString(",") { obj -> obj.getMessage() }
@@ -76,8 +79,8 @@ abstract class UAttributesValidator {
         val ttl = uAttributes.ttl
         val maybeTime = uAttributes.id.getTime()
 
-        // if the message does not have a ttl or the original time is not present or the ttl is less than 0
-        if (!uAttributes.hasTtl() || maybeTime == null || ttl <= 0) {
+        // if the original time is not present or the ttl is less than 0
+        if (maybeTime == null || ttl <= 0) {
             return false
         }
         // the original time plus the ttl is less than the current time, the message has expired
@@ -131,27 +134,6 @@ abstract class UAttributesValidator {
     }
 
     /**
-     * Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
-     * ValidationResult is ok.
-     *
-     * @param attributes UAttributes object containing the comm status to validate.
-     * @return Returns a [ValidationResult] that is success or failed with a failure message.
-     */
-    fun validateCommStatus(attributes: UAttributes): ValidationResult {
-        run {
-            if (attributes.hasCommstatus()) {
-                val enumValue = UCode.forNumber(attributes.commstatus)
-                return if (enumValue != null) {
-                    ValidationResult.success()
-                } else {
-                    ValidationResult.failure("Invalid Communication Status Code")
-                }
-            }
-            return ValidationResult.success()
-        }
-    }
-
-    /**
      * Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
      * ValidationResult is ok.
      *
@@ -187,182 +169,16 @@ abstract class UAttributesValidator {
      * @param attributes UAttributes object containing the message type to validate.
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
-    abstract fun validateType(attributes: UAttributes): ValidationResult
-
-    /**
-     * Validators Factory. Example:
-     * UAttributesValidator validateForPublishMessageType = UAttributesValidator.Validators.PUBLISH.validator()
-     */
-    enum class Validators(private val uAttributesValidator: UAttributesValidator) {
-        PUBLISH(Publish()),
-        REQUEST(Request()),
-        RESPONSE(Response());
-
-        fun validator(): UAttributesValidator {
-            return uAttributesValidator
+    fun validateType(attributes: UAttributes): ValidationResult{
+        return if (type == attributes.type) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
         }
     }
 
-    /**
-     * Implements validations for UAttributes that define a message that is meant for publishing state changes.
-     */
-    private class Publish : UAttributesValidator() {
-        /**
-         * Validates that attributes for a message meant to publish state changes has the correct type.
-         *
-         * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.type) {
-                ValidationResult.success()
-            } else {
-                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
-            }
-        }
-
-        override fun toString(): String {
-            return "UAttributesValidator.Publish"
-        }
-    }
-
-    /**
-     * Implements validations for UAttributes that define a message that is meant for an RPC request.
-     */
-    private class Request : UAttributesValidator() {
-        /**
-         * Validates that attributes for a message meant for an RPC request has the correct type.
-         *
-         * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_REQUEST == attributes.type) {
-                ValidationResult.success()
-            } else {
-                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
-            }
-        }
-
-        /**
-         * Validates that attributes for a message meant for an RPC request has a destination sink.
-         * In the case of an RPC request, the sink is required.
-         *
-         * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateSink(attributes: UAttributes): ValidationResult {
-            return if (!attributes.hasSink()) {
-                ValidationResult.failure("Missing Sink")
-            } else {
-                attributes.sink.validateRpcMethod()
-            }
-        }
-
-        /**
-         * Validate the time to live configuration.
-         * In the case of an RPC request, the time to live is required.
-         *
-         * @param attributes UAttributes object containing the time to live to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateTtl(attributes: UAttributes): ValidationResult {
-            if (!attributes.hasTtl()) {
-                return ValidationResult.failure("Missing TTL")
-            }
-            val ttl = attributes.ttl
-            return if (ttl <= 0) {
-                ValidationResult.failure("Invalid TTL [$ttl]")
-            } else {
-                ValidationResult.success()
-            }
-        }
-
-        /**
-         * Validate the priority value to ensure it is one of the known CS values
-         *
-         * @param attributes Attributes object containing the Priority to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validatePriority(attributes: UAttributes): ValidationResult {
-            return if (attributes.priority.number >= UPriority.UPRIORITY_CS4_VALUE) {
-                ValidationResult.success()
-            } else {
-                ValidationResult.failure("Invalid UPriority [${attributes.priority.name}]")
-            }
-        }
-
-        override fun toString(): String {
-            return "UAttributesValidator.Request"
-        }
-    }
-
-    /**
-     * Implements validations for UAttributes that define a message that is meant for an RPC response.
-     */
-    private class Response : UAttributesValidator() {
-        /**
-         * Validates that attributes for a message meant for an RPC response has the correct type.
-         *
-         * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateType(attributes: UAttributes): ValidationResult {
-            return if (UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.type) {
-                ValidationResult.success()
-            } else {
-                ValidationResult.failure("Wrong Attribute Type [${attributes.type}]")
-            }
-        }
-
-        /**
-         * Validates that attributes for a message meant for an RPC response has a destination sink.
-         * In the case of an RPC response, the sink is required.
-         *
-         * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateSink(attributes: UAttributes): ValidationResult {
-            if (!attributes.hasSink() || attributes.sink === UUri.getDefaultInstance()) {
-                return ValidationResult.failure("Missing Sink")
-            }
-            return attributes.sink.validateRpcResponse()
-        }
-
-        /**
-         * Validate the correlationId. n the case of an RPC response, the correlation id is required.
-         *
-         * @param attributes UAttributes object containing the correlation id to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validateReqId(attributes: UAttributes): ValidationResult {
-            if (!attributes.hasReqid() || attributes.reqid === UUID.getDefaultInstance()) {
-                return ValidationResult.failure("Missing correlationId")
-            }
-            return if (!attributes.reqid.isUuid()) {
-                ValidationResult.failure("Invalid correlationId [${attributes.reqid}]")
-            } else {
-                ValidationResult.success()
-            }
-        }
-
-        /**
-         * Validate the priority value to ensure it is one of the known CS values
-         *
-         * @param attributes Attributes object containing the Priority to validate.
-         * @return Returns a [ValidationResult] that is success or failed with a failure message.
-         */
-        override fun validatePriority(attributes: UAttributes): ValidationResult {
-            return if (attributes.priority.number >= UPriority.UPRIORITY_CS4_VALUE) {
-                ValidationResult.success()
-            } else ValidationResult.failure(
-                "Invalid UPriority [${attributes.priority.name}]"
-            )
-        }
-
-        override fun toString(): String {
-            return "UAttributesValidator.Response"
-        }
+    override fun toString(): String {
+        return "UAttributesValidator.$className"
     }
 
     companion object {
@@ -370,15 +186,152 @@ abstract class UAttributesValidator {
          * Static factory method for getting a validator according to the [UMessageType] defined in the
          * [UAttributes].
          *
-         * @param attribute UAttributes containing the UMessageType.
          * @return returns a UAttributesValidator according to the [UMessageType] defined in the [UAttributes].
          */
-        fun getValidator(attribute: UAttributes): UAttributesValidator {
-            return when (attribute.type) {
-                UMessageType.UMESSAGE_TYPE_RESPONSE -> Validators.RESPONSE.validator()
-                UMessageType.UMESSAGE_TYPE_REQUEST -> Validators.REQUEST.validator()
-                else -> Validators.PUBLISH.validator()
+        fun UAttributes.getValidator(): UAttributesValidator {
+            return when (type) {
+                UMessageType.UMESSAGE_TYPE_RESPONSE -> Response
+                UMessageType.UMESSAGE_TYPE_REQUEST -> Request
+                UMessageType.UMESSAGE_TYPE_NOTIFICATION -> Notification
+                else -> Publish
             }
         }
+    }
+}
+
+
+/**
+ * Implements validations for UAttributes that define a message that is meant for publishing state changes.
+ */
+object Publish : UAttributesValidator() {
+    override val className: String = "Publish"
+    override val type: UMessageType = UMessageType.UMESSAGE_TYPE_PUBLISH
+}
+
+/**
+ * Implements validations for UAttributes that define a message that is meant for notifications.
+ */
+object Notification: UAttributesValidator(){
+    override val className: String = "Notification"
+    override val type: UMessageType = UMessageType.UMESSAGE_TYPE_NOTIFICATION
+
+    /**
+     * Validates that attributes for a message meant for notifications has a destination sink.
+     * In the case of a notification, the sink is required.
+     *
+     * @param attributes UAttributes object containing the sink to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validateSink(attributes: UAttributes): ValidationResult {
+        if (!attributes.hasSink() || attributes.sink == UUri.getDefaultInstance()) {
+            return ValidationResult.failure("Missing Sink")
+        }
+        return ValidationResult.success()
+    }
+}
+/**
+ * Implements validations for UAttributes that define a message that is meant for an RPC request.
+ */
+object Request : UAttributesValidator() {
+    override val className: String = "Request"
+    override val type: UMessageType = UMessageType.UMESSAGE_TYPE_REQUEST
+
+    /**
+     * Validates that attributes for a message meant for an RPC request has a destination sink.
+     * In the case of an RPC request, the sink is required.
+     *
+     * @param attributes UAttributes object containing the sink to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validateSink(attributes: UAttributes): ValidationResult {
+        return if (!attributes.hasSink()) {
+            ValidationResult.failure("Missing Sink")
+        } else {
+            attributes.sink.validateRpcMethod()
+        }
+    }
+
+    /**
+     * Validate the time to live configuration.
+     * In the case of an RPC request, the time to live is required.
+     *
+     * @param attributes UAttributes object containing the time to live to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validateTtl(attributes: UAttributes): ValidationResult {
+        if (!attributes.hasTtl()) {
+            return ValidationResult.failure("Missing TTL")
+        }
+        return if (attributes.ttl <= 0) {
+            ValidationResult.failure("Invalid TTL [${attributes.ttl}]")
+        } else {
+            ValidationResult.success()
+        }
+    }
+
+    /**
+     * Validate the priority value to ensure it is one of the known CS values
+     *
+     * @param attributes Attributes object containing the Priority to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validatePriority(attributes: UAttributes): ValidationResult {
+        return if (attributes.priority.number >= UPriority.UPRIORITY_CS4_VALUE) {
+            ValidationResult.success()
+        } else {
+            ValidationResult.failure("Invalid UPriority [${attributes.priority.name}]")
+        }
+    }
+}
+
+/**
+ * Implements validations for UAttributes that define a message that is meant for an RPC response.
+ */
+object Response : UAttributesValidator() {
+    override val className: String = "Response"
+    override val type: UMessageType = UMessageType.UMESSAGE_TYPE_RESPONSE
+    /**
+     * Validates that attributes for a message meant for an RPC response has a destination sink.
+     * In the case of an RPC response, the sink is required.
+     *
+     * @param attributes UAttributes object containing the sink to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validateSink(attributes: UAttributes): ValidationResult {
+        if (!attributes.hasSink() || attributes.sink === UUri.getDefaultInstance()) {
+            return ValidationResult.failure("Missing Sink")
+        }
+        return attributes.sink.validateRpcResponse()
+    }
+
+    /**
+     * Validate the correlationId. n the case of an RPC response, the correlation id is required.
+     *
+     * @param attributes UAttributes object containing the correlation id to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validateReqId(attributes: UAttributes): ValidationResult {
+        if (!attributes.hasReqid() || attributes.reqid === UUID.getDefaultInstance()) {
+            return ValidationResult.failure("Missing correlationId")
+        }
+        return if (!attributes.reqid.isUuid()) {
+            ValidationResult.failure("Invalid correlationId [${attributes.reqid}]")
+        } else {
+            ValidationResult.success()
+        }
+    }
+
+    /**
+     * Validate the priority value to ensure it is one of the known CS values
+     *
+     * @param attributes Attributes object containing the Priority to validate.
+     * @return Returns a [ValidationResult] that is success or failed with a failure message.
+     */
+    override fun validatePriority(attributes: UAttributes): ValidationResult {
+        return if (attributes.priority.number >= UPriority.UPRIORITY_CS4_VALUE) {
+            ValidationResult.success()
+        } else ValidationResult.failure(
+            "Invalid UPriority [${attributes.priority.name}]"
+        )
     }
 }

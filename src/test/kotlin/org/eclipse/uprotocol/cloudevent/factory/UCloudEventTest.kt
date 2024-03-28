@@ -28,7 +28,9 @@ import io.cloudevents.core.builder.CloudEventBuilder
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes.Companion.uCloudEventAttributes
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.getCePriority
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.toMessage
+import org.eclipse.uprotocol.uri.Uri
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer
+import org.eclipse.uprotocol.uri.toUri
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
 import org.eclipse.uprotocol.v1.*
@@ -61,7 +63,7 @@ internal class UCloudEventTest {
             buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest))
         val cloudEvent: CloudEvent = builder.build()
         val sink = UCloudEvent.getSink(cloudEvent)
-        assertEquals(sinkForTest, sink)
+        assertEquals(sinkForTest, sink?.get())
     }
 
     @Test
@@ -193,7 +195,7 @@ internal class UCloudEventTest {
             buildBaseCloudEventBuilderForTest().withExtension("commstatus", UCode.ABORTED_VALUE)
         val cloudEvent: CloudEvent = builder.build()
         assertTrue(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -204,7 +206,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -215,7 +217,7 @@ internal class UCloudEventTest {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest().withExtension("commstatus", "boom")
         val cloudEvent: CloudEvent = builder.build()
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent))
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -227,8 +229,8 @@ internal class UCloudEventTest {
             "commstatus", UCode.INVALID_ARGUMENT_VALUE
         )
         val cloudEvent: CloudEvent = builder.build()
-        val communicationStatus: Int = UCloudEvent.getCommunicationStatus(cloudEvent)
-        assertEquals(3, communicationStatus)
+        val communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent)
+        assertEquals(UCode.INVALID_ARGUMENT, communicationStatus)
     }
 
     @Test
@@ -238,8 +240,8 @@ internal class UCloudEventTest {
     fun test_extract_platform_error_from_cloudevent_when_platform_error_does_not_exist() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        val communicationStatus: Int = UCloudEvent.getCommunicationStatus(cloudEvent)
-        assertEquals(UCode.OK_VALUE, communicationStatus)
+        val communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent)
+        assertEquals(UCode.OK, communicationStatus)
     }
 
     @Test
@@ -247,10 +249,10 @@ internal class UCloudEventTest {
     fun test_adding_platform_error_to_existing_cloudevent() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
         val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, UCode.DEADLINE_EXCEEDED_VALUE)
-        assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1))
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.DEADLINE_EXCEEDED, UCloudEvent.getCommunicationStatus(cloudEvent1))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
     }
 
     @Test
@@ -258,9 +260,9 @@ internal class UCloudEventTest {
     fun test_adding_empty_platform_error_to_existing_cloudevent() {
         val builder: CloudEventBuilder = buildBaseCloudEventBuilderForTest()
         val cloudEvent: CloudEvent = builder.build()
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
         val cloudEvent1: CloudEvent = UCloudEvent.addCommunicationStatus(cloudEvent, null)
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent))
         assertEquals(cloudEvent, cloudEvent1)
     }
 
@@ -655,7 +657,7 @@ internal class UCloudEventTest {
         // CloudEvent
         val cloudEvent = CloudEventFactory.request(
             buildSourceForTest(),
-            "//bo.cloud/petapp/1/rpc" + ".response",
+            ("//bo.cloud/petapp/1/rpc" + ".response").toUri(),
             buildProtoPayloadForTest(),
             uCloudEventAttributes
         )
@@ -664,7 +666,7 @@ internal class UCloudEventTest {
         assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(UCloudEvent.getToken(cloudEvent), result.attributes.getToken())
         assertEquals(
-            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getTraceparent(cloudEvent), result.attributes.traceparent)
 
@@ -686,13 +688,13 @@ internal class UCloudEventTest {
 
         // CloudEvent
         val cloudEvent = CloudEventFactory.request(
-            buildSourceForTest(), "//bo.cloud/petapp/1/rpc.response", buildProtoPayloadForTest(), uCloudEventAttributes
+            buildSourceForTest(), ("//bo.cloud/petapp/1/rpc.response").toUri(), buildProtoPayloadForTest(), uCloudEventAttributes
         )
         val result = toMessage(cloudEvent)
         assertNotNull(result)
         assertFalse(result.attributes.hasTtl())
         assertEquals(
-            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
@@ -714,7 +716,7 @@ internal class UCloudEventTest {
         // CloudEvent
         val cloudEvent = CloudEventFactory.response(
             buildSourceForTest(),
-            "//bo.cloud/petapp/1/rpc" + ".response",
+            ("//bo.cloud/petapp/1/rpc" + ".response").toUri(),
             LongUuidSerializer.INSTANCE.serialize(UUIDV8()),
             buildProtoPayloadForTest(),
             uCloudEventAttributes
@@ -726,7 +728,7 @@ internal class UCloudEventTest {
         )
         assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(
-            UCloudEvent.getSink(cloudEvent), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
@@ -756,7 +758,7 @@ internal class UCloudEventTest {
         val cloudEvent = cloudEventBuilder.build()
         val result = toMessage(cloudEvent)
         assertNotNull(result)
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent))
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent))
         assertEquals(2, result.attributes.permissionLevel)
 
         val cloudEvent1 = UCloudEvent.fromMessage(result)
@@ -859,7 +861,7 @@ internal class UCloudEventTest {
         assertEquals(getCePriority(UPriority.UPRIORITY_CS4), UCloudEvent.getPriority(cloudEvent1))
     }
 
-    private fun buildSourceForTest(): String {
+    private fun buildSourceForTest(): Uri {
         // source
         val uUri: UUri = uUri {
             entity = uEntity { name = "body.access" }
@@ -870,12 +872,12 @@ internal class UCloudEventTest {
             }
         }
 
-        return LongUriSerializer.INSTANCE.serialize(uUri)
+        return LongUriSerializer.INSTANCE.serialize(uUri).toUri()
     }
 
     private fun buildBaseCloudEventBuilderForTest(): CloudEventBuilder {
         // source
-        val source: String = buildSourceForTest()
+        val source = buildSourceForTest()
 
         // fake payload
         val protoPayload = buildProtoPayloadForTest()

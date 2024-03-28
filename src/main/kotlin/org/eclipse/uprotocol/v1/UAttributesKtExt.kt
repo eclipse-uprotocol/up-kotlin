@@ -53,7 +53,7 @@ fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPrior
     this@forNotification.sink = sink
     this@forNotification.priority = priority
     id = UUIDV8()
-    type = UMessageType.UMESSAGE_TYPE_PUBLISH
+    type = UMessageType.UMESSAGE_TYPE_NOTIFICATION
 }
 
 /**
@@ -90,4 +90,19 @@ fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: UPriority,
     id = UUIDV8()
     type = UMessageType.UMESSAGE_TYPE_RESPONSE
     reqid = reqId
+}
+
+/**
+ * Construct a UAttributesBuilder for a response message.
+ * @param request The original request {@code UAttributes} used to correlate the response to the request.
+ * @return Returns the UAttributesBuilder with the configured source, sink, priority and reqid.
+ */
+@JvmSynthetic
+fun UAttributesKt.Dsl.forResponse(request: UAttributes) {
+    source = request.sink
+    sink = request.source
+    priority = request.priority
+    id = UUIDV8()
+    type = UMessageType.UMESSAGE_TYPE_RESPONSE
+    reqid = request.id
 }

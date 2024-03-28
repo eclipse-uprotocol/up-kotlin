@@ -21,6 +21,7 @@
 package org.eclipse.uprotocol.uri.serializer
 
 import com.google.protobuf.ByteString
+import org.eclipse.uprotocol.uri.serializer.IpAddress.toBytes
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.uri.validator.isMicroForm
 import org.eclipse.uprotocol.v1.*
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.InetAddress
 import java.net.UnknownHostException
+
 
 class MicroUriSerializerTest {
     @Test
@@ -49,7 +51,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = uResource { id = 19999 }
+            resource = uResource { from(19999) }
         }
 
         val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
@@ -162,6 +164,53 @@ class MicroUriSerializerTest {
     }
 
     @Test
+    @DisplayName("Test serialize with good IPv4 based authority and the uEntity major version is missing")
+    fun test_serialize_good_ipv4_based_authority_missing_major_version() {
+        val uri: UUri = uUri {
+            authority = uAuthority { ip = ByteString.copyFrom(toBytes("192.168.1.100")) }
+            entity = uEntity { id = 29999 }
+            resource = uResource { forRpcResponse() }
+        }
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        val uri2: UUri = MicroUriSerializer.INSTANCE.deserialize(bytes)
+        assertEquals(uri2.entity.versionMajor, 0)
+    }
+
+    @Test
+    @DisplayName("Test serialize without uauthority ip or id")
+    fun test_serialize_without_uauthority_ip_or_id() {
+        val uri: UUri = uUri {
+            authority = uAuthority { name = "vcu.vin" }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { id = 19999 }
+        }
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        assertTrue(bytes.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test serialize with id that is out of range")
+    fun test_serialize_id_out_of_range() {
+        val byteArray = ByteArray(258)
+        for (i in 0..255) {
+            byteArray[i] = i.toByte()
+        }
+        val uri: UUri = uUri {
+            authority = uAuthority { ip = ByteString.copyFrom(byteArray) }
+            entity = uEntity {
+                id = 29999
+                versionMajor = 254
+            }
+            resource = uResource { from(19999) }
+        }
+        val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
+        assertTrue(bytes.isEmpty())
+    }
+
+    @Test
     @DisplayName("Test serialize with good IPv6 based authority")
     @Throws(UnknownHostException::class)
     fun test_serialize_good_ipv6_based_authority() {
@@ -176,7 +225,7 @@ class MicroUriSerializerTest {
                 versionMajor = 254
             }
 
-            resource = uResource { id = 19999 }
+            resource = uResource { from(19999) }
         }
 
         val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
@@ -201,7 +250,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = uResource { id = 19999 }
+            resource = uResource { from(19999) }
         }
 
         val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
@@ -224,7 +273,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = uResource { id = 19999 }
+            resource = uResource { from(19999) }
         }
 
         val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
@@ -246,7 +295,7 @@ class MicroUriSerializerTest {
                 id = 29999
                 versionMajor = 254
             }
-            resource = uResource { id = 19999 }
+            resource = uResource { from(19999) }
         }
 
         val bytes: ByteArray = MicroUriSerializer.INSTANCE.serialize(uri)
