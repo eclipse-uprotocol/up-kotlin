@@ -63,7 +63,7 @@ internal class UCloudEventTest {
             buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest))
         val cloudEvent: CloudEvent = builder.build()
         val sink = UCloudEvent.getSink(cloudEvent)
-        assertEquals(sinkForTest, sink?.get())
+        assertEquals(sinkForTest, sink?.value)
     }
 
     @Test
@@ -666,7 +666,7 @@ internal class UCloudEventTest {
         assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(UCloudEvent.getToken(cloudEvent), result.attributes.getToken())
         assertEquals(
-            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.value, LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getTraceparent(cloudEvent), result.attributes.traceparent)
 
@@ -694,7 +694,7 @@ internal class UCloudEventTest {
         assertNotNull(result)
         assertFalse(result.attributes.hasTtl())
         assertEquals(
-            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.value, LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(
@@ -728,7 +728,7 @@ internal class UCloudEventTest {
         )
         assertEquals(UCloudEvent.getTtl(cloudEvent), result.attributes.ttl)
         assertEquals(
-            UCloudEvent.getSink(cloudEvent)?.get(), LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
+            UCloudEvent.getSink(cloudEvent)?.value, LongUriSerializer.INSTANCE.serialize(result.attributes.sink)
         )
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(), result.payload.getValue())
         assertEquals(

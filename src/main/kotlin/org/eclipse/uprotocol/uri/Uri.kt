@@ -26,11 +26,9 @@
 package org.eclipse.uprotocol.uri
 
 @JvmInline
-value class Uri(private val uri: String=""){
-    fun get(): String = uri
-
+value class Uri(val value: String=""){
     override fun toString(): String {
-        return uri
+        return value
     }
 }
 

@@ -381,7 +381,7 @@ object UCloudEvent {
                 priority = getUPriority(p, UPriority.UPRIORITY_UNSPECIFIED)
             }
 
-            getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it.get()) }
+            getSink(event)?.let { sink = LongUriSerializer.INSTANCE.deserialize(it.value) }
 
             getRequestId(event)?.let { reqid = LongUuidSerializer.INSTANCE.deserialize(it) }
 

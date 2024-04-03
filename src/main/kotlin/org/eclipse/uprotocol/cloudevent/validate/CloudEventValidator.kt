@@ -140,7 +140,7 @@ sealed class CloudEventValidator {
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun Uri.validateUEntityUri(): ValidationResult {
-            return LongUriSerializer.INSTANCE.deserialize(this.get()).validateUEntityUri()
+            return LongUriSerializer.INSTANCE.deserialize(this.value).validateUEntityUri()
         }
 
         /**
@@ -163,7 +163,7 @@ sealed class CloudEventValidator {
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun Uri.validateTopicUri(): ValidationResult {
-            return LongUriSerializer.INSTANCE.deserialize(this.get()).validateTopicUri()
+            return LongUriSerializer.INSTANCE.deserialize(this.value).validateTopicUri()
         }
 
         /**
@@ -190,7 +190,7 @@ sealed class CloudEventValidator {
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun Uri.validateRpcTopicUri(): ValidationResult {
-            return LongUriSerializer.INSTANCE.deserialize(this.get()).validateRpcTopicUri()
+            return LongUriSerializer.INSTANCE.deserialize(this.value).validateRpcTopicUri()
         }
 
         /**
@@ -214,7 +214,7 @@ sealed class CloudEventValidator {
          * @return Returns the ValidationResult containing a success or a failure with the error message.
          */
         fun Uri.validateRpcMethod(): ValidationResult {
-            val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(this.get())
+            val uuri: UUri = LongUriSerializer.INSTANCE.deserialize(this.value)
             val validationResult: ValidationResult = uuri.validateUEntityUri()
             if (validationResult.isFailure()) {
                 return ValidationResult.failure("Invalid RPC method uri. ${validationResult.getMessage()}")

@@ -68,7 +68,7 @@ object CloudEventFactory {
             attributes
         )
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
-            .withExtension("sink", URI.create(serviceMethodUri.get()))
+            .withExtension("sink", URI.create(serviceMethodUri.value))
             .build()
     }
 
@@ -99,7 +99,7 @@ object CloudEventFactory {
             attributes
         )
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
-            .withExtension("sink", URI.create(applicationUriForRPC.get()))
+            .withExtension("sink", URI.create(applicationUriForRPC.value))
             .withExtension("reqid", requestId)
             .build()
     }
@@ -131,7 +131,7 @@ object CloudEventFactory {
             attributes
         )
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
-            .withExtension("sink", URI.create(applicationUriForRPC.get()))
+            .withExtension("sink", URI.create(applicationUriForRPC.value))
             .withExtension("reqid", requestId)
             .withExtension("commstatus", communicationStatus)
             .build()
@@ -171,7 +171,7 @@ object CloudEventFactory {
         val id = generateCloudEventId()
         return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.typeUrl, attributes)
             .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-            .withExtension("sink", URI.create(sink.get()))
+            .withExtension("sink", URI.create(sink.value))
             .build()
     }
 
@@ -205,7 +205,7 @@ object CloudEventFactory {
     ): CloudEventBuilder {
         val cloudEventBuilder: CloudEventBuilder = CloudEventBuilder.v1()
             .withId(id)
-            .withSource(URI.create(source.get())) /* Not needed:
+            .withSource(URI.create(source.value)) /* Not needed:
                 .withDataContentType(PROTOBUF_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayloadSchema))
                 */
