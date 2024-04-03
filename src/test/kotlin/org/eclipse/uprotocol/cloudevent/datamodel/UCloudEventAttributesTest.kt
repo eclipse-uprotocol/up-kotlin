@@ -38,28 +38,55 @@ internal class UCloudEventAttributesTest {
     @DisplayName("Make sure the default toString works")
     fun testToString() {
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS1
             ttl = 3
             token = "someOAuthToken"
             traceparent = "someTraceparent"
         }
-        val expected = "UCloudEventAttributes(hash=somehash, priority=UPRIORITY_CS1, ttl=3, token=someOAuthToken, traceparent=someTraceparent)"
+        val expected = "UCloudEventAttributes(hash=some hash, priority=UPRIORITY_CS1, ttl=3, token=someOAuthToken, traceparent=someTraceparent)"
         assertEquals(expected, uCloudEventAttributes.toString())
+    }
+
+    @Test @DisplayName("Test creating a valid attributes but traceparent is blank") fun test_create_valid_with_blank_traceparent() {
+        val uCloudEventAttributes: UCloudEventAttributes = uCloudEventAttributes {
+            hash = "some hash"
+            priority = UPriority.UPRIORITY_CS6
+            ttl = 3
+            token = "someOAuthToken"
+            traceparent = "  "
+        }
+        assertNotNull(uCloudEventAttributes.hash)
+        assertEquals("some hash", uCloudEventAttributes.hash)
+        assertNotNull(uCloudEventAttributes.traceparent)
+    }
+
+    @Test @DisplayName("Test creating a empty attributes with only traceparent") fun test_create_empty_with_only_traceparent() {
+        val uCloudEventAttributes: UCloudEventAttributes = uCloudEventAttributes {
+            traceparent = "someTraceParent"
+
+        }
+        assertNull(uCloudEventAttributes.hash)
+        assertNull(uCloudEventAttributes.priority)
+        assertNull(uCloudEventAttributes.token)
+        assertNull(uCloudEventAttributes.ttl)
+        assertNotNull(uCloudEventAttributes.traceparent)
+        assertFalse(uCloudEventAttributes.isEmpty)
+        assertEquals("someTraceParent", uCloudEventAttributes.traceparent)
     }
 
     @Test
     @DisplayName("Test creating a valid attributes object")
     fun test_create_valid() {
         val uCloudEventAttributes = uCloudEventAttributes {
-            hash = "somehash"
+            hash = "some hash"
             priority = UPriority.UPRIORITY_CS6
             ttl = 3
             token = "someOAuthToken"
             traceparent = "someTraceparent"
         }
         checkNotNull(uCloudEventAttributes.hash)
-        assertEquals("somehash", uCloudEventAttributes.hash)
+        assertEquals("some hash", uCloudEventAttributes.hash)
         checkNotNull(uCloudEventAttributes.priority)
         assertEquals(UPriority.UPRIORITY_CS6, uCloudEventAttributes.priority)
         checkNotNull(uCloudEventAttributes.ttl)
@@ -72,7 +99,7 @@ internal class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty function")
-    fun test_Isempty_function() {
+    fun test_isEmpty_function() {
         val uCloudEventAttributes: UCloudEventAttributes = UCloudEventAttributes.EMPTY
         assertTrue(uCloudEventAttributes.isEmpty)
         assertTrue(uCloudEventAttributes.hash.isNullOrBlank())
@@ -84,7 +111,7 @@ internal class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty when built with blank strings function")
-    fun test_Isempty_function_when_built_with_blank_strings() {
+    fun test_isEmpty_function_when_built_with_blank_strings() {
         val uCloudEventAttributes = uCloudEventAttributes {
             hash = "  "
             token = "  "
@@ -98,14 +125,14 @@ internal class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty permutations")
-    fun test_Isempty_function_permutations() {
+    fun test_isEmpty_function_permutations() {
         val uCloudEventAttributes= uCloudEventAttributes {
             hash = "  "
             token = "  "
         }
         assertTrue(uCloudEventAttributes.isEmpty)
         val uCloudEventAttributes2 = uCloudEventAttributes {
-            hash = "someHash"
+            hash = "some hash"
             token = "  "
         }
         assertFalse(uCloudEventAttributes2.isEmpty)

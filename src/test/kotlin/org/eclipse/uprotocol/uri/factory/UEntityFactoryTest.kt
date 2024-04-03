@@ -23,7 +23,7 @@ package org.eclipse.uprotocol.uri.factory
 
 import org.eclipse.uprotocol.core.udiscovery.v3.UDiscoveryProto
 import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto
-import org.eclipse.uprotocol.core.utwin.v1.UTwinProto
+import org.eclipse.uprotocol.core.utwin.v2.UTwinProto
 import org.eclipse.uprotocol.uri.factory.UEntityFactory.fromProto
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -65,7 +65,7 @@ class UEntityFactoryTest{
 
         assertEquals(entity.name, "core.utwin")
         assertEquals(entity.id, 26)
-        assertEquals(entity.versionMajor, 1)
+        assertEquals(entity.versionMajor, 2)
         assertEquals(entity.versionMinor, 0)
     }
 }

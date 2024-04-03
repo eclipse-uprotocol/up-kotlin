@@ -20,7 +20,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     assertFalse(uuid.isUuidv6())
     assertFalse(uuid.isUProtocol())
     assertTrue(version.isPresent)
-    assertEquals(version.get(), UuidUtils.Version.VERSION_UNKNOWN)
+    assertEquals(version, UuidUtils.Version.VERSION_UNKNOWN)
     assertFalse(time.isPresent)
     assertTrue(bytes.isNotEmpty())
     assertFalse(uuidString.isBlank())

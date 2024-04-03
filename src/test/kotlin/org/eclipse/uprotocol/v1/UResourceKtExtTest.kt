@@ -19,15 +19,13 @@
  * under the License.
  */
 
-package org.eclipse.uprotocol.uri.factory
+package org.eclipse.uprotocol.v1
 
-import org.eclipse.uprotocol.v1.forRpcRequest
-import org.eclipse.uprotocol.v1.forRpcResponse
-import org.eclipse.uprotocol.v1.from
-import org.eclipse.uprotocol.v1.uResource
+import org.eclipse.uprotocol.uServiceTopic
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
+
 
 class UResourceFactoryTest {
     @Test
@@ -100,5 +98,38 @@ class UResourceFactoryTest {
         assertEquals("", resource.name)
         assertEquals("", resource.instance)
         assertEquals(idTest, resource.id)
+    }
+
+    @Test
+    fun test_from_uservice_topic_valid_service_topic() {
+        val topic = uServiceTopic {
+            name = "SubscriptionChange"
+            id = 0
+            message = "Update"
+        }
+        val resource: UResource = uResource {
+            from(topic)
+        }
+        assertEquals(resource.name, "SubscriptionChange")
+        assertEquals(resource.instance, "")
+        assertEquals(resource.id, 0)
+        assertEquals(resource.message, "Update")
+    }
+
+    @Test
+    fun test_from_uservice_topic_valid_service_topic_with_instance() {
+        val topic = uServiceTopic {
+            name = "door.front_left"
+            id = 0x8000
+            message = "Door"
+        }
+
+        val resource: UResource = uResource {
+            from(topic)
+        }
+        assertEquals(resource.name, "door")
+        assertEquals(resource.instance, "front_left")
+        assertEquals(resource.id, 0x8000)
+        assertEquals(resource.message, "Door")
     }
 }
