@@ -1,39 +1,30 @@
-/*
- * Copyright (c) 2024 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2024 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.v1
+package org.eclipse.uprotocol.transport
 
 import org.eclipse.uprotocol.uuid.factory.UUIDV8
+import org.eclipse.uprotocol.v1.*
+
 
 /**
- * Construct a UAttributesBuilder for a publish message.
+ * Construct a UMessageBuilder for a Publish message.
  * @param source   Source address of the message.
  * @param priority The priority of the message.
  * @return Returns the UAttributesBuilder with the configured source and priority.
  */
 @JvmSynthetic
-fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
+internal fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
     this@forPublication.source = source
     this@forPublication.priority = priority
     id = UUIDV8()
@@ -48,7 +39,7 @@ fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
  * @return Returns the UAttributesBuilder with the configured source, sink and priority.
  */
 @JvmSynthetic
-fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPriority) {
+internal fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPriority) {
     this@forNotification.source = source
     this@forNotification.sink = sink
     this@forNotification.priority = priority
@@ -65,7 +56,7 @@ fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priority: UPrior
  * @return Returns the UAttributesBuilder with the configured source, sink, priority and ttl.
  */
 @JvmSynthetic
-fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UPriority, ttl: Int) {
+internal fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UPriority, ttl: Int) {
     this@forRequest.source = source
     this@forRequest.sink = sink
     this@forRequest.priority = priority
@@ -83,7 +74,7 @@ fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UPriority, 
  * @return Returns the UAttributesBuilder with the configured source, sink, priority and reqid.
  */
 @JvmSynthetic
-fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: UPriority, reqId: UUID) {
+internal fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: UPriority, reqId: UUID) {
     this@forResponse.source = source
     this@forResponse.sink = sink
     this@forResponse.priority = priority
@@ -98,7 +89,7 @@ fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: UPriority,
  * @return Returns the UAttributesBuilder with the configured source, sink, priority and reqid.
  */
 @JvmSynthetic
-fun UAttributesKt.Dsl.forResponse(request: UAttributes) {
+internal fun UAttributesKt.Dsl.forResponse(request: UAttributes) {
     source = request.sink
     sink = request.source
     priority = request.priority

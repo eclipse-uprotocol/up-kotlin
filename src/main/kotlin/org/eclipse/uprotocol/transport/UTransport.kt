@@ -1,24 +1,13 @@
-/*
- * Copyright (c) 2024 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -37,7 +26,6 @@ import org.eclipse.uprotocol.v1.UUri
  * https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l1/README.adoc.
  */
 interface UTransport {
-
     /**
      * Send a message over the transport.
      * @param message the [UMessage] to be sent.
@@ -46,23 +34,34 @@ interface UTransport {
     fun send(message: UMessage): UStatus
 
     /**
-     * Register `UListener` for `UUri` topic to be called when a message is received.
-     * @param topic `UUri` to listen for messages from.
-     * @param listener The `UListener` that will be executed when the message is
+     * Register `UListener` for `UUri` source and sink filters to be called when a message is received.
+     *
+     * @param sourceFilter The UAttributes::source address pattern that the message to receive needs to match.
+     * @param sinkFilter The UAttributes::sink address pattern that the message to receive needs to match.
+     * @param listener The [UListener] that will be executed when the message is
      * received on the given `UUri`.
      * @return Returns [UStatus] with [UCode.OK] if the listener is registered
-     * correctly, otherwise it returns with dthe appropriate failure.
+     * correctly, otherwise it returns with the appropriate failure.
      */
-    fun registerListener(topic: UUri, listener: UListener): UStatus
+    fun registerListener(sourceFilter: UUri, sinkFilter: UUri? = null, listener: UListener): UStatus
 
     /**
-     * Unregister `UListener` for `UUri` topic. Messages arriving on this topic will
+     * Unregister `UListener` for `UUri` source and sink filters. Messages arriving on this topic will
      * no longer be processed by this listener.
-     * @param topic `UUri` to the listener was registered for.
-     * @param listener The `UListener` that will no longer want to be registered to receive
+     *
+     * @param sourceFilter The UAttributes::source address pattern that the message to receive needs to match.
+     * @param sinkFilter The UAttributes::sink address pattern that the message to receive needs to match.
+     * @param listener The [UListener] that will no longer want to be registered to receive
      * messages.
      * @return Returns [UStatus] with [UCode.OK] if the listener is unregistered
      * correctly, otherwise it returns with the appropriate failure.
      */
-    fun unregisterListener(topic: UUri, listener: UListener): UStatus
+    fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri? = null, listener: UListener): UStatus
+
+    /**
+     * Return the source address for the uE (authority, entity, and resource information)
+     *
+     * @return [UUri] containing the source address
+     */
+    fun getSource(): UUri
 }

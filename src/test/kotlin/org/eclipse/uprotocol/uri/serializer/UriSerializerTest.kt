@@ -1,189 +1,302 @@
-/*
- * Copyright (c) 2024 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.uprotocol.uri.serializer
 
-import com.google.protobuf.ByteString
-import org.eclipse.uprotocol.UprotocolOptions
-import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto
-import org.eclipse.uprotocol.uri.factory.UEntityFactory.fromProto
 import org.eclipse.uprotocol.uri.validator.isEmpty
-import org.eclipse.uprotocol.uri.validator.isLongForm
-import org.eclipse.uprotocol.uri.validator.isMicroForm
-import org.eclipse.uprotocol.uri.validator.isShortForm
-import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions.*
+import org.eclipse.uprotocol.v1.UUri
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.InetAddress
 
 
 class UriSerializerTest {
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic and comparing long, short, and micro URIs")
-    fun test_build_resolved_full_information_compare() {
-        val descriptor = USubscriptionProto.getDescriptor().services[0]
+    @DisplayName("Test using the serializers")
+    fun test_using_the_serializers() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .setUeId(1)
+            .setUeVersionMajor(2)
+            .setResourceId(3)
+            .build()
 
-        val entity = fromProto(descriptor)
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/1/2/3", serializedUri)
+    }
 
-        val options = descriptor.options
-
-        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
-            topic.name.contains("SubscriptionChange")
-        }.map { topic ->
-            uResource {
-                from(topic)
-            }
-        }.first()
-
-        val uUri = uUri {
-            this.entity = entity
-            this.resource = resource
-        }
-
-        assertFalse(uUri.isEmpty())
-        assertTrue(uUri.isMicroForm())
-        assertTrue(uUri.isLongForm())
-        assertTrue(uUri.isShortForm())
-        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
-        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
-        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
-
-        assertEquals(longUri, "/core.usubscription/3/SubscriptionChange#Update")
-        assertEquals(shortUri, "/0/3/32768")
-        assertEquals(microUri.contentToString(), "[1, 0, -128, 0, 0, 0, 3, 0]")
+    @Test
+    @DisplayName("Test deserializing an empty UUri")
+    fun test_deserializing_an_empty_UUri() {
+        val uri: UUri = "".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
     }
 
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with IPv4 address UAuthority and comparing long, short, and micro URIs")
-    fun test_build_resolved_full_information_compare_with_ipv4() {
-        val descriptor = USubscriptionProto.getDescriptor().services[0]
-        val entity = fromProto(descriptor)
-        val options = descriptor.options
-        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
-            topic.name.contains("SubscriptionChange")
-        }.map { topic ->
-            uResource {
-                from(topic)
-            }
-        }.first()
-
-        val uUri = uUri {
-            this.entity = entity
-            this.resource = resource
-            authority = uAuthority {
-                name = "vcu.veh.gm.com"
-                ip = ByteString.copyFrom(InetAddress.getByName("192.168.1.100").address)
-            }
-        }
-
-        assertFalse(uUri.isEmpty())
-        assertTrue(uUri.isMicroForm())
-        assertTrue(uUri.isLongForm())
-        assertTrue(uUri.isShortForm())
-        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
-        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
-        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
-
-        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
-        assertEquals(shortUri, "//192.168.1.100/0/3/32768")
-        assertEquals(microUri.contentToString(), "[1, 1, -128, 0, 0, 0, 3, 0, -64, -88, 1, 100]")
+    @DisplayName("Test deserializing a blank UUri")
+    fun test_deserializing_a_blank_UUri() {
+        val uri: UUri = "  ".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
     }
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with IPv6 address UAuthority and comparing long, short, and micro URIs")
-    fun test_build_resolved_full_information_compare_with_ipv6() {
-        val descriptor = USubscriptionProto.getDescriptor().services[0]
-        val entity = fromProto(descriptor)
-        val options = descriptor.options
-        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
-            topic.name.contains("SubscriptionChange")
-        }.map { topic ->
-            uResource {
-                from(topic)
-            }
-        }.first()
-
-        val uUri = uUri {
-            this.entity = entity
-            this.resource = resource
-            authority = uAuthority {
-                name = "vcu.veh.gm.com"
-                ip = ByteString.copyFrom(InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334").address)
-            }
-        }
-
-        assertFalse(uUri.isEmpty())
-        assertTrue(uUri.isMicroForm())
-        assertTrue(uUri.isLongForm())
-        assertTrue(uUri.isShortForm())
-        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
-        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
-        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
-
-        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
-        assertEquals(shortUri, "//2001:db8:85a3:0:0:8a2e:370:7334/0/3/32768")
-        assertEquals(
-            microUri.contentToString(),
-            "[1, 2, -128, 0, 0, 0, 3, 0, 32, 1, 13, -72, -123, -93, 0, 0, 0, 0, -118, 46, 3, 112, 115, 52]"
-        )
+    @DisplayName("Test deserializing with a valid URI that has scheme")
+    fun test_deserializing_with_a_valid_URI_that_has_scheme() {
+        val uri: UUri = "up://myAuthority/1/2/3".deserializeAsUUri()
+        assertEquals("myAuthority", uri.authorityName)
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(3, uri.resourceId)
     }
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with id address UAuthority and comparing long, short, and micro URIs")
-    fun test_build_resolved_full_information_compare_with_id() {
-        val descriptor = USubscriptionProto.getDescriptor().services[0]
-        val entity = fromProto(descriptor)
-        val options = descriptor.options
+    @DisplayName("Test deserializing with a valid URI that has scheme but nothing else")
+    fun test_deserializing_with_a_valid_URI_that_has_scheme_but_nothing_else() {
+        val uri: UUri = "up://".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
 
-        val resource = options.getExtension(UprotocolOptions.notificationTopic).filter { topic ->
-            topic.name.contains("SubscriptionChange")
-        }.map { topic ->
-            uResource {
-                from(topic)
-            }
-        }.first()
+    @Test
+    @DisplayName("Test deserializing a valid UUri with all fields")
+    fun test_deserializing_a_valid_UUri_with_all_fields() {
+        val uri: UUri = "//myAuthority/1/2/3".deserializeAsUUri()
+        assertEquals("myAuthority", uri.authorityName)
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(3, uri.resourceId)
+    }
 
-        val uUri = uUri {
-            this.entity = entity
-            this.resource = resource
-            authority = uAuthority {
-                name = "1G1YZ23J9P5800001.veh.gm.com"
-                id = ByteString.copyFromUtf8("1G1YZ23J9P5800001")
-            }
-        }
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority")
+    fun test_deserializing_a_valid_UUri_with_only_authority() {
+        val uri: UUri = "//myAuthority".deserializeAsUUri()
+        assertEquals("myAuthority", uri.authorityName)
+        assertEquals(0, uri.ueId)
+        assertEquals(0, uri.ueVersionMajor)
+        assertEquals(0, uri.resourceId)
+    }
 
-        assertFalse(uUri.isEmpty())
-        assertTrue(uUri.isMicroForm())
-        assertTrue(uUri.isLongForm())
-        assertTrue(uUri.isShortForm())
-        val longUri: String = LongUriSerializer.INSTANCE.serialize(uUri)
-        val microUri: ByteArray = MicroUriSerializer.INSTANCE.serialize(uUri)
-        val shortUri: String = ShortUriSerializer.INSTANCE.serialize(uUri)
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority and ueId")
+    fun test_deserializing_a_valid_UUri_with_only_authority_and_ueId() {
+        val uri: UUri = "//myAuthority/1".deserializeAsUUri()
+        assertEquals("myAuthority", uri.authorityName)
+        assertEquals(1, uri.ueId)
+        assertEquals(0, uri.ueVersionMajor)
+        assertEquals(0, uri.resourceId)
+    }
 
-        assertEquals(longUri, "//1G1YZ23J9P5800001.veh.gm.com/core.usubscription/3/SubscriptionChange#Update")
-        assertEquals(shortUri, "//1G1YZ23J9P5800001/0/3/32768")
-        assertEquals(
-            microUri.contentToString(),
-            "[1, 3, -128, 0, 0, 0, 3, 0, 17, 49, 71, 49, 89, 90, 50, 51, 74, 57, 80, 53, 56, 48, 48, 48, 48, 49]"
-        )
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority, ueId and ueVersionMajor")
+    fun test_deserializing_a_valid_UUri_with_only_authority_ueId_and_ueVersionMajor() {
+        val uri: UUri = "//myAuthority/1/2".deserializeAsUUri()
+        assertEquals("myAuthority", uri.authorityName)
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(0, uri.resourceId)
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with invalid characters at the beginning")
+    fun test_deserializing_a_string_with_invalid_characters() {
+        val uri: UUri = "$$".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for UeId")
+    fun test_deserializing_a_string_with_names_instead_of_ids_for_UeId() {
+        val uri: UUri = "//myAuthority/myUeId/2/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for UeVersionMajor")
+    fun test_deserializing_a_string_with_names_instead_of_ids_for_UeVersionMajor() {
+        val uri: UUri = "//myAuthority/1/myUeVersionMajor/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for ResourceId")
+    fun test_deserializing_a_string_with_names_instead_of_ids_for_ResourceId() {
+        val uri: UUri = "//myAuthority/1/2/myResourceId".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority")
+    fun test_deserializing_a_string_without_authority() {
+        val uri: UUri = "/1/2/3".deserializeAsUUri()
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(3, uri.resourceId)
+        assertTrue(uri.authorityName.isBlank())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority and ResourceId")
+    fun test_deserializing_a_string_without_authority_and_ResourceId() {
+        val uri: UUri = "/1/2".deserializeAsUUri()
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(0, uri.resourceId)
+        assertTrue(uri.authorityName.isBlank())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority, ResourceId and UeVersionMajor")
+    fun test_deserializing_a_string_without_authority_ResourceId_and_UeVersionMajor() {
+        val uri: UUri = "/1".deserializeAsUUri()
+        assertEquals(1, uri.ueId)
+        assertEquals(0, uri.ueVersionMajor)
+        assertEquals(0, uri.resourceId)
+        assertTrue(uri.authorityName.isBlank())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with blank authority")
+    fun test_deserializing_a_string_with_blank_authority() {
+        val uri: UUri = "///2".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with all the items are the wildcard values")
+    fun test_deserializing_a_string_with_all_the_items_are_the_wildcard_values() {
+        val uri: UUri = "//*/FFFF/ff/ffff".deserializeAsUUri()
+        assertEquals("*", uri.authorityName)
+        assertEquals(0xFFFF, uri.ueId)
+        assertEquals(0xFF, uri.ueVersionMajor)
+        assertEquals(0xFFFF, uri.resourceId)
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with uEId() out of range")
+    fun test_deserializing_a_string_with_uEId_out_of_range() {
+        val uri: UUri = "/fffffffff/2/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with uEVersionMajor out of range")
+    fun test_deserializing_a_string_with_uEVersionMajor_out_of_range() {
+        val uri: UUri = "/1/256/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with resourceId out of range")
+    fun test_deserializing_a_string_with_resourceId_out_of_range() {
+        val uri: UUri = "/1/2/65536".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative uEId")
+    fun test_deserializing_a_string_with_negative_uEId() {
+        val uri: UUri = "/-1/2/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative uEVersionMajor")
+    fun test_deserializing_a_string_with_negative_uEVersionMajor() {
+        val uri: UUri = "/1/-2/3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative resourceId")
+    fun test_deserializing_a_string_with_negative_resourceId() {
+        val uri: UUri = "/1/2/-3".deserializeAsUUri()
+        assertTrue(uri.isEmpty())
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with wildcard ResourceId")
+    fun test_deserializing_a_string_with_wildcard_resourceId() {
+        val uri: UUri = "/1/2/ffff".deserializeAsUUri()
+        assertEquals(1, uri.ueId)
+        assertEquals(2, uri.ueVersionMajor)
+        assertEquals(0xFFFF, uri.resourceId)
+    }
+
+    @Test
+    @DisplayName("Test serializing an Empty UUri")
+    fun test_serializing_an_empty_UUri() {
+        val uri = UUri.getDefaultInstance()
+        val serializedUri: String = uri.serialize()
+        assertTrue(serializedUri.isBlank())
+    }
+
+    @Test
+    @DisplayName("Test serializing a full UUri")
+    fun test_serializing_a_full_UUri() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .setUeId(1)
+            .setUeVersionMajor(2)
+            .setResourceId(3)
+            .build()
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/1/2/3", serializedUri)
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority")
+    fun test_serializing_a_UUri_with_only_authority() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .build()
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/0/0/0", serializedUri)
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority and ueId")
+    fun test_serializing_a_UUri_with_only_authority_and_ueId() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .setUeId(1)
+            .build()
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/1/0/0", serializedUri)
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority, ueId and ueVersionMajor")
+    fun test_serializing_a_UUri_with_only_authority_ueId_and_ueVersionMajor() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .setUeId(1)
+            .setUeVersionMajor(2)
+            .build()
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/1/2/0", serializedUri)
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority, ueId, ueVersionMajor and resourceId")
+    fun test_serializing_a_UUri_with_only_authority_ueId_ueVersionMajor_and_resourceId() {
+        val uri = UUri.newBuilder()
+            .setAuthorityName("myAuthority")
+            .setUeId(1)
+            .setUeVersionMajor(2)
+            .setResourceId(3)
+            .build()
+        val serializedUri: String = uri.serialize()
+        assertEquals("//myAuthority/1/2/3", serializedUri)
     }
 }

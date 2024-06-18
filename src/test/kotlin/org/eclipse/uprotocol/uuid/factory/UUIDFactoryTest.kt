@@ -1,28 +1,20 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License") you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uuid.factory
 
-import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer
-import org.eclipse.uprotocol.uuid.serializer.MicroUuidSerializer
+import org.eclipse.uprotocol.uuid.serializer.deserializeAsUUID
+import org.eclipse.uprotocol.uuid.serializer.serialize
 import org.eclipse.uprotocol.v1.UUID
 import org.eclipse.uprotocol.v1.uUID
 import org.junit.jupiter.api.Assertions.*
@@ -39,10 +31,9 @@ class UUIDFactoryTest {
     fun test_uuidv8_creation() {
         val now: Instant = Instant.now()
         val uuid: UUID = UUIDV8(now)
-        val version= uuid.getVersion()
+        val version = uuid.getVersion()
         val time: Long? = uuid.getTime()
-        val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
-        val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
+        val uuidString = uuid.serialize()
 
         assertNotNull(uuid)
         assertTrue(uuid.isUProtocol())
@@ -51,14 +42,11 @@ class UUIDFactoryTest {
         assertNotNull(version)
         assertNotNull(time)
         assertEquals(now.toEpochMilli(), time)
-        assertTrue(bytes.isNotEmpty())
         assertFalse(uuidString.isBlank())
-        val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
-        val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
+
+        val uuid1: UUID = uuidString.deserializeAsUUID()
         assertFalse(uuid1 == UUID.getDefaultInstance())
-        assertFalse(uuid2 == UUID.getDefaultInstance())
         assertEquals(uuid, uuid1)
-        assertEquals(uuid, uuid2)
     }
 
     @Test
@@ -91,8 +79,7 @@ class UUIDFactoryTest {
         val uuid: UUID = UUIDV6(now)
         val version = uuid.getVersion()
         val time: Long? = uuid.getTime()
-        val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
-        val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
+        val uuidString = uuid.serialize()
         assertNotNull(uuid)
         assertTrue(uuid.isUuidv6())
         assertTrue(uuid.isUuid())
@@ -100,13 +87,10 @@ class UUIDFactoryTest {
         assertNotNull(version)
         assertNotNull(time)
         assertEquals(now.toEpochMilli(), time)
-        assertTrue(bytes.isNotEmpty())
+
         assertFalse(uuidString.isBlank())
-        val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
-        val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
-        assertFalse(uuid1 == UUID.getDefaultInstance())
+        val uuid2: UUID = uuidString.deserializeAsUUID()
         assertFalse(uuid2 == UUID.getDefaultInstance())
-        assertEquals(uuid, uuid1)
         assertEquals(uuid, uuid2)
     }
 
@@ -120,23 +104,18 @@ class UUIDFactoryTest {
         }
         val version = uuid.getVersion()
         val time: Long? = uuid.getTime()
-        val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
-        val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
+        val uuidString = uuid.serialize()
         assertNotNull(uuid)
         assertFalse(uuid.isUuidv6())
         assertFalse(uuid.isUProtocol())
         assertFalse(uuid.isUuid())
         assertNotNull(version)
         assertNull(time)
-        assertTrue(bytes.isNotEmpty())
+
         assertFalse(uuidString.isBlank())
 
-        val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
-        val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
-
-        assertFalse(uuid1 == UUID.getDefaultInstance())
+        val uuid2: UUID = uuidString.deserializeAsUUID()
         assertFalse(uuid2 == UUID.getDefaultInstance())
-        assertEquals(uuid, uuid1)
         assertEquals(uuid, uuid2)
     }
 
@@ -149,30 +128,18 @@ class UUIDFactoryTest {
         }
         val version = uuid.getVersion()
         val time: Long? = uuid.getTime()
-        val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
-        val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
+        val uuidString = uuid.serialize()
         assertNotNull(uuid)
         assertFalse(uuid.isUuidv6())
         assertFalse(uuid.isUProtocol())
         assertNotNull(version)
         assertEquals(UUIDVersion.VERSION_UNKNOWN, version)
         assertNull(time)
-        assertTrue(bytes.isNotEmpty())
         assertFalse(uuidString.isBlank())
 
-        val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
-        assertTrue(uuid1 == UUID.getDefaultInstance())
-        assertEquals(uuid, uuid1)
-        val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
+        val uuid2: UUID = uuidString.deserializeAsUUID()
         assertTrue(uuid2 == UUID.getDefaultInstance())
         assertEquals(uuid, uuid2)
-    }
-
-    @Test
-    @DisplayName("Test UuidUtils for a null UUID")
-    fun test_uuidutils_for_null_uuid() {
-        assertTrue(MicroUuidSerializer.INSTANCE.serialize(null).isEmpty())
-        assertTrue(LongUuidSerializer.INSTANCE.serialize(null).isBlank())
     }
 
     @Test
@@ -184,8 +151,7 @@ class UUIDFactoryTest {
         } // Invalid UUID type
         assertEquals(UUIDVersion.VERSION_UNKNOWN, uuid.getVersion())
         assertNull(uuid.getTime())
-        assertTrue(MicroUuidSerializer.INSTANCE.serialize(uuid).isNotEmpty())
-        assertFalse(LongUuidSerializer.INSTANCE.serialize(uuid).isBlank())
+        assertFalse(uuid.serialize().isBlank())
         assertFalse(uuid.isUuidv6())
         assertFalse(uuid.isUProtocol())
         assertFalse(uuid.isUuid())
@@ -193,19 +159,8 @@ class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UuidUtils fromString with invalid string")
-    fun test_uuidutils_fromstring_with_invalid_string() {
-        val uuid: UUID = LongUuidSerializer.INSTANCE.deserialize(null)
-        assertTrue(uuid == UUID.getDefaultInstance())
-        val uuid1: UUID = LongUuidSerializer.INSTANCE.deserialize("")
-        assertTrue(uuid1 == UUID.getDefaultInstance())
-    }
-
-    @Test
-    @DisplayName("Test UuidUtils fromBytes with invalid bytes")
-    fun test_uuidutils_frombytes_with_invalid_bytes() {
-        val uuid: UUID = MicroUuidSerializer.INSTANCE.deserialize(null)
-        assertTrue(uuid == UUID.getDefaultInstance())
-        val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(ByteArray(0))
+    fun test_uuidutils_from_string_with_invalid_string() {
+        val uuid1: UUID = "".deserializeAsUUID()
         assertTrue(uuid1 == UUID.getDefaultInstance())
     }
 
