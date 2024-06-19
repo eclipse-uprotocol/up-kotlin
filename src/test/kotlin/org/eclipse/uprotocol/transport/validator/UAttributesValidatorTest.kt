@@ -324,18 +324,18 @@ internal class UAttributesValidatorTest {
     }
 
     @Test
-    @DisplayName("Test validatePriority when priority is less than CS0")
-    fun testUAttributeValidatorValidatePriorityLessThanCS0() {
+    @DisplayName("Test validatePriority when priority is less than CS1")
+    fun testUAttributeValidatorValidatePriorityLessThanCS1() {
         val message: UMessage = uMessage {
             forPublication(topicUUri)
         }
-        val attributes = message.attributes.copy { priority = UPriority.UPRIORITY_UNSPECIFIED }
+        val attributes = message.attributes.copy { priority = UPriority.UPRIORITY_CS0 }
         val validator: UAttributesValidator = attributes.getValidator()
         val result = validator.validate(attributes)
 
         assertTrue(result.isFailure())
         assertEquals(validator.toString(), "UAttributesValidator.Publish")
-        assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_UNSPECIFIED]")
+        assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_CS0]")
     }
 
     @Test

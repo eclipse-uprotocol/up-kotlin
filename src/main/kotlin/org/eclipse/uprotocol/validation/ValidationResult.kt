@@ -22,7 +22,6 @@ import java.util.*
  * Class wrapping a ValidationResult of success or failure wrapping the value of a google.rpc.Status.
  */
 sealed class ValidationResult {
-
     fun isFailure(): Boolean {
         return !isSuccess()
     }

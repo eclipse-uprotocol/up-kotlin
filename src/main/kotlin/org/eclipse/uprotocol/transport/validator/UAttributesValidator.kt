@@ -141,7 +141,7 @@ sealed class UAttributesValidator {
      * @return Returns a [ValidationResult] that is success or failed with a failure message.
      */
     open fun validatePriority(attributes: UAttributes): ValidationResult {
-        return if (attributes.priority.number >= UPriority.UPRIORITY_CS0_VALUE) {
+        return if (attributes.priority.number >= UPriority.UPRIORITY_CS1_VALUE) {
             ValidationResult.success()
         } else {
             ValidationResult.failure("Invalid UPriority [${attributes.priority.name}]")
