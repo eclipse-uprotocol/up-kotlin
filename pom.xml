@@ -116,8 +116,23 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <!-- Exclude specific packages or classes -->
+                        <configuration>
+                            <excludes>
+                                <exclude>org/eclipse/uprotocol/core/**</exclude>
+                                <exclude>org/eclipse/uprotocol/v1/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <includes>
+                        <include>**/transport/**</include>
+                        <include>**/uri/**</include>
+                        <include>**/uuid/**</include>
+                        <include>**/validation/**</include>
+                    </includes>
+                </configuration>
             </plugin>
 
             <plugin>
