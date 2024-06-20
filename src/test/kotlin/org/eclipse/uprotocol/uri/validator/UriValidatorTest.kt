@@ -42,6 +42,7 @@ class UriValidatorTest {
     fun test_isEmpty_UUri_for_empty_built_UUri() {
         val uri = UUri.newBuilder().build()
         assertTrue(uri.isEmpty())
+        assertFalse(uri.isNotEmpty())
     }
 
     @Test

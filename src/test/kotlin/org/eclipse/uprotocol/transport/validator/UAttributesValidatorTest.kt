@@ -545,4 +545,15 @@ internal class UAttributesValidatorTest {
         assertEquals(validator.toString(), "UAttributesValidator.Response")
         assertEquals(result.getMessage(), "Invalid correlation UUID")
     }
+
+    @Test
+    @DisplayName("Test getValidator for other type of messages")
+    fun testUAttributeValidatorGetValidatorForOtherTypes() {
+        val attributes1 = uAttributes {
+            type = UMessageType.UMESSAGE_TYPE_UNSPECIFIED
+        }
+        val validator1: UAttributesValidator = attributes1.getValidator()
+
+        assertTrue(validator1 is Publish)
+    }
 }

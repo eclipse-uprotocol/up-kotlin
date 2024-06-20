@@ -14,6 +14,7 @@ package org.eclipse.uprotocol.uri.serializer
 
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.v1.uUri
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -236,7 +237,7 @@ class UriSerializerTest {
     @Test
     @DisplayName("Test serializing an Empty UUri")
     fun test_serializing_an_empty_UUri() {
-        val uri = UUri.getDefaultInstance()
+        val uri = uUri {  }
         val serializedUri: String = uri.serialize()
         assertTrue(serializedUri.isBlank())
     }
@@ -244,12 +245,12 @@ class UriSerializerTest {
     @Test
     @DisplayName("Test serializing a full UUri")
     fun test_serializing_a_full_UUri() {
-        val uri = UUri.newBuilder()
-            .setAuthorityName("myAuthority")
-            .setUeId(1)
-            .setUeVersionMajor(2)
-            .setResourceId(3)
-            .build()
+        val uri = uUri {
+            authorityName = "myAuthority"
+            ueId = 1
+            ueVersionMajor = 2
+            resourceId = 3
+        }
         val serializedUri: String = uri.serialize()
         assertEquals("//myAuthority/1/2/3", serializedUri)
     }
@@ -257,46 +258,74 @@ class UriSerializerTest {
     @Test
     @DisplayName("Test serializing a UUri with only authority")
     fun test_serializing_a_UUri_with_only_authority() {
-        val uri = UUri.newBuilder()
-            .setAuthorityName("myAuthority")
-            .build()
+        val uri = uUri {
+            authorityName = "myAuthority"
+
+        }
         val serializedUri: String = uri.serialize()
         assertEquals("//myAuthority/0/0/0", serializedUri)
     }
 
     @Test
-    @DisplayName("Test serializing a UUri with only authority and ueId")
+    @DisplayName("Test serializing a UUri with authority and ueId")
     fun test_serializing_a_UUri_with_only_authority_and_ueId() {
-        val uri = UUri.newBuilder()
-            .setAuthorityName("myAuthority")
-            .setUeId(1)
-            .build()
+        val uri = uUri {
+            authorityName = "myAuthority"
+            ueId = 1
+        }
         val serializedUri: String = uri.serialize()
         assertEquals("//myAuthority/1/0/0", serializedUri)
     }
 
     @Test
-    @DisplayName("Test serializing a UUri with only authority, ueId and ueVersionMajor")
+    @DisplayName("Test serializing a UUri with authority, ueId and ueVersionMajor")
     fun test_serializing_a_UUri_with_only_authority_ueId_and_ueVersionMajor() {
-        val uri = UUri.newBuilder()
-            .setAuthorityName("myAuthority")
-            .setUeId(1)
-            .setUeVersionMajor(2)
-            .build()
+        val uri = uUri {
+            authorityName = "myAuthority"
+            ueId = 1
+            ueVersionMajor = 2
+
+        }
         val serializedUri: String = uri.serialize()
         assertEquals("//myAuthority/1/2/0", serializedUri)
     }
 
     @Test
-    @DisplayName("Test serializing a UUri with only authority, ueId, ueVersionMajor and resourceId")
+    @DisplayName("Test serializing a UUri with authority, ueId, ueVersionMajor and resourceId")
     fun test_serializing_a_UUri_with_only_authority_ueId_ueVersionMajor_and_resourceId() {
-        val uri = UUri.newBuilder()
-            .setAuthorityName("myAuthority")
-            .setUeId(1)
-            .setUeVersionMajor(2)
-            .setResourceId(3)
-            .build()
+        val uri = uUri {
+            authorityName = "myAuthority"
+            ueId = 1
+            ueVersionMajor = 2
+            resourceId = 3
+
+        }
         val serializedUri: String = uri.serialize()
         assertEquals("//myAuthority/1/2/3", serializedUri)
+    }
+    @Test
+    @DisplayName("Test serializing a UUri with empty authority, ueId, ueVersionMajor and resourceId")
+    fun test_serializing_a_UUri_with_empty_authority_ueId_ueVersionMajor_and_resourceId() {
+        val uri = uUri {
+            authorityName = ""
+            ueId = 1
+            ueVersionMajor = 2
+            resourceId = 3
+        }
+        val serializedUri: String = uri.serialize()
+        assertEquals("/1/2/3", serializedUri)
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with blank authority, ueId, ueVersionMajor and resourceId")
+    fun test_serializing_a_UUri_with_blank_authority_ueId_ueVersionMajor_and_resourceId() {
+        val uri = uUri {
+            authorityName = "  "
+            ueId = 1
+            ueVersionMajor = 2
+            resourceId = 3
+        }
+        val serializedUri: String = uri.serialize()
+        assertEquals("/1/2/3", serializedUri)
     }
 }
