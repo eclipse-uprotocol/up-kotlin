@@ -1,24 +1,13 @@
-/*
- * Copyright (c) 2024 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -27,7 +16,6 @@ package org.eclipse.uprotocol.uuid.factory
 import com.github.f4b6a3.uuid.enums.UuidVariant
 import com.github.f4b6a3.uuid.util.UuidTime
 import com.github.f4b6a3.uuid.util.UuidUtil
-import org.eclipse.uprotocol.v1.UAttributes
 import org.eclipse.uprotocol.v1.UUID
 
 
@@ -129,16 +117,6 @@ fun UUID.getRemainingTime(ttl: Int): Long? {
 }
 
 /**
- * Calculates the remaining time until the expiration of the event identified by the given UAttributes.
- *
- * @return The remaining time in milliseconds until the event expires,
- * or null if the attributes do not contain TTL information or the creation time cannot be determined.
- */
-fun UAttributes.getRemainingTime():Long? {
-    return if (hasTtl()) id.getRemainingTime(ttl) else null
-}
-
-/**
  * Checks if the event identified by the given UUID has expired based on the specified time-to-live (TTL).
  *
  * @param ttl The time-to-live (TTL) in milliseconds for the event.
@@ -147,16 +125,6 @@ fun UAttributes.getRemainingTime():Long? {
  */
 fun UUID.isExpired(ttl: Int): Boolean {
     return ttl > 0 && getRemainingTime(ttl) == null
-}
-
-/**
- * Checks if the event identified by the given UAttributes has expired.
- *
- * @return true if the event has expired, false otherwise.Returns false if the attributes do not contain TTL
- * information or creation time cannot be determined.
- */
-fun UAttributes.isExpired(): Boolean {
-    return hasTtl() && id.isExpired(ttl)
 }
 
 /**

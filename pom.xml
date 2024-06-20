@@ -15,35 +15,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>org.eclipse.uprotocol</groupId>
     <artifactId>up-kotlin</artifactId>
     <name>Kotlin Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more
     </description>
-    <version>1.5.7-SNAPSHOT</version>
+    <version>0.1.8-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/up-kotlin/</url>
 
     <properties>
         <kotlin.version>1.9.21</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-
         <junit.platform.version>1.9.1</junit.platform.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <junit.version>4.12</junit.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-
         <slf4j.version>2.6.18</slf4j.version>
-
-        <cloudevents.version>2.4.2</cloudevents.version>
-
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.7</git.tag.name>
+        <git.tag.name>main</git.tag.name>
 
     </properties>
 
@@ -125,8 +116,23 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <!-- Exclude specific packages or classes -->
+                        <configuration>
+                            <excludes>
+                                <exclude>org/eclipse/uprotocol/core/**</exclude>
+                                <exclude>org/eclipse/uprotocol/v1/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <includes>
+                        <include>**/transport/**</include>
+                        <include>**/uri/**</include>
+                        <include>**/uuid/**</include>
+                        <include>**/validation/**</include>
+                    </includes>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -210,8 +216,8 @@
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
                                 <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
-                                <argument>${project.build.directory}/up-core-api</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-spec.git</argument>
+                                <argument>${project.build.directory}/up-spec</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
@@ -228,7 +234,7 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
-                            <workingDirectory>${project.build.directory}/up-core-api</workingDirectory>
+                            <workingDirectory>${project.build.directory}/up-spec/up-core-api</workingDirectory>
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
@@ -269,7 +275,7 @@
                     <source>11</source>
                     <target>11</target>
                 </configuration>
-                <version>3.10.1</version> <!-- 3.8.1 -->
+                <version>3.13.0</version> <!-- 3.8.1 -->
             </plugin>
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
@@ -294,8 +300,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <protoSourceRoot>${project.build.directory}/up-core-api/uprotocol</protoSourceRoot>
-
+                    <protoSourceRoot>${project.build.directory}/up-spec/up-core-api</protoSourceRoot>
                     <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                 </configuration>
             </plugin>
@@ -310,19 +315,12 @@
                 <artifactId>kotlin-stdlib</artifactId>
                 <version>${kotlin.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.cloudevents</groupId>
-                <artifactId>cloudevents-protobuf</artifactId>
-                <version>2.4.2</version>
-            </dependency>
-
 
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
                 <version>2.11.0</version>
             </dependency>
-
 
             <dependency>
                 <groupId>org.checkerframework</groupId>
@@ -336,16 +334,6 @@
                 <version>${protobuf.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
-            </dependency>
-
-            <!-- CloudEvents Java SDK https://github.com/cloudevents/sdk-java -->
-            <!-- https://github.com/cloudevents/sdk-java/pull/526 bump the version to fix serialization issue -->
-            <dependency>
-                <groupId>io.cloudevents</groupId>
-                <artifactId>cloudevents-bom</artifactId>
-                <version>${cloudevents.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -401,27 +389,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.cloudevents/cloudevents-protobuf -->
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-protobuf</artifactId>
-
-        </dependency>
-
-        <!-- CloudEvents support https://cloudevents.github.io/sdk-java/  https://github.com/cloudevents/sdk-java-->
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-json-jackson</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-kotlin</artifactId>
@@ -470,13 +437,13 @@
       </repository>
     </distributionManagement>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>dash-licenses-snapshots</id>
-            <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
-        </pluginRepository>
+<!--    <pluginRepositories>-->
+<!--        <pluginRepository>-->
+<!--            <id>dash-licenses-snapshots</id>-->
+<!--            <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>-->
+<!--        </pluginRepository>-->
 
-    </pluginRepositories>
+<!--    </pluginRepositories>-->
     <profiles>
         <profile>
             <id>release</id>
