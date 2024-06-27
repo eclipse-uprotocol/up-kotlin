@@ -55,7 +55,7 @@ sealed class UuidValidator {
             return if (uuid.isUuidv6()) {
                 UUIDv6Validator
             } else if (uuid.isUProtocol()) {
-                UUIDv8Validator
+                UUIDV7Validator
             } else {
                 InvalidValidator
             }
@@ -91,12 +91,12 @@ data object UUIDv6Validator : UuidValidator() {
     }
 }
 
-data object UUIDv8Validator : UuidValidator() {
+data object UUIDV7Validator : UuidValidator() {
     override fun validateVersion(uuid: UUID): ValidationResult {
         return if (uuid.getVersion() == UUIDVersion.VERSION_UPROTOCOL) {
             ValidationResult.success()
         } else {
-            ValidationResult.failure("Invalid UUIDv8 Version")
+            ValidationResult.failure("Invalid UUIDV7 Version")
         }
     }
 

@@ -27,10 +27,10 @@ import java.util.*
 
 class UUIDFactoryTest {
     @Test
-    @DisplayName("Test UUIDv8 Creation")
-    fun test_uuidv8_creation() {
+    @DisplayName("Test UUIDV7 Creation")
+    fun test_UUIDV7_creation() {
         val now: Instant = Instant.now()
-        val uuid: UUID = UUIDV8(now)
+        val uuid: UUID = UUIDV7(now)
         val version = uuid.getVersion()
         val time: Long? = uuid.getTime()
         val uuidString = uuid.serialize()
@@ -47,29 +47,6 @@ class UUIDFactoryTest {
         val uuid1: UUID = uuidString.deserializeAsUUID()
         assertFalse(uuid1 == UUID.getDefaultInstance())
         assertEquals(uuid, uuid1)
-    }
-
-    @Test
-    @DisplayName("Test UUIDv8 overflow")
-    fun test_uuidv8_overflow() {
-        val uuidList: MutableList<UUID> = ArrayList()
-
-        val maxCount = 4095
-
-        // Build UUIDs above MAX_COUNT (4095) so we can test the limits
-        val now: Instant = Instant.now()
-        for (i in 0 until maxCount * 2) {
-            uuidList.add(UUIDV8(now))
-
-            // Time should be the same as the 1st
-            assertEquals(uuidList[0].getTime(), uuidList[i].getTime())
-
-            // Random should always remain the same be the same
-            assertEquals(uuidList[0].lsb, uuidList[i].lsb)
-            if (i > maxCount) {
-                assertEquals(uuidList[maxCount].msb, uuidList[i].msb)
-            }
-        }
     }
 
     @Test
@@ -168,7 +145,7 @@ class UUIDFactoryTest {
     @DisplayName("Test Create UProtocol UUID in the past")
     fun test_create_uprotocol_uuid_in_the_past() {
         val past: Instant = Instant.now().minusSeconds(10)
-        val uuid: UUID = UUIDV8(past)
+        val uuid: UUID = UUIDV7(past)
         val time: Long? = uuid.getTime()
         assertTrue(uuid.isUProtocol())
         assertTrue(uuid.isUuid())
@@ -180,9 +157,9 @@ class UUIDFactoryTest {
     @DisplayName("Test Create UProtocol UUID with different time values")
     @Throws(InterruptedException::class)
     fun test_create_uprotocol_uuid_with_different_time_values() {
-        val uuid: UUID = UUIDV8()
+        val uuid: UUID = UUIDV7()
         Thread.sleep(10)
-        val uuid1: UUID = UUIDV8()
+        val uuid1: UUID = UUIDV7()
         val time: Long? = uuid.getTime()
         val time1: Long? = uuid1.getTime()
         assertTrue(uuid.isUProtocol())
@@ -194,15 +171,15 @@ class UUIDFactoryTest {
     }
 
     @Test
-    @DisplayName("Test Create both UUIDv6 and v8 to compare performance")
+    @DisplayName("Test Create both UUIDv6 and v7 to compare performance")
     @Throws(InterruptedException::class)
-    fun test_create_both_uuidv6_and_v8_to_compare_performance() {
+    fun test_create_both_uuidv6_and_v7_to_compare_performance() {
         val uuidv6List: MutableList<UUID> = ArrayList()
-        val uuidv8List: MutableList<UUID> = ArrayList()
+        val UUIDV7List: MutableList<UUID> = ArrayList()
         val maxCount = 10000
         var start: Instant = Instant.now()
         for (i in 0 until maxCount) {
-            uuidv8List.add(UUIDV8())
+            UUIDV7List.add(UUIDV7())
         }
         val v8Diff: Duration = Duration.between(start, Instant.now())
         start = Instant.now()
@@ -210,6 +187,16 @@ class UUIDFactoryTest {
             uuidv6List.add(UUIDV6())
         }
         val v6Diff: Duration = Duration.between(start, Instant.now())
-        println((("UUIDv8:[" + v8Diff.toNanos() / maxCount) + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / maxCount) + "ns]")
+        println((("UUIDV7:[" + v8Diff.toNanos() / maxCount) + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / maxCount) + "ns]")
+    }
+
+    @Test
+    @DisplayName("Test Create UUIDv7 with the same time to confirm the UUIDs are not the same")
+    fun test_create_uuidv7_with_the_same_time_to_confirm_the_uuids_are_not_the_same() {
+        val now = Instant.now()
+        val uuid: UUID = UUIDV7(now)
+        val uuid1: UUID = UUIDV7(now)
+        assertNotEquals(uuid, uuid1)
+        assertEquals(uuid1.getTime(), uuid.getTime())
     }
 }

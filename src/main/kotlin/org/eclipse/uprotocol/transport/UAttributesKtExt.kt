@@ -13,7 +13,7 @@
 
 package org.eclipse.uprotocol.transport
 
-import org.eclipse.uprotocol.uuid.factory.UUIDV8
+import org.eclipse.uprotocol.uuid.factory.UUIDV7
 import org.eclipse.uprotocol.v1.*
 
 
@@ -27,7 +27,7 @@ import org.eclipse.uprotocol.v1.*
 internal fun UAttributesKt.Dsl.forPublication(source: UUri, priority: UPriority) {
     this@forPublication.source = source
     this@forPublication.priority = priority
-    id = UUIDV8()
+    id = UUIDV7()
     type = UMessageType.UMESSAGE_TYPE_PUBLISH
 }
 
@@ -43,7 +43,7 @@ internal fun UAttributesKt.Dsl.forNotification(source: UUri, sink: UUri, priorit
     this@forNotification.source = source
     this@forNotification.sink = sink
     this@forNotification.priority = priority
-    id = UUIDV8()
+    id = UUIDV7()
     type = UMessageType.UMESSAGE_TYPE_NOTIFICATION
 }
 
@@ -61,7 +61,7 @@ internal fun UAttributesKt.Dsl.forRequest(source: UUri, sink: UUri, priority: UP
     this@forRequest.sink = sink
     this@forRequest.priority = priority
     this@forRequest.ttl = ttl
-    id = UUIDV8()
+    id = UUIDV7()
     type = UMessageType.UMESSAGE_TYPE_REQUEST
 }
 
@@ -78,7 +78,7 @@ internal fun UAttributesKt.Dsl.forResponse(source: UUri, sink: UUri, priority: U
     this@forResponse.source = source
     this@forResponse.sink = sink
     this@forResponse.priority = priority
-    id = UUIDV8()
+    id = UUIDV7()
     type = UMessageType.UMESSAGE_TYPE_RESPONSE
     reqid = reqId
 }
@@ -93,7 +93,7 @@ internal fun UAttributesKt.Dsl.forResponse(request: UAttributes) {
     source = request.sink
     sink = request.source
     priority = request.priority
-    id = UUIDV8()
+    id = UUIDV7()
     type = UMessageType.UMESSAGE_TYPE_RESPONSE
     reqid = request.id
 }

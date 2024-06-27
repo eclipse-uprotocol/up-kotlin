@@ -37,7 +37,7 @@ fun UUID.getVersion(): UUIDVersion {
 fun UUID.getVariant(): Int = (lsb ushr (64 - (lsb ushr 62)).toInt() and (lsb shr 63)).toInt()
 
 /**
- * Verify if version is a formal UUIDv8 uProtocol ID.
+ * Verify if version is a formal UUIDv7 uProtocol ID.
  *
  * @return true if is a uProtocol UUID or false if the UUID is not uProtocol format.
  */
@@ -53,9 +53,9 @@ fun UUID.isUuidv6(): Boolean =
 
 
 /**
- * Verify uuid is either v6 or v8
+ * Verify uuid is either v6 or v7
  *
- * @return true if is UUID version 6 or 8
+ * @return true if is UUID version 6 or 7
  */
 fun UUID.isUuid(): Boolean = isUProtocol() || isUuidv6()
 
@@ -149,7 +149,7 @@ enum class UUIDVersion(val value: Int) {
     /**
      * The custom or free-form version proposed by Peabody and Davis.
      */
-    VERSION_UPROTOCOL(8);
+    VERSION_UPROTOCOL(7);
 
     companion object {
         /**
