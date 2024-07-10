@@ -28,11 +28,22 @@ import org.junit.jupiter.api.Test
 class SimpleNotifierTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
+
     @Test
     @DisplayName("Test sending a simple notification")
     fun testSendNotification() = testScope.runTest {
         val notifier: Notifier = SimpleNotifier(TestUTransport(dispatcher = testDispatcher))
-        val result = notifier.notify(createTopic(), createDestinationUri(), null)
+        val result = notifier.notify(createTopic(), createDestinationUri())
+        assertEquals(UCode.OK, result.code)
+
+    }
+
+    @Test
+    @DisplayName("Test sending a simple notification passing CallOptions")
+    fun testSendNotificationWithOptions() = testScope.runTest {
+        val notifier: Notifier = SimpleNotifier(TestUTransport(dispatcher = testDispatcher))
+        val result =
+            notifier.notify(createTopic(), createDestinationUri(), CallOptions(1, UPriority.UPRIORITY_CS0, "token"))
         assertEquals(UCode.OK, result.code)
     }
 
@@ -46,11 +57,24 @@ class SimpleNotifierTest {
         val notifier: Notifier = SimpleNotifier(TestUTransport(dispatcher = testDispatcher))
         val result = notifier.notify(
             createTopic(), createDestinationUri(),
-            UPayload.pack(uri)
+            payload = UPayload.pack(uri)
         )
         assertEquals(UCode.OK, result.code)
     }
 
+    @Test
+    @DisplayName("Test sending a simple notification passing a google.protobuf.Any payload and CallOptions")
+    fun testSendNotificationWithAnyPayloadAndOptions() = testScope.runTest {
+        val uri = uUri {
+            authorityName = "Hartley"
+        }
+        val notifier: Notifier = SimpleNotifier(TestUTransport(dispatcher = testDispatcher))
+        val result = notifier.notify(
+            createTopic(), createDestinationUri(),
+            payload = UPayload.packToAny(uri)
+        )
+        assertEquals(UCode.OK, result.code)
+    }
 
     @Test
     @DisplayName("Test registering and unregistering a listener for a notification topic")
@@ -95,7 +119,7 @@ class SimpleNotifierTest {
 
         val notifyResult = notifier.notify(
             topic, createDestinationUri(),
-            UPayload.pack(payload)
+            payload = UPayload.pack(payload)
         )
         assertEquals(UCode.OK, notifyResult.code)
 
@@ -108,7 +132,7 @@ class SimpleNotifierTest {
 
         val notifyResult2 = notifier.notify(
             topic, createDestinationUri(),
-            UPayload.pack(payload)
+            payload = UPayload.pack(payload)
         )
         assertEquals(UCode.OK, notifyResult2.code)
 

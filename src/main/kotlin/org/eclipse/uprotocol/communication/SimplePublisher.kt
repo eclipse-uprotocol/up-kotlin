@@ -12,9 +12,7 @@
  */
 package org.eclipse.uprotocol.communication
 
-import org.eclipse.uprotocol.transport.UTransport
-import org.eclipse.uprotocol.transport.forPublication
-import org.eclipse.uprotocol.transport.setPayload
+import org.eclipse.uprotocol.transport.*
 import org.eclipse.uprotocol.v1.UStatus
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.uMessage
@@ -35,12 +33,18 @@ class SimplePublisher(private val transport: UTransport) : Publisher {
      * Publish a message to a topic passing [UPayload] as the payload.
      *
      * @param topic The topic to publish to.
+     * @param options The [CallOptions] for the publish.
      * @param payload The [UPayload] to publish.
      * @return
      */
-    override suspend fun publish(topic: UUri, payload: UPayload?): UStatus {
+    override suspend fun publish(topic: UUri, options: CallOptions, payload: UPayload?): UStatus {
         return transport.send(uMessage {
             forPublication(topic)
+            if (options != CallOptions()) {
+                setPriority(options.priority)
+                setToken(options.token)
+                setTtl(options.timeout)
+            }
             payload?.let { setPayload(it) }
         })
     }

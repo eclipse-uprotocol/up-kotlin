@@ -28,10 +28,16 @@ interface Notifier {
      *
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.
+     * @param options [CallOptions] for the notification.
      * @param payload The payload to send with the notification.
      * @return Returns the [UStatus] with the status of the notification.
      */
-    suspend fun notify(topic: UUri, destination: UUri, payload: UPayload?): UStatus
+    suspend fun notify(
+        topic: UUri,
+        destination: UUri,
+        options: CallOptions = CallOptions(),
+        payload: UPayload? = null
+    ): UStatus
 
 
     /**

@@ -14,6 +14,20 @@
 package org.eclipse.uprotocol.uri
 
 object UUriConstant {
+    const val WILDCARD_AUTHORITY: String = "*"
+
+    /**
+     * The wildcard id for a field.
+     */
+    const val WILDCARD_ENTITY_ID: Int = 0xFFFF
+
+    /**
+     * major version wildcard
+     */
+    const val WILDCARD_ENTITY_VERSION: Int = 0xFF
+
+    const val WILDCARD_RESOURCE_ID: Int = 0xFFFF
+
     /**
      * The minimum publish/notification topic id for a URI.
      */
@@ -23,14 +37,4 @@ object UUriConstant {
      * The Default resource id.
      */
     const val DEFAULT_RESOURCE_ID = 0
-
-    /**
-     * major version wildcard
-     */
-    const val MAJOR_VERSION_WILDCARD = 0xFF
-
-    /**
-     * The wildcard id for a field.
-     */
-    const val WILDCARD_ID: Int = 0xFFFF
 }

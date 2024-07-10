@@ -12,27 +12,36 @@
  */
 package org.eclipse.uprotocol.communication
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.eclipse.uprotocol.transport.UListener
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
+@ExperimentalCoroutinesApi
 class UClientTest {
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
     // Main functionality is tested in the various individual implementations
     @Test
     @DisplayName("Test happy path for all APIs")
-    fun test() = runTest {
-        val client = UClient(TestUTransport())
+    fun test() = testScope.runTest {
+        val client = UClient(TestUTransport(dispatcher = testDispatcher), testDispatcher)
         val listener = UListener {
             assertNotNull(it)
         }
-        client.notify(createTopic(), createDestinationUri(), null)
+        val subscriptionChangeHandler = SubscriptionChangeHandler { _, _ ->
+        }
+        client.notify(createTopic(), createDestinationUri())
 
-        client.publish(createTopic(), null)
+        client.publish(createTopic())
 
         client.invokeMethod(createMethodUri(), UPayload())
 
@@ -42,10 +51,15 @@ class UClientTest {
 
         client.subscribe(createTopic(), listener, CallOptions())
 
-        client.unsubscribe(createTopic(), listener)
+        client.subscribe(createTopic(), listener, CallOptions(), subscriptionChangeHandler)
 
-        val result: UStatus = client.unregisterListener(createTopic(), listener)
-        assertEquals(UCode.OK, result.code)
+        client.unsubscribe(createTopic(), listener).also {
+            assertEquals(UCode.OK, it.code)
+        }
+
+        client.unregisterListener(createTopic(), listener).also {
+            assertEquals(UCode.NOT_FOUND, it.code)
+        }
 
         client.registerNotificationListener(createTopic(), listener)
 
@@ -58,6 +72,57 @@ class UClientTest {
         client.registerRequestHandler(createMethodUri(), handler)
 
         client.unregisterRequestHandler(createMethodUri(), handler)
+
+        client.close()
+    }
+
+
+    @Test
+    @DisplayName("Test happy path for all APIs")
+    fun test_sync() = runBlocking {
+        val client = UClient(TestUTransport())
+        val listener = UListener {
+            assertNotNull(it)
+        }
+        val subscriptionChangeHandler = SubscriptionChangeHandler { _, _ ->
+        }
+        client.notify(createTopic(), createDestinationUri())
+
+        client.publish(createTopic())
+
+        client.invokeMethod(createMethodUri(), UPayload())
+
+        client.invokeMethod(createMethodUri(), UPayload(), CallOptions())
+
+        client.subscribe(createTopic(), listener)
+
+        client.subscribe(createTopic(), listener, CallOptions(), null)
+
+        client.subscribe(createTopic(), listener, CallOptions())
+
+        client.subscribe(createTopic(), listener, CallOptions(), subscriptionChangeHandler)
+
+        client.unsubscribe(createTopic(), listener).also {
+            assertEquals(UCode.OK, it.code)
+        }
+
+        client.unregisterListener(createTopic(), listener).also {
+            assertEquals(UCode.NOT_FOUND, it.code)
+        }
+
+        client.registerNotificationListener(createTopic(), listener)
+
+        client.unregisterNotificationListener(createTopic(), listener)
+
+        val handler = RequestHandler {
+            throw UnsupportedOperationException("Unimplemented method 'handleRequest'")
+        }
+
+        client.registerRequestHandler(createMethodUri(), handler)
+
+        client.unregisterRequestHandler(createMethodUri(), handler)
+
+        client.close()
     }
 
     private fun createTopic(): UUri {

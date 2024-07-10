@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.uri.validator
 
+import org.eclipse.uprotocol.uri.serializer.deserializeAsUUri
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -140,5 +141,117 @@ class UriValidatorTest {
             .setUeId(1)
             .setResourceId(0).build()
         assertFalse(uri.isRpcMethod())
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for identical URIs")
+    fun test_Matches_Succeeds_For_Identical_Uris() {
+        val patternUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard authority")
+    fun test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority() {
+        val patternUri: UUri = "//*/A410/3/1003".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard authority and local candidate URI")
+    fun test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority_And_Local_Candidate_Uri() {
+        val patternUri: UUri = "//*/A410/3/1003".deserializeAsUUri()
+        val candidateUri: UUri = "/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard entity ID")
+    fun test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Id() {
+        val patternUri: UUri = "//authority/FFFF/3/1003".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with matching entity instance")
+    fun test_Matches_Succeeds_For_Pattern_With_Matching_Entity_Instance() {
+        val patternUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/2A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard entity version")
+    fun test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Version() {
+        val patternUri: UUri = "//authority/A410/FF/1003".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard resource")
+    fun test_Matches_Succeeds_For_Pattern_With_Wildcard_Resource() {
+        val patternUri: UUri = "//authority/A410/3/FFFF".deserializeAsUUri()
+        val candidateUri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertTrue(patternUri.matches(candidateUri))
+    }
+
+    @Test
+    @DisplayName("Matches fails for upper case authority")
+    fun test_Matches_Fail_For_Upper_Case_Authority() {
+        val pattern: UUri = "//Authority/A410/3/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for local pattern with authority")
+    fun test_Matches_Fail_For_Local_Pattern_With_Authority() {
+        val pattern: UUri = "/A410/3/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for different authority")
+    fun test_Matches_Fail_For_Different_Authority() {
+        val pattern: UUri = "//other/A410/3/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity ID")
+    fun test_Matches_Fail_For_Different_Entity_Id() {
+        val pattern: UUri = "//authority/45/3/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity instance")
+    fun test_Matches_Fail_For_Different_Entity_Instance() {
+        val pattern: UUri = "//authority/30A410/3/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/2A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity version")
+    fun test_Matches_Fail_For_Different_Entity_Version() {
+        val pattern: UUri = "//authority/A410/1/1003".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
+    }
+
+    @Test
+    @DisplayName("Matches fails for different resource")
+    fun test_Matches_Fail_For_Different_Resource() {
+        val pattern: UUri = "//authority/A410/3/ABCD".deserializeAsUUri()
+        val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(pattern.matches(candidate))
     }
 }

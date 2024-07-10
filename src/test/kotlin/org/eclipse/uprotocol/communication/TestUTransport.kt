@@ -37,13 +37,17 @@ open class TestUTransport(
     var lastMessage: UMessage = UMessage.getDefaultInstance()
         private set
 
+    protected var sendJob : Job? = null
     open fun buildResponse(request: UMessage): UMessage {
         // If the request is a subscribe or unsubscribe request, return the appropriate response
         return if (request.attributes.sink.ueId == 0) {
             if (request.attributes.sink.resourceId == 1) {
                 try {
                     val subscriptionRequest = SubscriptionRequest.parseFrom(request.payload)
-                    val subResponse = subscriptionResponse { topic = subscriptionRequest.topic }
+                    val subResponse = subscriptionResponse {
+                        topic = subscriptionRequest.topic
+                        status = subscriptionStatus { state = SubscriptionStatus.State.SUBSCRIBED }
+                    }
                     uMessage {
                         forResponse(request.attributes)
                         setPayload(UPayload.pack(subResponse))
@@ -82,14 +86,14 @@ open class TestUTransport(
 
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST) {
             val response = buildResponse(message)
-            scope.launch {
+            sendJob = scope.launch {
                 delay(100)
                 listeners.forEach { listener -> listener.onReceive(response) }
             }
         }
 
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION) {
-            scope.launch {
+            sendJob = scope.launch {
                 listeners.forEach { listener -> listener.onReceive(message) }
             }
         }
@@ -101,11 +105,15 @@ open class TestUTransport(
      * Register a listener based on the source and sink URIs.
      */
     override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
-        listeners.add(listener)
+        sendJob?.join()
+        if (!listeners.contains(listener)){
+            listeners.add(listener)
+        }
         return OK_STATUS
     }
 
     override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        sendJob?.join()
         return uStatus {
             code = if (listeners.remove(listener)) UCode.OK else UCode.NOT_FOUND
         }
@@ -116,6 +124,7 @@ open class TestUTransport(
     }
 
     override fun close() {
+        sendJob?.cancel()
         listeners.clear()
     }
 }
@@ -129,7 +138,7 @@ internal class TimeoutUTransport(dispatcher: CoroutineDispatcher = Dispatchers.I
     override suspend fun send(message: UMessage): UStatus {
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST) {
             val response = buildResponse(message)
-            scope.launch {
+            sendJob = scope.launch {
                 delay(message.attributes.ttl+10L)
                 listeners.forEach { listener -> listener.onReceive(response) }
             }
@@ -196,7 +205,7 @@ internal class EchoUTransport(dispatcher: CoroutineDispatcher = Dispatchers.IO) 
     override suspend fun send(message: UMessage): UStatus {
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_REQUEST) {
             val response = buildResponse(message)
-            scope.launch {
+            sendJob = scope.launch {
                 listeners.forEach { listener -> listener.onReceive(response) }
             }
         }
@@ -207,7 +216,7 @@ internal class EchoUTransport(dispatcher: CoroutineDispatcher = Dispatchers.IO) 
 
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION) {
             val response = buildResponse(message)
-            scope.launch {
+            sendJob = scope.launch {
                 listeners.forEach { listener -> listener.onReceive(response) }
             }
         }

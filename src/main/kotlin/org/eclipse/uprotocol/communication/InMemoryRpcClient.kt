@@ -113,6 +113,9 @@ class InMemoryRpcClient(
         }
     }
 
+    /**
+     * Close the RPC client and clean up any resources
+     */
     fun close() {
         mRequests.clear()
         scope.launch {

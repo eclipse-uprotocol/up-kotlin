@@ -21,10 +21,7 @@ import org.eclipse.uprotocol.uuid.serializer.deserializeAsUUID
 import org.eclipse.uprotocol.uuid.validate.UUIDv6Validator
 import org.eclipse.uprotocol.uuid.validate.UUIDV7Validator
 import org.eclipse.uprotocol.uuid.validate.UuidValidator
-import org.eclipse.uprotocol.v1.UCode
-import org.eclipse.uprotocol.v1.UStatus
-import org.eclipse.uprotocol.v1.UUID
-import org.eclipse.uprotocol.v1.uUID
+import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName

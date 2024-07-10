@@ -28,8 +28,9 @@ interface Publisher {
      * Publish a message to a topic passing [UPayload] as the payload.
      *
      * @param topic The topic to publish to.
+     * @param options The [CallOptions] for the publish.
      * @param payload The [UPayload] to publish.
      * @return
      */
-    suspend fun publish(topic: UUri, payload: UPayload?): UStatus
+    suspend fun publish(topic: UUri, options: CallOptions = CallOptions(), payload: UPayload? = null): UStatus
 }

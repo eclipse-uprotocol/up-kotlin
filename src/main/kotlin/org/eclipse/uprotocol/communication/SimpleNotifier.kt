@@ -12,10 +12,7 @@
  */
 package org.eclipse.uprotocol.communication
 
-import org.eclipse.uprotocol.transport.UListener
-import org.eclipse.uprotocol.transport.UTransport
-import org.eclipse.uprotocol.transport.forNotification
-import org.eclipse.uprotocol.transport.setPayload
+import org.eclipse.uprotocol.transport.*
 import org.eclipse.uprotocol.v1.UStatus
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.uMessage
@@ -36,12 +33,18 @@ class SimpleNotifier(private val transport: UTransport) : Notifier {
      *
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.
+     * @param options [CallOptions] for the notification.
      * @param payload The payload to send with the notification.
      * @return Returns the [UStatus] with the status of the notification.
      */
-    override suspend fun notify(topic: UUri, destination: UUri, payload: UPayload?): UStatus {
-        return transport.send( uMessage {
+    override suspend fun notify(topic: UUri, destination: UUri, options: CallOptions, payload: UPayload?): UStatus {
+        return transport.send(uMessage {
             forNotification(topic, destination)
+            if (options != CallOptions()) {
+                setPriority(options.priority)
+                setToken(options.token)
+                setTtl(options.timeout)
+            }
             payload?.let {
                 setPayload(it)
             }

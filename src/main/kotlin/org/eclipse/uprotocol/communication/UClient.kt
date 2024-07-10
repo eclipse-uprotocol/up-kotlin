@@ -12,6 +12,8 @@
  */
 package org.eclipse.uprotocol.communication
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse
 import org.eclipse.uprotocol.transport.UListener
 import org.eclipse.uprotocol.transport.UTransport
@@ -24,20 +26,22 @@ import org.eclipse.uprotocol.v1.UUri
  * @param transport The transport to use for sending the RPC requests
  */
 class UClient(
-    private val transport: UTransport
+    private val transport: UTransport,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RpcServer, Subscriber, Notifier, Publisher, RpcClient {
-    private val rpcServer: RpcServer = InMemoryRpcServer(transport)
-    private val publisher: Publisher = SimplePublisher(transport)
-    private val notifier: Notifier = SimpleNotifier(transport)
-    private val rpcClient: RpcClient = InMemoryRpcClient(transport)
-    private val subscriber: Subscriber = InMemorySubscriber(transport, rpcClient)
+    private val rpcServer: InMemoryRpcServer = InMemoryRpcServer(transport)
+    private val publisher: SimplePublisher = SimplePublisher(transport)
+    private val notifier: SimpleNotifier = SimpleNotifier(transport)
+    private val rpcClient: InMemoryRpcClient = InMemoryRpcClient(transport, dispatcher)
+    private val subscriber: InMemorySubscriber = InMemorySubscriber(transport, rpcClient, notifier, dispatcher)
 
     override suspend fun subscribe(
         topic: UUri,
         listener: UListener,
-        options: CallOptions
+        options: CallOptions,
+        handler: SubscriptionChangeHandler?
     ): Result<SubscriptionResponse> {
-        return subscriber.subscribe(topic, listener, options)
+        return subscriber.subscribe(topic, listener, options, handler)
     }
 
 
@@ -49,8 +53,8 @@ class UClient(
         return subscriber.unregisterListener(topic, listener)
     }
 
-    override suspend fun notify(topic: UUri, destination: UUri, payload: UPayload?): UStatus {
-        return notifier.notify(topic, destination, payload)
+    override suspend fun notify(topic: UUri, destination: UUri, options: CallOptions, payload: UPayload?): UStatus {
+        return notifier.notify(topic, destination, options, payload)
     }
 
     override suspend fun registerNotificationListener(topic: UUri, listener: UListener): UStatus {
@@ -62,8 +66,8 @@ class UClient(
     }
 
 
-    override suspend fun publish(topic: UUri, payload: UPayload?): UStatus {
-        return publisher.publish(topic, payload)
+    override suspend fun publish(topic: UUri, options: CallOptions, payload: UPayload?): UStatus {
+        return publisher.publish(topic, options, payload)
     }
 
 
@@ -83,5 +87,11 @@ class UClient(
         options: CallOptions
     ): Result<UPayload> {
         return rpcClient.invokeMethod(methodUri, requestPayload, options)
+    }
+
+    fun close() {
+        rpcClient.close()
+        subscriber.close()
+        transport.close()
     }
 }

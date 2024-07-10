@@ -14,6 +14,7 @@ package org.eclipse.uprotocol.communication
 
 import kotlinx.coroutines.test.runTest
 import org.eclipse.uprotocol.v1.UCode
+import org.eclipse.uprotocol.v1.UPriority
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.uUri
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,7 +26,14 @@ class SimplePublisherTest {
     @DisplayName("Test sending a simple publish message without a payload")
     fun testSendPublish() = runTest {
         val publisher: Publisher = SimplePublisher(TestUTransport())
-        val result= publisher.publish(createTopic(), null)
+        val result= publisher.publish(createTopic())
+        assertEquals(UCode.OK, result.code)
+    }
+    @Test
+    @DisplayName("Test sending a simple publish message with CallOptions without a payload")
+    fun testSendPublishWithOptions() = runTest {
+        val publisher: Publisher = SimplePublisher(TestUTransport())
+        val result= publisher.publish(createTopic(), CallOptions(1, UPriority.UPRIORITY_CS0, "token"))
         assertEquals(UCode.OK, result.code)
     }
 
@@ -34,7 +42,16 @@ class SimplePublisherTest {
     fun testSendPublishWithStuffedPayload() = runTest {
         val uri = uUri {  }
         val publisher: Publisher = SimplePublisher(TestUTransport())
-        val result= publisher.publish(createTopic(), UPayload.packToAny(uri))
+        val result= publisher.publish(createTopic(), payload = UPayload.packToAny(uri))
+        assertEquals(UCode.OK, result.code)
+    }
+
+    @Test
+    @DisplayName("Test sending a simple publish message with CallOptions and a stuffed UPayload")
+    fun testSendPublishWithPayloadAndOptions() = runTest {
+        val uri = uUri {  }
+        val publisher: Publisher = SimplePublisher(TestUTransport())
+        val result= publisher.publish(createTopic(), payload = UPayload.pack(uri))
         assertEquals(UCode.OK, result.code)
     }
 
