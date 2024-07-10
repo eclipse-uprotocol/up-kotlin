@@ -13,8 +13,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     val uuid: UUID = UUIDV8()
     val version: UUIDVersion = uuid.getVersion()
     val time: Long? = uuid.getTime()
-    val bytes = MicroUuidSerializer.INSTANCE.serialize(uuid)
-    val uuidString = LongUuidSerializer.INSTANCE.serialize(uuid)
+    val uuidString = uuid.serialize()
 
     assertNotNull(uuid)
     assertFalse(uuid.isUuidv6())
@@ -22,14 +21,9 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
     assertTrue(version.isPresent)
     assertEquals(version, UuidUtils.Version.VERSION_UNKNOWN)
     assertFalse(time.isPresent)
-    assertTrue(bytes.isNotEmpty())
     assertFalse(uuidString.isBlank())
 
-    val uuid1: UUID = MicroUuidSerializer.INSTANCE.deserialize(bytes)
+    val uuid1: UUID = uuidString.deserializeAsUUID()
     assertTrue(uuid1 == UUID.getDefaultInstance())
     assertEquals(uuid, uuid1)
-
-    val uuid2: UUID = LongUuidSerializer.INSTANCE.deserialize(uuidString)
-    assertTrue(uuid2 == UUID.getDefaultInstance())
-    assertEquals(uuid, uuid2)
 ----

@@ -1,51 +1,32 @@
-/*
- * Copyright (c) 2024 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2024 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package org.eclipse.uprotocol.uuid.factory
 
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import kotlin.math.abs
 import kotlin.test.assertNull
 
 class UuidUtilsTest {
-
-    private val testSource = uUri {
-        entity = uEntity { name = "body.access" }
-        resource = uResource {
-            name = "door"
-            instance = "front_left"
-            message = "Door"
-        }
-    }
-
     @Test
     @Throws(InterruptedException::class)
     fun testGetElapsedTime() {
         val testID = createId()
         Thread.sleep(DELAY_MS.toLong())
-        //assertEquals(DELAY_MS, testID.getElapsedTime()?.toInt(), DELTA)
         assertEquals(DELAY_MS, testID.getElapsedTime()?.toInt(), DELTA)
     }
 
@@ -84,37 +65,6 @@ class UuidUtilsTest {
 
     @Test
     @Throws(InterruptedException::class)
-    fun testGetRemainingTimeAttributes() {
-        val attributes: UAttributes = uAttributes {
-            forPublication(testSource, UPriority.UPRIORITY_CS0)
-            ttl = TTL
-        }
-        assertEquals(TTL, attributes.getRemainingTime()?.toInt(), DELTA)
-        Thread.sleep(DELAY_MS.toLong())
-        assertEquals(TTL - DELAY_MS, attributes.getRemainingTime()?.toInt(), DELTA)
-    }
-
-    @Test
-    fun testGetRemainingTimeAttributesNoTtl() {
-        val attributes: UAttributes = uAttributes {
-            forPublication(testSource, UPriority.UPRIORITY_CS0)
-        }
-        assertNull(attributes.getRemainingTime())
-    }
-
-    @Test
-    @Throws(InterruptedException::class)
-    fun testGetRemainingTimeAttributesExpired() {
-        val attributes: UAttributes = uAttributes {
-            forPublication(testSource, UPriority.UPRIORITY_CS0)
-            ttl = DELAY_MS - DELTA
-        }
-        Thread.sleep(DELAY_MS.toLong())
-        assertNull(attributes.getRemainingTime())
-    }
-
-    @Test
-    @Throws(InterruptedException::class)
     fun testIsExpired() {
         val id = createId()
         assertFalse(id.isExpired(DELAY_MS - DELTA))
@@ -130,23 +80,11 @@ class UuidUtilsTest {
     }
 
     @Test
-    @Throws(InterruptedException::class)
-    fun testIsExpiredAttributes() {
-        val attributes: UAttributes = uAttributes {
-            forPublication(testSource, UPriority.UPRIORITY_CS0)
-            ttl = DELAY_MS - DELTA
-        }
-        assertFalse(attributes.isExpired())
-        Thread.sleep(DELAY_MS.toLong())
-        assertTrue(attributes.isExpired())
-    }
-
-    @Test
-    fun testIsExpiredAttributesNoTtl() {
-        val attributes: UAttributes = uAttributes {
-            forPublication(testSource, UPriority.UPRIORITY_CS0)
-        }
-        assertFalse(attributes.isExpired())
+    @DisplayName("Test getElapseTime() when UUID time is in the future")
+    fun testGetElapsedTimePast() {
+        val now = Instant.now().plusMillis(DELAY_MS.toLong())
+        val id: UUID = UUIDV8(now)
+        assertNull(id.getElapsedTime())
     }
 
     private fun assertEquals(expect: Int, actual: Int?, delta: Int?) {

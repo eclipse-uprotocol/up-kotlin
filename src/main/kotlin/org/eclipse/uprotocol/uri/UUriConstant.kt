@@ -11,21 +11,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.transport
+package org.eclipse.uprotocol.uri
 
-import org.eclipse.uprotocol.v1.UMessage
-
-
-/**
- * For any implementation that defines some kind of callback or function that
- * will be called to handle incoming messages.
- */
-interface UListener {
+object UUriConstant {
     /**
-     * Method called to handle/process messages.
-     *
-     * @param message Message received.
-     * @return Returns an Ack every time a message is received and processed.
+     * The minimum publish/notification topic id for a URI.
      */
-    fun onReceive(message: UMessage)
+    const val MIN_TOPIC_ID = 0x8000
+
+    /**
+     * The Default resource id.
+     */
+    const val DEFAULT_RESOURCE_ID = 0
+
+    /**
+     * major version wildcard
+     */
+    const val MAJOR_VERSION_WILDCARD = 0xFF
+
+    /**
+     * The wildcard id for a field.
+     */
+    const val WILDCARD_ID: Int = 0xFFFF
 }
