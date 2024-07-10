@@ -13,6 +13,8 @@
 
 package org.eclipse.uprotocol.transport.validator
 
+import io.mockk.every
+import io.mockk.mockk
 import org.eclipse.uprotocol.transport.*
 import org.eclipse.uprotocol.transport.validator.UAttributesValidator.Companion.getValidator
 import org.eclipse.uprotocol.v1.*
@@ -555,5 +557,15 @@ internal class UAttributesValidatorTest {
         val validator1: UAttributesValidator = attributes1.getValidator()
 
         assertTrue(validator1 is Publish)
+    }
+
+
+    @Test
+    @DisplayName("Test getValidator static method with UNRECOGNIZED message")
+    fun test_getValidator_UNRECOGNIZED() {
+        val mockAttributes = mockk<UAttributes>()
+        every { mockAttributes.type } returns UMessageType.UNRECOGNIZED
+        val validator = mockAttributes.getValidator()
+        assertTrue(validator is Publish)
     }
 }

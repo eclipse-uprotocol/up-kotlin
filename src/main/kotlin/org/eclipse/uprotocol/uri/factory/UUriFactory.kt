@@ -15,6 +15,10 @@ package org.eclipse.uprotocol.uri.factory
 
 import com.google.protobuf.Descriptors.ServiceDescriptor
 import org.eclipse.uprotocol.Uoptions
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_AUTHORITY
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_ID
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_VERSION
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_RESOURCE_ID
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.uUri
 
@@ -44,10 +48,9 @@ object UUriFactory {
      * @return Returns a UUri for a protobuf generated code Service Descriptor.
      */
     val ANY: UUri = uUri {
-        authorityName = "*"
-        ueId = 0xFFFF
-        ueVersionMajor = 0xFF
-        resourceId = 0xFFFF
-
+        authorityName = WILDCARD_AUTHORITY
+        ueId = WILDCARD_ENTITY_ID
+        ueVersionMajor = WILDCARD_ENTITY_VERSION
+        resourceId = WILDCARD_RESOURCE_ID
     }
 }

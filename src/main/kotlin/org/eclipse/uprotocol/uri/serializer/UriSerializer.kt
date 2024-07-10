@@ -14,8 +14,8 @@
 package org.eclipse.uprotocol.uri.serializer
 
 
-import org.eclipse.uprotocol.uri.UUriConstant.MAJOR_VERSION_WILDCARD
-import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ID
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_ID
+import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_VERSION
 import org.eclipse.uprotocol.uri.validator.isEmpty
 import org.eclipse.uprotocol.v1.UUri
 
@@ -97,13 +97,13 @@ fun String.deserializeAsUUri(): UUri {
 
 
     // Ensure the major version is less than the wildcard
-    if (builder.ueVersionMajor > MAJOR_VERSION_WILDCARD) {
+    if (builder.ueVersionMajor > WILDCARD_ENTITY_VERSION) {
         return UUri.getDefaultInstance()
     }
 
 
     // Ensure the resource id is less than the wildcard
-    if (builder.resourceId > WILDCARD_ID) {
+    if (builder.resourceId > WILDCARD_ENTITY_ID) {
         return UUri.getDefaultInstance()
     }
 

@@ -13,9 +13,7 @@
 
 package org.eclipse.uprotocol.transport
 
-import com.google.protobuf.Any
-import com.google.protobuf.ByteString
-import com.google.protobuf.Message
+import org.eclipse.uprotocol.communication.UPayload
 import org.eclipse.uprotocol.v1.*
 
 /**
@@ -104,40 +102,15 @@ fun UMessageKt.Dsl.setTraceparent(traceparent: String) {
 }
 
 /**
- * Set payload and payload format for a UMessage.
- * @param message Google protobuf message to be packed into the payload
+ * Build a message with the passed {@link UPayload}.
  *
+ * @param payload The payload to be packed into the message.
  * @return Returns the UMessage with the configured payload.
  */
 @JvmSynthetic
-fun UMessageKt.Dsl.setPayload(message: Message) {
-    payload = message.toByteString()
-    attributes = attributes.copy { payloadFormat = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF }
-}
-
-/**
- * Set payload and payload format for a UMessage.
- * @param any Google protobuf Any message to be packed into the payload
- *
- * @return Returns the UMessage with the configured payload.
- */
-@JvmSynthetic
-fun UMessageKt.Dsl.setPayload(any: Any) {
-    payload = any.toByteString()
-    attributes = attributes.copy { payloadFormat = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY }
-}
-
-/**
- * Set payload and payload format for a UMessage.
- * @param format The format of the payload.
- * @param payload The payload of the message.
- *
- * @return Returns the UMessage with the configured payload.
- */
-@JvmSynthetic
-fun UMessageKt.Dsl.setPayload(format: UPayloadFormat, payload: ByteString) {
-    this.payload = payload
-    attributes = attributes.copy { payloadFormat = format }
+fun UMessageKt.Dsl.setPayload(payload: UPayload) {
+    this.payload = payload.data
+    attributes = attributes.copy { payloadFormat = payload.format }
 }
 
 /**

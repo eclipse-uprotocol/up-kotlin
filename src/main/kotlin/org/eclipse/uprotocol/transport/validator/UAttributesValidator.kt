@@ -23,16 +23,13 @@ import org.eclipse.uprotocol.validation.ValidationResult
 
 
 /**
- * [UAttributes] is the class that defines the Payload. It is the place
- * for configuring time to live, priority,
- * security tokens and more.
- * Each UAttributes class defines a different type of message payload. The
- * payload can represent a simple published
- * payload with some state change,
+ * [UAttributes] is the class that defines the uProtocol header that includes routing
+ * and payload metadata. It is the place for configuring time to live, priority,
+ * security tokens and more. Each UAttributes class defines a different type of message
+ * payload. The payload can represent a simple published payload with some state change,
  * Payload representing an RPC request or Payload representing an RPC response.
  * UAttributesValidator is a base class for all UAttribute validators, that can
- * help validate that the
- * [UAttributes] object is correctly defined
+ * help validate that the [UAttributes] object is correctly defined
  * to define the Payload correctly.
  */
 sealed class UAttributesValidator {

@@ -10,7 +10,7 @@ location of the uProtocol URI Factory serializers, validators, and builders per 
 
 == Using the SDK
 
-[source,java]
+[source,kotlin]
 ----
 include::../../../../../../test/kotlin/org/eclipse/uprotocol/uri/UUriExamples.kt[]
 ----

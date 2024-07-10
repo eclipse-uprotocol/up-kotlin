@@ -13,10 +13,9 @@
 
 package org.eclipse.uprotocol.transport
 
-import com.google.protobuf.Any
+import org.eclipse.uprotocol.communication.UPayload
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -107,24 +106,11 @@ class UMessageKtExtKtTest {
     }
 
     @Test
-    @DisplayName("Test building UMessage with google.protobuf.Message payload")
-    fun testBuildWithPayload() {
-        val message: UMessage = uMessage {
-            forPublication(testSource)
-            setPayload(testSink)
-        }
-        assertNotNull(message)
-        assertNotNull(message.payload)
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, message.attributes.payloadFormat)
-        assertEquals(testSink.toByteString(), message.payload)
-    }
-
-    @Test
     @DisplayName("Test building UMessage with UPayload payload")
     fun testBuildWithUPayload() {
         val message: UMessage = uMessage {
             forPublication(testSource)
-            setPayload(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, testSink.toByteString())
+            setPayload(UPayload(testSink.toByteString(),UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF))
         }
         assertNotNull(message)
         assertNotNull(message.payload)
@@ -133,19 +119,13 @@ class UMessageKtExtKtTest {
     }
 
     @Test
-    @DisplayName("Test building UMessage with google.protobuf.Any payload")
+    @DisplayName("Test building UMessage with empty payload")
     fun testBuildWithAnyPayload() {
         val message: UMessage = uMessage {
             forPublication(testSource)
-            setPayload(Any.getDefaultInstance())
         }
         assertNotNull(message)
-        assertNotNull(message.payload)
-        assertEquals(
-            UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
-            message.attributes.payloadFormat
-        )
-        assertEquals(Any.getDefaultInstance().toByteString(), message.payload)
+        assertFalse(message.hasPayload())
     }
 
 

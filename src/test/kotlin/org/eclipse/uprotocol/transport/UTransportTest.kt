@@ -13,6 +13,7 @@
 
 package org.eclipse.uprotocol.transport
 
+import kotlinx.coroutines.test.runTest
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Test
 class UTransportTest {
     @Test
     @DisplayName("Test happy path send message")
-    fun test_happy_send_message() {
+    fun test_happy_send_message() = runTest {
         val transport: UTransport = HappyUTransport()
         val uri = uUri {
             ueId = 1
@@ -40,7 +41,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test happy path register listener")
-    fun test_happy_register_listener() {
+    fun test_happy_register_listener() = runTest {
         val transport: UTransport = HappyUTransport()
         val status = transport.registerListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.OK)
@@ -48,7 +49,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test happy path unregister listener")
-    fun test_happy_register_unlistener() {
+    fun test_happy_register_unlistener() = runTest {
         val transport: UTransport = HappyUTransport()
         val status = transport.unregisterListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.OK)
@@ -56,7 +57,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test unhappy path send message")
-    fun test_unhappy_send_message() {
+    fun test_unhappy_send_message() = runTest {
         val transport: UTransport = SadUTransport()
         val status = transport.send(uMessage { })
         assertEquals(status.code, UCode.INTERNAL)
@@ -64,7 +65,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test unhappy path register listener")
-    fun test_unhappy_register_listener() {
+    fun test_unhappy_register_listener() = runTest {
         val transport: UTransport = SadUTransport()
         val status = transport.registerListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.INTERNAL)
@@ -72,7 +73,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test unhappy path unregister listener")
-    fun test_unhappy_register_unlistener() {
+    fun test_unhappy_register_unlistener() = runTest {
         val transport: UTransport = SadUTransport()
         val status = transport.unregisterListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.INTERNAL)
@@ -80,7 +81,7 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test happy path registerlistener with source filter only")
-    fun test_happy_register_listener_source_filter() {
+    fun test_happy_register_listener_source_filter() = runTest {
         val transport: UTransport = HappyUTransport()
         val status = transport.registerListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.OK)
@@ -88,31 +89,42 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test happy path unregisterlistener with source filter only")
-    fun test_happy_unregister_listener_source_filter() {
+    fun test_happy_unregister_listener_source_filter() = runTest {
         val transport: UTransport = HappyUTransport()
         val status = transport.unregisterListener(UUri.getDefaultInstance(), listener = MyListener())
         assertEquals(status.code, UCode.OK)
     }
 
+    @Test
+    @DisplayName("Test happy path close")
+    fun test_happy_close() {
+        val transport = HappyUTransport()
+        assertEquals(0, transport.status)
+        transport.close()
+        assertEquals(1, transport.status)
+    }
+
     internal inner class MyListener : UListener {
-        override fun onReceive(message: UMessage) {}
+        override suspend fun onReceive(message: UMessage) {}
     }
 
     private inner class HappyUTransport : UTransport {
-        override fun send(message: UMessage): UStatus {
+        var status = 0
+
+        override suspend fun send(message: UMessage): UStatus {
             return uStatus {
                 code = UCode.OK
             }
         }
 
-        override fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
             listener.onReceive(uMessage { })
             return uStatus {
                 code = UCode.OK
             }
         }
 
-        override fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
             return uStatus {
                 code = UCode.OK
             }
@@ -120,24 +132,28 @@ class UTransportTest {
 
         override fun getSource(): UUri {
             return uUri { }
+        }
+
+        override fun close() {
+            status = 1
         }
     }
 
     private inner class SadUTransport : UTransport {
-        override fun send(message: UMessage): UStatus {
+        override suspend fun send(message: UMessage): UStatus {
             return uStatus {
                 code = UCode.INTERNAL
             }
         }
 
-        override fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
             listener.onReceive(uMessage { })
             return uStatus {
                 code = UCode.INTERNAL
             }
         }
 
-        override fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
             return uStatus {
                 code = UCode.INTERNAL
             }
@@ -145,6 +161,10 @@ class UTransportTest {
 
         override fun getSource(): UUri {
             return uUri { }
+        }
+
+        override fun close() {
+            // Do nothing
         }
     }
 

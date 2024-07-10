@@ -34,8 +34,7 @@
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <slf4j.version>2.6.18</slf4j.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>main</git.tag.name>
-
+        <up-spec.git.tag.name>v1.6.0-alpha.2</up-spec.git.tag.name>
     </properties>
 
     <scm>
@@ -127,6 +126,7 @@
                 </executions>
                 <configuration>
                     <includes>
+                        <include>**/communication/**</include>
                         <include>**/transport/**</include>
                         <include>**/uri/**</include>
                         <include>**/uuid/**</include>
@@ -195,7 +195,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>${maven.compiler.target}</jvmTarget>
+                    <jvmTarget>17</jvmTarget>
                 </configuration>
             </plugin>
             <plugin>
@@ -215,7 +215,7 @@
                             <arguments>
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
-                                <argument>${git.tag.name}</argument>
+                                <argument>${up-spec.git.tag.name}</argument>
                                 <argument>https://github.com/eclipse-uprotocol/up-spec.git</argument>
                                 <argument>${project.build.directory}/up-spec</argument>
                             </arguments>
@@ -238,7 +238,7 @@
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
-                                <argument>${git.tag.name}</argument>
+                                <argument>${up-spec.git.tag.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -360,6 +360,13 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-jvm</artifactId>
+            <version>1.13.11</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
