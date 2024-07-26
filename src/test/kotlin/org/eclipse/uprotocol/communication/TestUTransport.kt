@@ -104,7 +104,7 @@ open class TestUTransport(
     /*
      * Register a listener based on the source and sink URIs.
      */
-    override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+    override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
         sendJob?.join()
         if (!listeners.contains(listener)){
             listeners.add(listener)
@@ -112,7 +112,7 @@ open class TestUTransport(
         return OK_STATUS
     }
 
-    override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+    override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
         sendJob?.join()
         return uStatus {
             code = if (listeners.remove(listener)) UCode.OK else UCode.NOT_FOUND
@@ -153,11 +153,11 @@ internal class ErrorUTransport(dispatcher: CoroutineDispatcher = Dispatchers.IO)
         return uStatus { code = UCode.FAILED_PRECONDITION }
     }
 
-    override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+    override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
         return uStatus { code = UCode.FAILED_PRECONDITION }
     }
 
-    override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+    override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
         return uStatus { code = UCode.FAILED_PRECONDITION }
     }
 }
@@ -177,6 +177,23 @@ internal class CommStatusTransport(dispatcher: CoroutineDispatcher = Dispatchers
     }
 }
 
+/**
+ * Test UTransport that will set the commstatus for a success response
+ */
+internal class CommStatusOkTransport(dispatcher: CoroutineDispatcher = Dispatchers.IO) :
+    TestUTransport(dispatcher = dispatcher) {
+    override fun buildResponse(request: UMessage): UMessage {
+        val status = uStatus {
+            code = UCode.OK
+            message = "No Communication Error"
+        }
+        return uMessage {
+            forResponse(request.attributes)
+            setCommStatus(UCode.OK)
+            setPayload(UPayload.pack(status))
+        }
+    }
+}
 
 /**
  * Test UTransport that will set the Response type incorrect

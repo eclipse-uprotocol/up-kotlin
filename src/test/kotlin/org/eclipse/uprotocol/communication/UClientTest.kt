@@ -17,9 +17,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.eclipse.uprotocol.client.usubscription.v3.SubscriptionChangeHandler
 import org.eclipse.uprotocol.transport.UListener
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -37,8 +37,7 @@ class UClientTest {
         val listener = UListener {
             assertNotNull(it)
         }
-        val subscriptionChangeHandler = SubscriptionChangeHandler { _, _ ->
-        }
+
         client.notify(createTopic(), createDestinationUri())
 
         client.publish(createTopic())
@@ -46,20 +45,6 @@ class UClientTest {
         client.invokeMethod(createMethodUri(), UPayload())
 
         client.invokeMethod(createMethodUri(), UPayload(), CallOptions())
-
-        client.subscribe(createTopic(), listener)
-
-        client.subscribe(createTopic(), listener, CallOptions())
-
-        client.subscribe(createTopic(), listener, CallOptions(), subscriptionChangeHandler)
-
-        client.unsubscribe(createTopic(), listener).also {
-            assertEquals(UCode.OK, it.code)
-        }
-
-        client.unregisterListener(createTopic(), listener).also {
-            assertEquals(UCode.NOT_FOUND, it.code)
-        }
 
         client.registerNotificationListener(createTopic(), listener)
 
@@ -93,22 +78,6 @@ class UClientTest {
         client.invokeMethod(createMethodUri(), UPayload())
 
         client.invokeMethod(createMethodUri(), UPayload(), CallOptions())
-
-        client.subscribe(createTopic(), listener)
-
-        client.subscribe(createTopic(), listener, CallOptions(), null)
-
-        client.subscribe(createTopic(), listener, CallOptions())
-
-        client.subscribe(createTopic(), listener, CallOptions(), subscriptionChangeHandler)
-
-        client.unsubscribe(createTopic(), listener).also {
-            assertEquals(UCode.OK, it.code)
-        }
-
-        client.unregisterListener(createTopic(), listener).also {
-            assertEquals(UCode.NOT_FOUND, it.code)
-        }
 
         client.registerNotificationListener(createTopic(), listener)
 

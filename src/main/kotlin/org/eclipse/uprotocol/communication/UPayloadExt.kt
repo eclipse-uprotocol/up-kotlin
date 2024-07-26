@@ -14,8 +14,9 @@ package org.eclipse.uprotocol.communication
 
 import com.google.protobuf.*
 import com.google.protobuf.Internal.getDefaultInstance
+import org.eclipse.uprotocol.v1.UMessage
 import org.eclipse.uprotocol.v1.UPayloadFormat
-import kotlin.Boolean
+import java.util.*
 
 /**
  * Check if the payload is empty, returns true when what is passed is null or the data is empty.
@@ -24,6 +25,16 @@ import kotlin.Boolean
  */
 fun UPayload.isEmpty(): Boolean {
     return data.isEmpty && format == UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED
+}
+
+
+/**
+ * Unpack a uMessage into [google.protobuf.Message].
+ *
+ * @return the unpacked message
+ */
+inline fun <reified T : Message?> UMessage.unpack(): T? {
+    return UPayload.unpack(payload, attributes.payloadFormat)
 }
 
 /**

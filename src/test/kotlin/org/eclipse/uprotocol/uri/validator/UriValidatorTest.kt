@@ -254,4 +254,45 @@ class UriValidatorTest {
         val candidate: UUri = "//authority/A410/3/1003".deserializeAsUUri()
         assertFalse(pattern.matches(candidate))
     }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with empty URI")
+    fun test_hasWildcard_for_empty_UUri() {
+        assertFalse(UUri.getDefaultInstance().hasWildcard())
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard authority")
+    fun test_hasWildcard_for_UUri_with_wildcard_authority() {
+        val uri: UUri = "//*/A410/3/1003".deserializeAsUUri()
+        assertTrue(uri.hasWildcard())
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard entity ID")
+    fun test_hasWildcard_for_UUri_with_wildcard_entity_id() {
+        val uri: UUri = "//authority/FFFF/3/1003".deserializeAsUUri()
+        assertTrue(uri.hasWildcard())
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard entity version")
+    fun test_hasWildcard_for_UUri_with_wildcard_entity_instance() {
+        val uri: UUri = "//authority/A410/FF/1003".deserializeAsUUri()
+        assertTrue(uri.hasWildcard())
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard resource")
+    fun test_hasWildcard_for_UUri_with_wildcard_resource() {
+        val uri: UUri = "//authority/A410/3/FFFF".deserializeAsUUri()
+        assertTrue(uri.hasWildcard())
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with no wildcards")
+    fun test_hasWildcard_for_UUri_with_no_wildcards() {
+        val uri: UUri = "//authority/A410/3/1003".deserializeAsUUri()
+        assertFalse(uri.hasWildcard())
+    }
 }

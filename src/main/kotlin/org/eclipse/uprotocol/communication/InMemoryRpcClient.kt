@@ -135,7 +135,7 @@ class InMemoryRpcClient(
         // Check if the response is for a request we made, if not then ignore it
         val responseDeferred = mutex.withLock { mRequests.remove(response.attributes.reqid) } ?: return
         // Check if the response has a commstatus and if it is not OK then complete the future with an exception
-        if (response.attributes.hasCommstatus()) {
+        if (response.attributes.hasCommstatus() && response.attributes.getCommstatus() != UCode.OK) {
             val code = response.attributes.commstatus
             responseDeferred.completeExceptionally(UStatusException(code, "Communication error [$code]"))
         } else {

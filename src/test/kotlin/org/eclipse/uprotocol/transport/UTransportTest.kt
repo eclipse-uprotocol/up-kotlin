@@ -15,10 +15,10 @@ package org.eclipse.uprotocol.transport
 
 import kotlinx.coroutines.test.runTest
 import org.eclipse.uprotocol.v1.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-
 
 /**
  * Test implementing and using uTransport API
@@ -104,6 +104,48 @@ class UTransportTest {
         assertEquals(1, transport.status)
     }
 
+    @Test
+    @DisplayName("Test happy path calling open() API")
+    fun test_happy_open() = runTest {
+        val transport: UTransport = HappyUTransport()
+        assertEquals(UCode.OK, transport.open().code)
+    }
+
+    @Test
+    @DisplayName("Test default oepn() and close() APIs")
+    fun test_default_open_close() {
+        val transport: UTransport = object : UTransport {
+            override suspend fun send(message: UMessage): UStatus {
+                return uStatus {
+                    code = UCode.OK
+                }
+            }
+
+            override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
+                return uStatus {
+                    code = UCode.OK
+                }
+            }
+
+            override suspend fun unregisterListener(
+                sourceFilter: UUri,
+                sinkFilter: UUri,
+                listener: UListener
+            ): UStatus {
+                return uStatus {
+                    code = UCode.OK
+                }
+            }
+
+            override fun getSource(): UUri {
+                return uUri {  }
+            }
+        }
+
+        assertDoesNotThrow { transport.close() }
+    }
+
+
     internal inner class MyListener : UListener {
         override suspend fun onReceive(message: UMessage) {}
     }
@@ -117,14 +159,14 @@ class UTransportTest {
             }
         }
 
-        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
             listener.onReceive(uMessage { })
             return uStatus {
                 code = UCode.OK
             }
         }
 
-        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
             return uStatus {
                 code = UCode.OK
             }
@@ -146,14 +188,14 @@ class UTransportTest {
             }
         }
 
-        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
             listener.onReceive(uMessage { })
             return uStatus {
                 code = UCode.INTERNAL
             }
         }
 
-        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri?, listener: UListener): UStatus {
+        override suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri, listener: UListener): UStatus {
             return uStatus {
                 code = UCode.INTERNAL
             }

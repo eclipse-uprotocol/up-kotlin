@@ -17,6 +17,7 @@ import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.util.*
 
 class UPayloadTest {
     @Test
@@ -206,5 +207,16 @@ class UPayloadTest {
         assertTrue(result.isFailure)
         assertFalse(result.isSuccess)
         assertEquals(exception, result.exceptionOrNull())
+    }
+
+    @Test
+    @DisplayName("Test unpack passing a valid UMessage")
+    fun test_unpack_passing_a_valid_UMessage() {
+        val uri = UUri.newBuilder().setAuthorityName("Hartley").build()
+        val payload = UPayload.packToAny(uri)
+        val unpacked : UUri? = uMessage {
+            this.payload = payload.data
+        }.unpack()
+        assertEquals(uri, unpacked)
     }
 }

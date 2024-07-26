@@ -14,7 +14,6 @@ package org.eclipse.uprotocol.communication
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse
 import org.eclipse.uprotocol.transport.UListener
 import org.eclipse.uprotocol.transport.UTransport
 import org.eclipse.uprotocol.v1.UStatus
@@ -28,30 +27,11 @@ import org.eclipse.uprotocol.v1.UUri
 class UClient(
     private val transport: UTransport,
     dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : RpcServer, Subscriber, Notifier, Publisher, RpcClient {
+) : RpcServer, Notifier, Publisher, RpcClient {
     private val rpcServer: InMemoryRpcServer = InMemoryRpcServer(transport)
     private val publisher: SimplePublisher = SimplePublisher(transport)
     private val notifier: SimpleNotifier = SimpleNotifier(transport)
     private val rpcClient: InMemoryRpcClient = InMemoryRpcClient(transport, dispatcher)
-    private val subscriber: InMemorySubscriber = InMemorySubscriber(transport, rpcClient, notifier, dispatcher)
-
-    override suspend fun subscribe(
-        topic: UUri,
-        listener: UListener,
-        options: CallOptions,
-        handler: SubscriptionChangeHandler?
-    ): Result<SubscriptionResponse> {
-        return subscriber.subscribe(topic, listener, options, handler)
-    }
-
-
-    override suspend fun unsubscribe(topic: UUri, listener: UListener, options: CallOptions): UStatus {
-        return subscriber.unsubscribe(topic, listener, options)
-    }
-
-    override suspend fun unregisterListener(topic: UUri, listener: UListener): UStatus {
-        return subscriber.unregisterListener(topic, listener)
-    }
 
     override suspend fun notify(topic: UUri, destination: UUri, options: CallOptions, payload: UPayload?): UStatus {
         return notifier.notify(topic, destination, options, payload)
@@ -91,7 +71,5 @@ class UClient(
 
     fun close() {
         rpcClient.close()
-        subscriber.close()
-        transport.close()
     }
 }

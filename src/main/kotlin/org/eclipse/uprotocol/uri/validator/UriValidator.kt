@@ -18,6 +18,7 @@ import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_AUTHORITY
 import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_ID
 import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_ENTITY_VERSION
 import org.eclipse.uprotocol.uri.UUriConstant.WILDCARD_RESOURCE_ID
+import org.eclipse.uprotocol.uri.factory.UUriFactory
 import org.eclipse.uprotocol.v1.*
 
 
@@ -174,3 +175,13 @@ fun UUri.matches(uri: UUri): Boolean {
 }
 
 
+/**
+ * Checks if the URI has a wildcard in any of its fields.
+ *
+ * @return True if the URI has a wildcard, False otherwise.
+ */
+fun UUri.hasWildcard(): Boolean {
+    return !isEmpty() &&
+            (authorityName == WILDCARD_AUTHORITY || ueId and WILDCARD_ENTITY_ID == WILDCARD_ENTITY_ID ||
+                    ueVersionMajor == WILDCARD_ENTITY_VERSION || resourceId == WILDCARD_RESOURCE_ID)
+}

@@ -1,4 +1,4 @@
-/**
+/*
  * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -10,23 +10,29 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.uprotocol.communication
 
-import io.mockk.*
+package org.eclipse.uprotocol.client.usubscription.v3
+
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.eclipse.uprotocol.communication.*
 import org.eclipse.uprotocol.core.usubscription.v3.*
 import org.eclipse.uprotocol.transport.*
 import org.eclipse.uprotocol.v1.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CompletableFuture
 
 @ExperimentalCoroutinesApi
-class InMemorySubscriberTest {
+class InMemoryUSubscriptionClientTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
@@ -52,10 +58,19 @@ class InMemorySubscriberTest {
     }
 
     @Test
+    @DisplayName("Testing creation of InMemoryUSubscriptionClient passing only the transport")
+    fun test_creation_of_InMemoryUSubscriptionClient_passing_only_the_transport() {
+        val transport: UTransport = TestUTransport()
+
+        val subscriber = InMemoryUSubscriptionClient(transport)
+        subscriber.close()
+    }
+
+    @Test
     @DisplayName("Test registerNotification at init and unregister when close")
     fun test_registerNotification_at_init_and_unregister_when_close() = testScope.runTest {
         val transport: UTransport = TestUTransport()
-        val subscriber = InMemorySubscriber(transport, mockClient, mockNotifier, testDispatcher)
+        val subscriber = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier, testDispatcher)
         coVerify { mockNotifier.registerNotificationListener(any(), any()) }
 
         subscriber.close()
@@ -69,7 +84,7 @@ class InMemorySubscriberTest {
     fun test_subscribe_happy_path_without_handler() = testScope.runTest {
         val topic = createTopic()
         val transport = TestUTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -80,8 +95,8 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {})
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), CallOptions()) }
-        assertEquals(1, transport.listeners.size)
-        assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(1, transport.listeners.size)
+        Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
     }
 
     @Test
@@ -89,7 +104,7 @@ class InMemorySubscriberTest {
     fun test_subscribe_happy_path_with_NULL_handler() = testScope.runTest {
         val topic = createTopic()
         val transport = TestUTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -100,8 +115,8 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {}, CallOptions(100), handler = null)
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), any()) }
-        assertEquals(1, transport.listeners.size)
-        assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(1, transport.listeners.size)
+        Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
     }
 
     @Test
@@ -111,7 +126,7 @@ class InMemorySubscriberTest {
         val transport: UTransport = TestUTransport()
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -122,7 +137,7 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {}, handler = handler)
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), CallOptions()) }
-        assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
     }
 
     @Test
@@ -132,7 +147,7 @@ class InMemorySubscriberTest {
         val transport = TestUTransport()
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         val subscriptionResult =
             subscriptionResponse { status = subscriptionStatus { state = SubscriptionStatus.State.UNSUBSCRIBED } }
@@ -146,8 +161,8 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {}, handler = handler)
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), CallOptions()) }
-        assertEquals(0, transport.listeners.size)
-        assertEquals(SubscriptionStatus.State.UNSUBSCRIBED, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(0, transport.listeners.size)
+        Assertions.assertEquals(SubscriptionStatus.State.UNSUBSCRIBED, result.getOrNull()?.status?.state)
     }
 
     @Test
@@ -157,7 +172,7 @@ class InMemorySubscriberTest {
         val transport = TestUTransport()
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
         val subscriptionResult =
             subscriptionResponse { status = subscriptionStatus { state = SubscriptionStatus.State.SUBSCRIBE_PENDING } }
 
@@ -170,8 +185,8 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {}, handler = handler)
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), CallOptions()) }
-        assertEquals(1, transport.listeners.size)
-        assertEquals(SubscriptionStatus.State.SUBSCRIBE_PENDING, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(1, transport.listeners.size)
+        Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBE_PENDING, result.getOrNull()?.status?.state)
     }
 
 
@@ -182,7 +197,7 @@ class InMemorySubscriberTest {
         val transport: UTransport = TestUTransport()
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.failure(
             UStatusException(UCode.FAILED_PRECONDITION, "CommStatus Error")
@@ -191,8 +206,8 @@ class InMemorySubscriberTest {
         val result = subscriber.subscribe(topic, {}, handler = handler)
         val payloadSlot = slot<UPayload>()
         coVerify { mockClient.invokeMethod(any(), capture(payloadSlot), CallOptions()) }
-        assertTrue(result.exceptionOrNull() is UStatusException)
-        assertEquals(UCode.FAILED_PRECONDITION, (result.exceptionOrNull() as UStatusException).code)
+        Assertions.assertTrue(result.exceptionOrNull() is UStatusException)
+        Assertions.assertEquals(UCode.FAILED_PRECONDITION, (result.exceptionOrNull() as UStatusException).code)
     }
 
     @Test
@@ -202,8 +217,8 @@ class InMemorySubscriberTest {
         val transport: UTransport = TestUTransport()
         var isHandlerCalled = false
         val handler = SubscriptionChangeHandler { uri, status ->
-            assertEquals(topic, uri)
-            assertEquals(SubscriptionStatus.State.SUBSCRIBED, status.state)
+            Assertions.assertEquals(topic, uri)
+            Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBED, status.state)
             isHandlerCalled = true
         }
         val notificationListenerSlot = slot<UListener>()
@@ -213,7 +228,7 @@ class InMemorySubscriberTest {
                 capture(notificationListenerSlot)
             )
         } returns OK_STATUS
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -232,7 +247,7 @@ class InMemorySubscriberTest {
             )
         }
         notificationListenerSlot.captured.onReceive(testMessage)
-        assertTrue(isHandlerCalled)
+        Assertions.assertTrue(isHandlerCalled)
     }
 
     @Test
@@ -250,7 +265,7 @@ class InMemorySubscriberTest {
                 capture(notificationListenerSlot)
             )
         } returns OK_STATUS
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -287,7 +302,7 @@ class InMemorySubscriberTest {
                 capture(notificationListenerSlot)
             )
         } returns OK_STATUS
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -304,7 +319,7 @@ class InMemorySubscriberTest {
             )
         }
         notificationListenerSlot.captured.onReceive(testMessage)
-        assertFalse(isHandlerCalled)
+        Assertions.assertFalse(isHandlerCalled)
     }
 
     @Test
@@ -323,7 +338,7 @@ class InMemorySubscriberTest {
                 capture(notificationListenerSlot)
             )
         } returns OK_STATUS
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -341,7 +356,7 @@ class InMemorySubscriberTest {
             )
         }
         notificationListenerSlot.captured.onReceive(testMessage)
-        assertFalse(isHandlerCalled)
+        Assertions.assertFalse(isHandlerCalled)
     }
 
     @Test
@@ -360,7 +375,7 @@ class InMemorySubscriberTest {
                 capture(notificationListenerSlot)
             )
         } returns OK_STATUS
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -379,7 +394,7 @@ class InMemorySubscriberTest {
             )
         }
         notificationListenerSlot.captured.onReceive(testMessage)
-        assertFalse(isHandlerCalled)
+        Assertions.assertFalse(isHandlerCalled)
     }
 
     @Test
@@ -389,7 +404,7 @@ class InMemorySubscriberTest {
         val transport: UTransport = TestUTransport()
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -399,7 +414,7 @@ class InMemorySubscriberTest {
 
         subscriber.subscribe(topic, {}, handler = handler)
         val result = subscriber.subscribe(topic, {}, handler = handler)
-        assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
+        Assertions.assertEquals(SubscriptionStatus.State.SUBSCRIBED, result.getOrNull()?.status?.state)
     }
 
     @Test
@@ -411,7 +426,7 @@ class InMemorySubscriberTest {
         }
         val handler2 = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -421,8 +436,8 @@ class InMemorySubscriberTest {
 
         subscriber.subscribe(topic, {}, handler = handler1)
         val result = subscriber.subscribe(topic, {}, handler = handler2)
-        assertTrue(result.exceptionOrNull() is UStatusException)
-        assertEquals(UCode.ALREADY_EXISTS, (result.exceptionOrNull() as UStatusException).code)
+        Assertions.assertTrue(result.exceptionOrNull() is UStatusException)
+        Assertions.assertEquals(UCode.ALREADY_EXISTS, (result.exceptionOrNull() as UStatusException).code)
     }
 
     @Test
@@ -433,7 +448,7 @@ class InMemorySubscriberTest {
         val listener = UListener { }
         val handler = SubscriptionChangeHandler { _, _ ->
         }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returnsMany
                 listOf(
                     Result.success(UPayload.pack(successSubscriptionResult)),
@@ -442,7 +457,7 @@ class InMemorySubscriberTest {
 
         subscriber.subscribe(topic, listener, handler = handler)
         val result = subscriber.unsubscribe(topic, listener)
-        assertEquals(UCode.OK, result.code)
+        Assertions.assertEquals(UCode.OK, result.code)
     }
 
     @Test
@@ -451,7 +466,7 @@ class InMemorySubscriberTest {
         val topic = createTopic()
         val transport: UTransport = TestUTransport()
         val listener = UListener { }
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returnsMany
                 listOf(
                     Result.success(UPayload.pack(successSubscriptionResult)),
@@ -460,7 +475,7 @@ class InMemorySubscriberTest {
 
         subscriber.subscribe(topic, listener)
         val result = subscriber.unsubscribe(topic, listener)
-        assertEquals(UCode.OK, result.code)
+        Assertions.assertEquals(UCode.OK, result.code)
     }
 
     @Test
@@ -468,7 +483,7 @@ class InMemorySubscriberTest {
     fun test_unsubscribe_happy_path() = testScope.runTest {
         val topic = createTopic()
         val transport: UTransport = TestUTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
                 successUnsubscriptionResult
@@ -478,7 +493,7 @@ class InMemorySubscriberTest {
         val result = subscriber.unsubscribe(topic, {
             throw UnsupportedOperationException("Unimplemented method 'onReceive'")
         })
-        assertEquals(UCode.NOT_FOUND, result.code)
+        Assertions.assertEquals(UCode.NOT_FOUND, result.code)
     }
 
     @Test
@@ -486,7 +501,7 @@ class InMemorySubscriberTest {
     fun test_unsubscribe_happy_path_with_callOption() = testScope.runTest {
         val topic = createTopic()
         val transport: UTransport = TestUTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
                 successUnsubscriptionResult
@@ -496,7 +511,7 @@ class InMemorySubscriberTest {
         val result = subscriber.unsubscribe(topic, {
             throw UnsupportedOperationException("should not execute")
         }, CallOptions())
-        assertEquals(UCode.NOT_FOUND, result.code)
+        Assertions.assertEquals(UCode.NOT_FOUND, result.code)
     }
 
     @Test
@@ -505,7 +520,7 @@ class InMemorySubscriberTest {
         val topic = createTopic()
         val myListener = UListener { }
         val transport: UTransport = TestUTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.success(
             UPayload.pack(
@@ -515,7 +530,7 @@ class InMemorySubscriberTest {
 
         subscriber.subscribe(topic, myListener, CallOptions(100))
         val result = subscriber.unregisterListener(topic, myListener)
-        assertEquals(UCode.OK, result.code)
+        Assertions.assertEquals(UCode.OK, result.code)
     }
 
     @Test
@@ -523,7 +538,7 @@ class InMemorySubscriberTest {
     fun testUnsubscribeWithUStatusException() = testScope.runTest {
         val topic = createTopic()
         val transport: UTransport = CommStatusTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.failure(
             UStatusException(UCode.FAILED_PRECONDITION, "CommStatus Error")
@@ -531,8 +546,8 @@ class InMemorySubscriberTest {
 
         val result = subscriber.unsubscribe(topic, {})
 
-        assertEquals(UCode.FAILED_PRECONDITION, result.code)
-        assertEquals("CommStatus Error", result.message)
+        Assertions.assertEquals(UCode.FAILED_PRECONDITION, result.code)
+        Assertions.assertEquals("CommStatus Error", result.message)
     }
 
     @Test
@@ -540,7 +555,7 @@ class InMemorySubscriberTest {
     fun testUnsubscribeWithOtherException() = testScope.runTest {
         val topic = createTopic()
         val transport: UTransport = CommStatusTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.failure(
             IllegalStateException("Some Error")
@@ -548,8 +563,8 @@ class InMemorySubscriberTest {
 
         val result = subscriber.unsubscribe(topic, {})
 
-        assertEquals(UCode.INVALID_ARGUMENT, result.code)
-        assertEquals("Some Error", result.message)
+        Assertions.assertEquals(UCode.INVALID_ARGUMENT, result.code)
+        Assertions.assertEquals("Some Error", result.message)
     }
 
     @Test
@@ -557,7 +572,7 @@ class InMemorySubscriberTest {
     fun testUnsubscribeWithOtherExceptionNoMessage() = testScope.runTest {
         val topic = createTopic()
         val transport: UTransport = CommStatusTransport()
-        val subscriber: Subscriber = InMemorySubscriber(transport, mockClient, mockNotifier)
+        val subscriber: USubscriptionClient = InMemoryUSubscriptionClient(transport, mockClient, mockNotifier)
 
         coEvery { mockClient.invokeMethod(any(), any(), any()) } returns Result.failure(
             IllegalStateException()
@@ -565,8 +580,8 @@ class InMemorySubscriberTest {
 
         val result = subscriber.unsubscribe(topic, {})
 
-        assertEquals(UCode.INVALID_ARGUMENT, result.code)
-        assertEquals("Invalid argument", result.message)
+        Assertions.assertEquals(UCode.INVALID_ARGUMENT, result.code)
+        Assertions.assertEquals("Invalid argument", result.message)
     }
 
     private fun createTopic(): UUri {

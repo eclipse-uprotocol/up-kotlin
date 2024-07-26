@@ -116,6 +116,19 @@ class InMemoryRpcClientTest {
     }
 
     @Test
+    @DisplayName("Test invokeMethod response with CommStatus Error but status is ok")
+    fun `test InvokeMethod response with CommStatus error but status is ok`() = testScope.runTest {
+        val transport = CommStatusOkTransport(testDispatcher)
+        val rpcClient = InMemoryRpcClient(transport, testDispatcher)
+        val payload = UPayload.packToAny(uUri { })
+        val result = rpcClient.invokeMethod(testMethodUri, payload)
+        assertTrue(result.isSuccess)
+        val unpack = result.getOrNull()!!.unpack<UStatus>()
+        assertEquals(UCode.OK, unpack?.code)
+        assertEquals("No Communication Error", unpack?.message)
+    }
+
+    @Test
     @DisplayName("Test invokeMethod Duplicate Request")
     fun `test InvokeMethod Duplicate Request`() = testScope.runTest {
         val time: Long = Instant.now().toEpochMilli()

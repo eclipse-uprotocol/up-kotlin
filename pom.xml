@@ -20,7 +20,7 @@
     <name>Kotlin Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more
     </description>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/up-kotlin/</url>
 
@@ -131,6 +131,7 @@
                         <include>**/uri/**</include>
                         <include>**/uuid/**</include>
                         <include>**/validation/**</include>
+                        <include>**/client/**</include>
                     </includes>
                 </configuration>
             </plugin>
