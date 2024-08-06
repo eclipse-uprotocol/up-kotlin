@@ -12,14 +12,18 @@
  */
 package org.eclipse.uprotocol.client.utwin.v2
 
-import io.mockk.coEvery
-import io.mockk.mockk
-import io.mockk.unmockkAll
+import io.mockk.*
 import kotlinx.coroutines.test.runTest
+import org.eclipse.uprotocol.communication.CallOptions
 import org.eclipse.uprotocol.communication.RpcClient
 import org.eclipse.uprotocol.communication.UPayload
 import org.eclipse.uprotocol.communication.UStatusException
+import org.eclipse.uprotocol.core.udiscovery.v3.addNodesResponse
+import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesRequest
+import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesResponse
 import org.eclipse.uprotocol.core.utwin.v2.getLastMessagesRequest
+import org.eclipse.uprotocol.core.utwin.v2.getLastMessagesResponse
+import org.eclipse.uprotocol.core.utwin.v2.messageResponse
 import org.eclipse.uprotocol.transport.UTransport
 import org.eclipse.uprotocol.v1.*
 import org.junit.jupiter.api.AfterEach
@@ -34,7 +38,6 @@ import kotlin.test.assertTrue
  * This is the test code for said implementation.
  */
 class SimpleUTwinClientTest {
-    private val transport: UTransport = mockk(relaxed = true)
     private val rpcClient: RpcClient = mockk(relaxed = true)
 
     private val topic: UUri = uUri {
@@ -58,12 +61,57 @@ class SimpleUTwinClientTest {
     @DisplayName("Test calling getLastMessages() with valid topics")
     fun testGetLastMessages() = runTest {
         val topics = UUriBatch.newBuilder().addUris(topic).build()
-        coEvery { rpcClient.invokeMethod(any(), any(), any()) } returns Result.success(UPayload.pack(
-            getLastMessagesRequest { }
+        val optionSlot = slot<CallOptions>()
+        coEvery { rpcClient.invokeMethod(any(), any(), capture(optionSlot)) } returns Result.success(UPayload.pack(
+            getLastMessagesResponse { }
         ))
         val client = SimpleUTwinClient(rpcClient)
         val response = client.getLastMessages(topics)
         assertTrue(response.isSuccess)
+        assertEquals("", optionSlot.captured.token)
+        assertEquals(CallOptions.TIMEOUT_DEFAULT, optionSlot.captured.timeout)
+        assertEquals(UPriority.UPRIORITY_CS4, optionSlot.captured.priority)
+    }
+
+    @Test
+    @DisplayName("Test calling getLastMessages() with valid topics and Data in response")
+    fun testGetLastMessagesWithDataInResponse() = runTest {
+        val topics = UUriBatch.newBuilder().addUris(topic).build()
+        val optionSlot = slot<CallOptions>()
+        coEvery { rpcClient.invokeMethod(any(), any(), capture(optionSlot)) } returns Result.success(UPayload.pack(
+            getLastMessagesResponse {
+               this.responses.add(messageResponse {
+                   this.topic = uUri {  }
+               })
+            }
+        ))
+        val client = SimpleUTwinClient(rpcClient)
+        val response = client.getLastMessages(topics)
+        assertTrue(response.isSuccess)
+        assertEquals("", optionSlot.captured.token)
+        assertEquals(CallOptions.TIMEOUT_DEFAULT, optionSlot.captured.timeout)
+        assertEquals(UPriority.UPRIORITY_CS4, optionSlot.captured.priority)
+    }
+
+    @Test
+    @DisplayName("Test calling getLastMessages() with valid topics and CallOptions")
+    fun testGetLastMessagesWithCallOptions() = runTest {
+        val topics = UUriBatch.newBuilder().addUris(topic).build()
+        val options = CallOptions(
+            timeout = 1000,
+            priority = UPriority.UPRIORITY_CS2,
+            token = "testToken"
+        )
+        val optionSlot = slot<CallOptions>()
+        coEvery { rpcClient.invokeMethod(any(), any(), capture(optionSlot)) } returns Result.success(UPayload.pack(
+            getLastMessagesResponse { }
+        ))
+        val client = SimpleUTwinClient(rpcClient)
+        val response = client.getLastMessages(topics, options)
+        assertTrue(response.isSuccess)
+        assertEquals("testToken", optionSlot.captured.token)
+        assertEquals(1000, optionSlot.captured.timeout)
+        assertEquals(UPriority.UPRIORITY_CS2, optionSlot.captured.priority)
     }
 
 

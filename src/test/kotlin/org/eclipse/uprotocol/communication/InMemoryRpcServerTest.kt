@@ -296,7 +296,13 @@ class InMemoryRpcServerTest {
 
         server.registerRequestHandler(method, handler)
 
-        transport.send(uMessage { forNotification(transport.getSource(), method) })
+        transport.send(uMessage {
+            forNotification(transport.getSource().copy {
+                resourceId = 0x8000
+            }, createMethodUri().copy {
+                resourceId = 0
+            })
+        })
 
         assertTrue(transport.receivedResponse.isEmpty())
     }

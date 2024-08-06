@@ -78,6 +78,7 @@ open class TestUTransport(
         val validator = message.attributes.getValidator()
 
         if (validator.validate(message.attributes).isFailure()) {
+            println("flag1")
             return uStatus {
                 code = UCode.INVALID_ARGUMENT
                 this.message = "Invalid message attributes"
@@ -94,6 +95,7 @@ open class TestUTransport(
 
         if (message.attributes.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION) {
             sendJob = scope.launch {
+                println("flag2")
                 listeners.forEach { listener -> listener.onReceive(message) }
             }
         }

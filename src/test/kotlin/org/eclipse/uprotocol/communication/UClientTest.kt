@@ -69,8 +69,6 @@ class UClientTest {
         val listener = UListener {
             assertNotNull(it)
         }
-        val subscriptionChangeHandler = SubscriptionChangeHandler { _, _ ->
-        }
         client.notify(createTopic(), createDestinationUri())
 
         client.publish(createTopic())

@@ -107,15 +107,13 @@ interface USubscriptionClient {
      *
      * @param topic The topic to unregister for notifications.
      * @param options The [CallOptions] to be used for the request.
-     * @param handler The [SubscriptionChangeHandler] to be unregistered.
      * @return [Result] with [NotificationsResponse] if uSubscription service accepts the
      * request to unregister the caller to be notified of subscription changes, or
      * [Result] with [UStatusException] that indicates the reason for the failure.
      */
     suspend fun unregisterForNotifications(
         topic: UUri,
-        options: CallOptions = CallOptions(),
-        handler: SubscriptionChangeHandler? = null
+        options: CallOptions = CallOptions()
     ): Result<NotificationsResponse>
 
     /**

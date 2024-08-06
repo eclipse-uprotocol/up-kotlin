@@ -17,6 +17,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.eclipse.uprotocol.transport.*
 import org.eclipse.uprotocol.transport.validator.UAttributesValidator.Companion.getValidator
+import org.eclipse.uprotocol.uuid.factory.UUIDV7
 import org.eclipse.uprotocol.v1.*
 import org.eclipse.uprotocol.validation.ValidationResult
 import org.junit.jupiter.api.Assertions.*
@@ -179,12 +180,17 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("Test validation of request message has an invalid sink attribute")
     fun testUAttributeValidatorRequestMissingSink() {
-        val message: UMessage = uMessage {
-            forRequest(defaultUUri, defaultUUri, 1000)
+        val attributes = uAttributes {
+            source = defaultUUri
+            sink = defaultUUri
+            ttl = 1000
+            id = UUIDV7()
+            type = UMessageType.UMESSAGE_TYPE_REQUEST
+            priority = UPriority.UPRIORITY_CS4
         }
 
-        val validator: UAttributesValidator = message.attributes.getValidator()
-        val result = validator.validate(message.attributes)
+        val validator: UAttributesValidator = attributes.getValidator()
+        val result = validator.validate(attributes)
         assertTrue(result.isFailure())
         assertEquals(validator.toString(), "UAttributesValidator.Request")
         assertEquals(result.getMessage(), "Invalid Sink Uri")
@@ -314,11 +320,16 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("Test notification validation where the sink is NOT the defaultResourceId")
     fun testUAttributeValidatorNotificationDefaultResourceId() {
-        val message: UMessage = uMessage {
-            forNotification(topicUUri, topicUUri)
+        val attributes = uAttributes {
+            source = topicUUri
+            id = UUIDV7()
+            sink = methodUUri
+            type = UMessageType.UMESSAGE_TYPE_NOTIFICATION
+            priority = UPriority.UPRIORITY_CS1
+
         }
-        val validator: UAttributesValidator = message.attributes.getValidator()
-        val result = validator.validate(message.attributes)
+        val validator: UAttributesValidator = attributes.getValidator()
+        val result = validator.validate(attributes)
 
         assertTrue(result.isFailure())
         assertEquals(validator.toString(), "UAttributesValidator.Notification")
@@ -404,11 +415,16 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("Test validateTtl of a request message where ttl is less than 0")
     fun testUAttributeValidatorValidateTtlLessThanZero() {
-        val message: UMessage = uMessage {
-            forRequest(defaultUUri, methodUUri, -1)
+        val attributes = uAttributes {
+            source = defaultUUri
+            sink = methodUUri
+            ttl = -1
+            id = UUIDV7()
+            type = UMessageType.UMESSAGE_TYPE_REQUEST
+            priority = UPriority.UPRIORITY_CS4
         }
-        val validator: UAttributesValidator = message.attributes.getValidator()
-        val result = validator.validate(message.attributes)
+        val validator: UAttributesValidator = attributes.getValidator()
+        val result = validator.validate(attributes)
 
         assertTrue(result.isFailure())
         assertEquals(validator.toString(), "UAttributesValidator.Request")
@@ -475,14 +491,17 @@ internal class UAttributesValidatorTest {
     @Test
     @DisplayName("Test validateSink for a response message where the sink is NOT the defaultResourceId")
     fun testUAttributeValidatorValidateSinkResponseDefaultResourceId() {
-        val request: UMessage = uMessage {
-            forRequest(methodUUri, defaultUUri, 1000)
+        val attributes = uAttributes {
+            source = methodUUri
+            sink = methodUUri
+            ttl = 1000
+            id = UUIDV7()
+            type = UMessageType.UMESSAGE_TYPE_RESPONSE
+            reqid = UUIDV7()
+            priority = UPriority.UPRIORITY_CS4
         }
-        val response: UMessage = uMessage {
-            forResponse(request.attributes)
-        }
-        val validator: UAttributesValidator = response.attributes.getValidator()
-        val result = validator.validate(response.attributes)
+        val validator: UAttributesValidator = attributes.getValidator()
+        val result = validator.validate(attributes)
 
         assertTrue(result.isFailure())
         assertEquals(validator.toString(), "UAttributesValidator.Response")

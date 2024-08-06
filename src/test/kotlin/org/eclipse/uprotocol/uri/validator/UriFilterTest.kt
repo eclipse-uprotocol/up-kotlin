@@ -17,8 +17,7 @@ import org.eclipse.uprotocol.uri.factory.UUriFactory
 import org.eclipse.uprotocol.v1.UUri
 import org.eclipse.uprotocol.v1.uAttributes
 import org.eclipse.uprotocol.v1.uUri
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -134,6 +133,26 @@ class UriFilterTest {
             uAttributes {
                 source = SOURCE_URI
             }))
+    }
+
+    @Test
+    @DisplayName("Test UriFilter constructor")
+    fun testUriFilterConstructor() {
+        val uriFilter1 = UriFilter()
+        assertEquals(UUriFactory.ANY, uriFilter1.source)
+        assertEquals(UUriFactory.ANY, uriFilter1.sink)
+
+        val uriFilter2 = UriFilter(SOURCE_URI)
+        assertEquals(SOURCE_URI, uriFilter2.source)
+        assertEquals(UUriFactory.ANY, uriFilter2.sink)
+
+        val uriFilter3 = UriFilter(sink = SINK_URI)
+        assertEquals(UUriFactory.ANY, uriFilter3.source)
+        assertEquals(SINK_URI, uriFilter3.sink)
+
+        val uriFilter4 = UriFilter(SOURCE_URI, SINK_URI)
+        assertEquals(SOURCE_URI, uriFilter4.source)
+        assertEquals(SINK_URI, uriFilter4.sink)
     }
 
     companion object {
