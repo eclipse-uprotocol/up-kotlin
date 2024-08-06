@@ -13,10 +13,10 @@
 
 package org.eclipse.uprotocol.transport
 
-import org.eclipse.uprotocol.v1.UCode
-import org.eclipse.uprotocol.v1.UMessage
-import org.eclipse.uprotocol.v1.UStatus
-import org.eclipse.uprotocol.v1.UUri
+import org.eclipse.uprotocol.uri.factory.UUriFactory
+import org.eclipse.uprotocol.v1.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 
 
 /**
@@ -31,7 +31,7 @@ interface UTransport {
      * @param message the [UMessage] to be sent.
      * @return Returns [UStatus] with [UCode] set to the status code (successful or failure).
      */
-    fun send(message: UMessage): UStatus
+    suspend fun send(message: UMessage): UStatus
 
     /**
      * Register `UListener` for `UUri` source and sink filters to be called when a message is received.
@@ -43,7 +43,7 @@ interface UTransport {
      * @return Returns [UStatus] with [UCode.OK] if the listener is registered
      * correctly, otherwise it returns with the appropriate failure.
      */
-    fun registerListener(sourceFilter: UUri, sinkFilter: UUri? = null, listener: UListener): UStatus
+    suspend fun registerListener(sourceFilter: UUri, sinkFilter: UUri = UUriFactory.ANY, listener: UListener): UStatus
 
     /**
      * Unregister `UListener` for `UUri` source and sink filters. Messages arriving on this topic will
@@ -56,12 +56,32 @@ interface UTransport {
      * @return Returns [UStatus] with [UCode.OK] if the listener is unregistered
      * correctly, otherwise it returns with the appropriate failure.
      */
-    fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri? = null, listener: UListener): UStatus
+    suspend fun unregisterListener(sourceFilter: UUri, sinkFilter: UUri = UUriFactory.ANY, listener: UListener): UStatus
 
     /**
-     * Return the source address for the uE (authority, entity, and resource information)
+     * Return the source address of the uE
+     * The Source address is passed to the constructor of a given transport
      *
      * @return [UUri] containing the source address
      */
     fun getSource(): UUri
+
+    /**
+     * Open the connection to the transport that will trigger any registered listeners
+     * to be registered.
+     *
+     * @return Returns [UStatus] with [UCode.OK] if the connection is
+     * opened correctly, otherwise it returns with the appropriate failure.
+     */
+    suspend fun open(): UStatus {
+        return uStatus {
+            code = UCode.OK
+        }
+    }
+
+    /**
+     * Close the connection to the transport that will trigger any registered listeners
+     * to be unregistered.
+     */
+    fun close() {}
 }

@@ -33,7 +33,7 @@ Below are the list of the classes and interfaces that are part of the uProtocol 
 
 In the following section we will provide an example for how a transport implementations are expected to implement the uTransport library
 
-[source,java]
+[source,kotlin]
 ----
-// include::../../../../../../test/java/org/eclipse/uprotocol/communication/TestUTransport.java[]
+include::../../../../../../test/kotlin/org/eclipse/uprotocol/communication/TestUTransport.kt[]
 ----

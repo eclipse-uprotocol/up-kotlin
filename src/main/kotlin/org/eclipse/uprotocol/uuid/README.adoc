@@ -10,7 +10,7 @@ Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/
 
 [source,kotlin]
 ----
-    val uuid: UUID = UUIDV8()
+    val uuid: UUID = UUIDV7()
     val version: UUIDVersion = uuid.getVersion()
     val time: Long? = uuid.getTime()
     val uuidString = uuid.serialize()

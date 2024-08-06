@@ -31,7 +31,7 @@ class UuidUtilsTest {
     }
 
     private fun createId(): UUID {
-        return UUIDV8()
+        return UUIDV7()
     }
 
     @Test
@@ -83,7 +83,7 @@ class UuidUtilsTest {
     @DisplayName("Test getElapseTime() when UUID time is in the future")
     fun testGetElapsedTimePast() {
         val now = Instant.now().plusMillis(DELAY_MS.toLong())
-        val id: UUID = UUIDV8(now)
+        val id: UUID = UUIDV7(now)
         assertNull(id.getElapsedTime())
     }
 

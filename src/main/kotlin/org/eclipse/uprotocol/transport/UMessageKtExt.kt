@@ -13,9 +13,12 @@
 
 package org.eclipse.uprotocol.transport
 
-import com.google.protobuf.Any
-import com.google.protobuf.ByteString
-import com.google.protobuf.Message
+import org.eclipse.uprotocol.communication.UPayload
+import org.eclipse.uprotocol.transport.validator.Request
+import org.eclipse.uprotocol.uri.validator.isRpcMethod
+import org.eclipse.uprotocol.uri.validator.isRpcResponse
+import org.eclipse.uprotocol.uri.validator.isTopic
+import org.eclipse.uprotocol.uuid.validate.UUIDV7Validator
 import org.eclipse.uprotocol.v1.*
 
 /**
@@ -27,12 +30,12 @@ import org.eclipse.uprotocol.v1.*
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.setPriority(priority: UPriority) {
-    val basePriority =  when (attributes.type) {
-        UMessageType.UMESSAGE_TYPE_REQUEST,
-        UMessageType.UMESSAGE_TYPE_RESPONSE -> UPriority.UPRIORITY_CS4
+    val basePriority = when (attributes.type) {
+        UMessageType.UMESSAGE_TYPE_REQUEST, UMessageType.UMESSAGE_TYPE_RESPONSE -> UPriority.UPRIORITY_CS4
+
         else -> UPriority.UPRIORITY_CS1
     }
-    if (priority.number>= basePriority.number){
+    if (priority.number >= basePriority.number) {
         attributes = attributes.copy { this.priority = priority }
     }
 }
@@ -104,40 +107,15 @@ fun UMessageKt.Dsl.setTraceparent(traceparent: String) {
 }
 
 /**
- * Set payload and payload format for a UMessage.
- * @param message Google protobuf message to be packed into the payload
+ * Build a message with the passed {@link UPayload}.
  *
+ * @param payload The payload to be packed into the message.
  * @return Returns the UMessage with the configured payload.
  */
 @JvmSynthetic
-fun UMessageKt.Dsl.setPayload(message: Message) {
-    payload = message.toByteString()
-    attributes = attributes.copy { payloadFormat = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF }
-}
-
-/**
- * Set payload and payload format for a UMessage.
- * @param any Google protobuf Any message to be packed into the payload
- *
- * @return Returns the UMessage with the configured payload.
- */
-@JvmSynthetic
-fun UMessageKt.Dsl.setPayload(any: Any) {
-    payload = any.toByteString()
-    attributes = attributes.copy { payloadFormat = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY }
-}
-
-/**
- * Set payload and payload format for a UMessage.
- * @param format The format of the payload.
- * @param payload The payload of the message.
- *
- * @return Returns the UMessage with the configured payload.
- */
-@JvmSynthetic
-fun UMessageKt.Dsl.setPayload(format: UPayloadFormat, payload: ByteString) {
-    this.payload = payload
-    attributes = attributes.copy { payloadFormat = format }
+fun UMessageKt.Dsl.setPayload(payload: UPayload) {
+    this.payload = payload.data
+    attributes = attributes.copy { payloadFormat = payload.format }
 }
 
 /**
@@ -148,6 +126,7 @@ fun UMessageKt.Dsl.setPayload(format: UPayloadFormat, payload: ByteString) {
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.forPublication(source: UUri) {
+    require(source.isTopic()) { "The source must be a topic" }
     attributes = uAttributes {
         forPublication(source, UPriority.UPRIORITY_CS1)
     }
@@ -161,6 +140,7 @@ fun UMessageKt.Dsl.forPublication(source: UUri) {
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.forNotification(source: UUri, sink: UUri) {
+    require(source.isTopic() && sink.isRpcResponse()) { "The source must be a topic and sink must be a response." }
     attributes = uAttributes {
         forNotification(source, sink, UPriority.UPRIORITY_CS1)
     }
@@ -175,6 +155,12 @@ fun UMessageKt.Dsl.forNotification(source: UUri, sink: UUri) {
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.forRequest(source: UUri, sink: UUri, ttl: Int) {
+    // Validate the source and sink
+    require(sink.isRpcMethod() && source.isRpcResponse()) {
+        "source must be an rpc method and sink must be a request."
+    }
+    // Validate the ttl
+    require(ttl > 0) { "ttl must be greater than 0." }
     attributes = uAttributes {
         forRequest(source, sink, UPriority.UPRIORITY_CS4, ttl)
     }
@@ -189,6 +175,11 @@ fun UMessageKt.Dsl.forRequest(source: UUri, sink: UUri, ttl: Int) {
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.forResponse(source: UUri, sink: UUri, reqId: UUID) {
+    // Validate the source and sink
+    require(sink.isRpcResponse() && source.isRpcMethod()) {
+        "sink must be a response and source must be an rpc method."
+    }
+    require(UUIDV7Validator.validate(reqId).getCode() === UCode.OK) { "reqid is not a valid UUID." }
     attributes = uAttributes {
         forResponse(source, sink, UPriority.UPRIORITY_CS4, reqId)
     }
@@ -201,6 +192,8 @@ fun UMessageKt.Dsl.forResponse(source: UUri, sink: UUri, reqId: UUID) {
  */
 @JvmSynthetic
 fun UMessageKt.Dsl.forResponse(request: UAttributes) {
+    // Validate the request
+    require(!Request.validate(request).isFailure()) { "request must contain valid request attributes." }
     attributes = uAttributes {
         forResponse(request)
     }

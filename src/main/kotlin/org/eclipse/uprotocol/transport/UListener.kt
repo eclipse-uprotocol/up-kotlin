@@ -20,12 +20,12 @@ import org.eclipse.uprotocol.v1.UMessage
  * For any implementation that defines some kind of callback or function that
  * will be called to handle incoming messages.
  */
-interface UListener {
+fun interface UListener {
     /**
      * Method called to handle/process messages.
      *
      * @param message Message received.
      * @return Returns an Ack every time a message is received and processed.
      */
-    fun onReceive(message: UMessage)
+    suspend fun onReceive(message: UMessage)
 }
